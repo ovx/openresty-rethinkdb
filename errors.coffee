@@ -1,7 +1,3 @@
-goog.provide("rethinkdb.errors")
-
-goog.require("rethinkdb.base")
-
 class RqlDriverError extends Error
     constructor: (msg) ->
         @name = @constructor.name
@@ -63,8 +59,14 @@ class RqlQueryPrinter
     joinTree = (tree) ->
         str = ''
         for term in tree
-            if goog.isArray term
+            if Array.isArray term
                 str += joinTree term
             else
                 str += term
         return str
+
+module.exports.RqlDriverError = RqlDriverError
+module.exports.RqlRuntimeError = RqlRuntimeError
+module.exports.RqlCompileError = RqlCompileError
+module.exports.RqlClientError = RqlClientError
+module.exports.printQuery = RqlQueryPrinter::printQuery

@@ -1,6 +1,11 @@
-goog.provide("rethinkdb.cursor")
+err = require('./errors')
+util = require('./util')
 
-goog.require("rethinkdb.base")
+# Import some names to this namespace for convienience
+ar = util.ar
+varar = util.varar
+aropt = util.aropt
+
 
 class IterableResult
     hasNext: -> throw "Abstract Method"
@@ -8,9 +13,9 @@ class IterableResult
 
     each: varar(1, 2, (cb, onFinished) ->
         unless typeof cb is 'function'
-            throw new RqlDriverError "First argument to each must be a function."
+            throw new err.RqlDriverError "First argument to each must be a function."
         if onFinished? and typeof onFinished isnt 'function'
-            throw new RqlDriverError "Optional second argument to each must be a function."
+            throw new err.RqlDriverError "Optional second argument to each must be a function."
 
         brk = false
         n = =>
@@ -25,7 +30,7 @@ class IterableResult
 
     toArray: ar (cb) ->
         unless typeof cb is 'function'
-            throw new RqlDriverError "Argument to toArray must be a function."
+            throw new err.RqlDriverError "Argument to toArray must be a function."
 
         arr = []
         if not @hasNext()
@@ -77,7 +82,7 @@ class Cursor extends IterableResult
             # If there's no more data let's notify the waiting callback
             if not @hasNext()
                 cb = @_cbQueue.shift()
-                cb new RqlDriverError "No more rows in the cursor."
+                cb new err.RqlDriverError "No more rows in the cursor."
             else
 
                 # We haven't processed all the data, let's try to give it to the callback
@@ -142,4 +147,8 @@ class ArrayResult extends IterableResult
 
 nextCbCheck = (cb) ->
     unless typeof cb is 'function'
-        throw new RqlDriverError "Argument to next must be a function."
+        throw new err.RqlDriverError "Argument to next must be a function."
+
+
+module.exports.Cursor = Cursor
+module.exports.makeIterable = ArrayResult::makeIterable

@@ -1,15 +1,40 @@
-goog.provide("rethinkdb.net")
+net = require('net')
+events = require('events')
 
-goog.require("rethinkdb.base")
-goog.require("rethinkdb.cursor")
-goog.require("rethinkdb.protobuf")
+util = require('./util')
+err = require('./errors')
+cursors = require('./cursor')
+pb = require('./protobuf')
 
-# Eventually when we ditch Closure we can actually use the node
-# event emitter library. For now it's simple enough that we'll
-# emulate the interface.
-# var events = require('events')
+r = require('./ast')
 
-class Connection
+# Import some names to this namespace for convienience
+ar = util.ar
+varar = util.varar
+aropt = util.aropt
+
+deconstructDatum = (datum) ->
+    pb.DatumTypeSwitch(datum, {
+        "R_NULL": =>
+            null
+       ,"R_BOOL": =>
+            datum.r_bool
+       ,"R_NUM": =>
+            datum.r_num
+       ,"R_STR": =>
+            datum.r_str
+       ,"R_ARRAY": =>
+            deconstructDatum dt for dt in datum.r_array
+       ,"R_OBJECT": =>
+            obj = {}
+            for pair in datum.r_object
+                obj[pair.key] = deconstructDatum(pair.val)
+            obj
+        },
+            => throw new err.RqlDriverError "Unknown Datum type"
+        )
+
+class Connection extends events.EventEmitter
     DEFAULT_HOST: 'localhost'
     DEFAULT_PORT: 28015
     DEFAULT_AUTH_KEY: ''
@@ -37,10 +62,10 @@ class Connection
 
         errCallback = (e) =>
             @removeListener 'connect', conCallback
-            if e instanceof RqlDriverError
+            if e instanceof err.RqlDriverError
                 callback e
             else
-                callback new RqlDriverError "Could not connect to #{@host}:#{@port}."
+                callback new err.RqlDriverError "Could not connect to #{@host}:#{@port}."
         @once 'error', errCallback
 
         conCallback = =>
@@ -59,24 +84,24 @@ class Connection
             unless @buffer.byteLength >= (4 + responseLength)
                 break
 
-            responseArray = new Uint8Array @buffer, 4, responseLength
-            response = ResponsePB::parse(responseArray)
+            responseBuffer = @buffer.slice(4, responseLength + 4)
+            response = pb.ParseResponse(responseBuffer)
             @_processResponse response
 
             # For some reason, Arraybuffer.slice is not in my version of node
             @buffer = @buffer.slice(4 + responseLength)
 
-    mkAtom = (response) -> DatumTerm::deconstruct response.getResponse 0
+    mkAtom = (response) -> deconstructDatum response.response[0]
 
-    mkSeq = (response) -> (DatumTerm::deconstruct res for res in response.responseArray())
+    mkSeq = (response) -> (deconstructDatum res for res in response.response)
 
     mkErr = (ErrClass, response, root) ->
         msg = mkAtom response
-        bt = for frame in response.getBacktraceArray()
-                if frame.getType() is Frame.FrameType.POS
-                    parseInt frame.getPos()
+        bt = for frame in response.backtrace.frames
+                if frame.type is "POS"
+                    parseInt frame.pos
                 else
-                    frame.getOpt()
+                    frame.opt
         new ErrClass msg, root, bt
 
     _delQuery: (token) ->
@@ -87,42 +112,48 @@ class Connection
             @cancel()
 
     _processResponse: (response) ->
-        token = response.getToken()
+        token = response.token
         if @outstandingCallbacks[token]?
             {cb:cb, root:root, cursor: cursor} = @outstandingCallbacks[token]
             if cursor?
-                if response.getType() is Response.ResponseType.SUCCESS_PARTIAL
-                    cursor._addData mkSeq response
-                else if response.getType() is Response.ResponseType.SUCCESS_SEQUENCE
-                    cursor._endData mkSeq response
-                    @_delQuery(token)
+                pb.ResponseTypeSwitch(response, {
+                     "SUCCESS_PARTIAL": =>
+                        cursor._addData mkSeq response
+                    ,"SUCCESS_SEQUENCE": =>
+                        cursor._endData mkSeq response
+                        @_delQuery(token)
+                },
+                    => cb new err.RqlDriverError "Unknown response type"
+                )
             else if cb?
                 # Behavior varies considerably based on response type
-                if response.getType() is Response.ResponseType.COMPILE_ERROR
-                    cb mkErr(RqlCompileError, response, root)
-                    @_delQuery(token)
-                else if response.getType() is Response.ResponseType.CLIENT_ERROR
-                    cb mkErr(RqlClientError, response, root)
-                    @_delQuery(token)
-                else if response.getType() is Response.ResponseType.RUNTIME_ERROR
-                    cb mkErr(RqlRuntimeError, response, root)
-                    @_delQuery(token)
-                else if response.getType() is Response.ResponseType.SUCCESS_ATOM
-                    response = mkAtom response
-                    if goog.isArray response
-                        response = ArrayResult::makeIterable response
-                    cb null, response
-                    @_delQuery(token)
-                else if response.getType() is Response.ResponseType.SUCCESS_PARTIAL
-                    cursor = new Cursor @, token
-                    @outstandingCallbacks[token].cursor = cursor
-                    cb null, cursor._addData(mkSeq response)
-                else if response.getType() is Response.ResponseType.SUCCESS_SEQUENCE
-                    cursor = new Cursor @, token
-                    @_delQuery(token)
-                    cb null, cursor._endData(mkSeq response)
-                else
-                    cb new RqlDriverError "Unknown response type"
+                pb.ResponseTypeSwitch(response, {
+                    "COMPILE_ERROR": =>
+                        cb mkErr(err.RqlCompileError, response, root)
+                        @_delQuery(token)
+                   ,"CLIENT_ERROR": =>
+                        cb mkErr(err.RqlClientError, response, root)
+                        @_delQuery(token)
+                   ,"RUNTIME_ERROR": =>
+                        cb mkErr(err.RqlRuntimeError, response, root)
+                        @_delQuery(token)
+                   ,"SUCCESS_ATOM": =>
+                        response = mkAtom response
+                        if Array.isArray response
+                            response = cursors.makeIterable response
+                        cb null, response
+                        @_delQuery(token)
+                   ,"SUCCESS_PARTIAL": =>
+                        cursor = new cursors.Cursor @, token
+                        @outstandingCallbacks[token].cursor = cursor
+                        cb null, cursor._addData(mkSeq response)
+                   ,"SUCCESS_SEQUENCE": =>
+                        cursor = new cursors.Cursor @, token
+                        @_delQuery(token)
+                        cb null, cursor._endData(mkSeq response)
+                },
+                    => cb new err.RqlDriverError "Unknown response type"
+                )
 
     close: ar () ->
         @open = false
@@ -138,36 +169,35 @@ class Connection
         @db = db
 
     _start: (term, cb, useOutdated, noreply) ->
-        unless @open then throw new RqlDriverError "Connection is closed."
+        unless @open then throw new err.RqlDriverError "Connection is closed."
 
         # Assign token
-        token = ''+@nextToken
-        @nextToken++
+        token = @nextToken++
 
         # Construct query
-        query = new QueryPB
-        query.setType "START"
-        query.setQuery term.build()
-        query.setToken token
+        query = {'global_optargs':[]}
+        query.type = "START"
+        query.query = term.build()
+        query.token = token
 
         # Set global options
         if @db?
-            pair = new QueryPB::AssocPair
-            pair.setKey('db')
-            pair.setVal((new Db {}, @db).build())
-            query.addGlobalOptargs(pair)
+            pair =
+                key: 'db'
+                val: r.db(@db).build()
+            query.global_optargs.push(pair)
 
         if useOutdated?
-            pair = new QueryPB::AssocPair
-            pair.setKey('use_outdated')
-            pair.setVal((new DatumTerm (!!useOutdated)).build())
-            query.addGlobalOptargs(pair)
+            pair =
+                key: 'use_outdated'
+                val: r.expr(!!useOutdated).build()
+            query.global_optargs.push(pair)
 
         if noreply?
-            pair = new QueryPB::AssocPair
-            pair.setKey('noreply')
-            pair.setVal((new DatumTerm (!!noreply)).build())
-            query.addGlobalOptargs(pair)
+            pair =
+                key: 'noreply'
+                val: r.expr(!!noreply).build()
+            query.global_optargs.push(pair)
 
         # Save callback
         if (not noreply?) or !noreply
@@ -176,19 +206,19 @@ class Connection
         @_sendQuery(query)
 
         if noreply? and noreply and typeof(cb) is 'function'
-                cb null # There is no error and result is `undefined`
+            cb null # There is no error and result is `undefined`
 
     _continueQuery: (token) ->
-        query = new QueryPB
-        query.setType "CONTINUE"
-        query.setToken token
+        query =
+            type: "CONTINUE"
+            token: token
 
         @_sendQuery(query)
 
     _endQuery: (token) ->
-        query = new QueryPB
-        query.setType "STOP"
-        query.setToken token
+        query =
+            type: "STOP"
+            token: token
 
         @_sendQuery(query)
         @_delQuery(token)
@@ -196,7 +226,7 @@ class Connection
     _sendQuery: (query) ->
 
         # Serialize protobuf
-        data = query.serialize()
+        data = pb.SerializeQuery(query)
 
         length = data.byteLength
         finalArray = new Uint8Array length + 4
@@ -205,58 +235,31 @@ class Connection
 
         @write finalArray.buffer
 
-    ## Emulate the event emitter interface
-
-
-    addListener: (event, listener) ->
-        unless @_events[event]?
-            @_events[event] = []
-        @_events[event].push(listener)
-
-    on: (event, listener) -> @addListener(event, listener)
-
-    once: (event, listener) ->
-        listener._once = true
-        @addListener(event, listener)
-
-    removeListener: (event, listener) ->
-        if @_events[event]?
-            @_events[event] = @_events[event].filter (lst) -> (lst isnt listener)
-
-    removeAllListeners: (event) -> delete @_events[event]
-
-    listeners: (event) -> @_events[event]
-
-    emit: (event, args...) ->
-        if @_events[event]?
-            listeners = @_events[event].concat()
-            for lst in listeners
-                if lst._once?
-                    @removeListener(event, lst)
-                lst.apply(null, args)
-
 class TcpConnection extends Connection
-    @isAvailable: -> testFor('net')
+    @isAvailable: () -> !(process.browser)
 
     constructor: (host, callback) ->
         unless TcpConnection.isAvailable()
-            throw new RqlDriverError "TCP sockets are not available in this environment"
+            throw new err.RqlDriverError "TCP sockets are not available in this environment"
 
         super(host, callback)
 
         if @rawSocket?
             @close()
 
-        net = require('net')
         @rawSocket = net.connect @port, @host
         @rawSocket.setNoDelay()
 
-        handshake_complete = false
+        timeout = setTimeout( (()=>
+            @rawSocket.destroy()
+            @emit 'error', new RqlDriverError "Handshake timedout"
+        ), @timeout*1000)
+
         @rawSocket.once 'connect', =>
             # Initialize connection with magic number to validate version
             buf = new ArrayBuffer 8
             buf_view = new DataView buf
-            buf_view.setUint32 0, VersionDummy.Version.V0_2, true
+            buf_view.setUint32 0, 0x723081e1, true # VersionDummy.Version.V0_2
             buf_view.setUint32 4, @authKey.length, true
             @write buf
             @rawSocket.write @authKey, 'ascii'
@@ -264,7 +267,7 @@ class TcpConnection extends Connection
             # Now we have to wait for a response from the server
             # acknowledging the new connection
             handshake_callback = (buf) =>
-                arr = toArrayBuffer(buf)
+                arr = util.toArrayBuffer(buf)
 
                 @buffer = bufferConcat @buffer, arr
                 for b,i in new Uint8Array @buffer
@@ -275,30 +278,24 @@ class TcpConnection extends Connection
                         @buffer = @buffer.slice(i + 1)
                         status_str = String.fromCharCode.apply(null, new Uint8Array status_buf)
 
-                        handshake_complete = true
+                        clearTimeout(timeout)
                         if status_str == "SUCCESS"
                             # We're good, finish setting up the connection
                             @rawSocket.on 'data', (buf) =>
-                                @_data(toArrayBuffer(buf))
+                                @_data(util.toArrayBuffer(buf))
 
                             @emit 'connect'
                             return
                         else
-                            @emit 'error', new RqlDriverError "Server dropped connection with message: \"" + status_str.trim() + "\""
+                            @emit 'error', new err.RqlDriverError "Server dropped connection with message: \"" + status_str.trim() + "\""
                             return
+
 
             @rawSocket.on 'data', handshake_callback
 
         @rawSocket.on 'error', (args...) => @emit 'error', args...
 
         @rawSocket.on 'close', => @open = false; @emit 'close'
-
-        setTimeout( (()=>
-            if not handshake_complete
-                @rawSocket.destroy()
-                @emit 'error', new RqlDriverError "Handshake timedout"
-        ), @timeout*1000)
-
 
     close: () ->
         super()
@@ -322,12 +319,12 @@ class HttpConnection extends Connection
     @isAvailable: -> typeof XMLHttpRequest isnt "undefined"
     constructor: (host, callback) ->
         unless HttpConnection.isAvailable()
-            throw new RqlDriverError "XMLHttpRequest is not available in this environment"
+            throw new err.RqlDriverError "XMLHttpRequest is not available in this environment"
 
         super(host, callback)
 
         protocol = if host.protocol is 'https' then 'https' else @DEFAULT_PROTOCOL
-        url = "#{protocol}://#{@host}:#{@port}/ajax/reql/"
+        url = "#{protocol}://#{@host}:#{@port}#{host.pathname}ajax/reql/"
         xhr = new XMLHttpRequest
         xhr.open("GET", url+"open-new-connection", true)
         xhr.responseType = "arraybuffer"
@@ -339,7 +336,7 @@ class HttpConnection extends Connection
                     @_connId = (new DataView xhr.response).getInt32(0, true)
                     @emit 'connect'
                 else
-                    @emit 'error', new RqlDriverError "XHR error, http status #{xhr.status}."
+                    @emit 'error', new err.RqlDriverError "XHR error, http status #{xhr.status}."
         xhr.send()
 
     cancel: ->
@@ -360,24 +357,22 @@ class HttpConnection extends Connection
                 @_data(xhr.response)
         xhr.send chunk
 
-class EmbeddedConnection extends Connection
-    @isAvailable: -> (typeof RDBPbServer isnt "undefined")
-    constructor: (embeddedServer, callback) ->
-        super({}, callback)
-        @_embeddedServer = embeddedServer
-        @emit 'connect'
+bufferConcat = (buf1, buf2) ->
+    view = new Uint8Array (buf1.byteLength + buf2.byteLength)
+    view.set new Uint8Array(buf1), 0
+    view.set new Uint8Array(buf2), buf1.byteLength
+    view.buffer
 
-    write: (chunk) -> @_data(@_embeddedServer.execute(chunk))
-
-rethinkdb.connect = ar (host, callback) ->
+# The only exported function of this module
+module.exports.connect = ar (host, callback) ->
     # Host must be a string or an object
     unless typeof(host) is 'string' or typeof(host) is 'object'
-        throw new RqlDriverError "First argument to `connect` must be a string giving the "+
+        throw new err.RqlDriverError "First argument to `connect` must be a string giving the "+
                                  "host to `connect` to or an object giving `host` and `port`."
 
     # Callback must be a function
     unless typeof(callback) is 'function'
-        throw new RqlDriverError "Second argument to `connect` must be a callback to invoke with "+
+        throw new err.RqlDriverError "Second argument to `connect` must be a callback to invoke with "+
                                  "either an error or the successfully established connection."
 
     if TcpConnection.isAvailable()
@@ -385,24 +380,5 @@ rethinkdb.connect = ar (host, callback) ->
     else if HttpConnection.isAvailable()
         new HttpConnection host, callback
     else
-        throw new RqlDriverError "Neither TCP nor HTTP avaiable in this environment"
+        throw new err.RqlDriverError "Neither TCP nor HTTP avaiable in this environment"
     return
-
-rethinkdb.embeddedConnect = ar (callback) ->
-    unless callback? then callback = (->)
-    unless EmbeddedConnection.isAvailable()
-        throw new RqlDriverError "Embedded connection not available in this environment"
-    new EmbeddedConnection new RDBPbServer, callback
-
-bufferConcat = (buf1, buf2) ->
-    view = new Uint8Array (buf1.byteLength + buf2.byteLength)
-    view.set new Uint8Array(buf1), 0
-    view.set new Uint8Array(buf2), buf1.byteLength
-    view.buffer
-
-toArrayBuffer = (node_buffer) ->
-    # Convert from node buffer to array buffer
-    arr = new Uint8Array new ArrayBuffer node_buffer.length
-    for byte,i in node_buffer
-        arr[i] = byte
-    return arr.buffer

@@ -1,8 +1,38 @@
-goog.provide("rethinkdb.ast")
+util = require('./util')
+err = require('./errors')
 
-goog.require("rethinkdb.base")
-goog.require("rethinkdb.errors")
-goog.require("rethinkdb.protobuf")
+# Import some names to this namespace for convienience
+ar = util.ar
+varar = util.varar
+aropt = util.aropt
+
+# rethinkdb is both the main export object for the module
+# and a function that shortcuts `r.expr`.
+rethinkdb = (args...) -> rethinkdb.expr(args...)
+
+# Utilities
+
+funcWrap = (val) ->
+    if val is undefined
+        # Pass through the undefined value so it's caught by
+        # the appropriate undefined checker
+        return val
+
+    val = rethinkdb.expr(val)
+
+    ivarScan = (node) ->
+        unless node instanceof TermBase then return false
+        if node instanceof ImplicitVar then return true
+        if (node.args.map ivarScan).some((a)->a) then return true
+        if (v for own k,v of node.optargs).map(ivarScan).some((a)->a) then return true
+        return false
+
+    if ivarScan(val)
+        return new Func {}, (x) -> val
+
+    return val
+
+# AST classes
 
 class TermBase
     constructor: ->
@@ -14,12 +44,12 @@ class TermBase
         useOutdated = undefined
 
         # Parse out run options from connOrOptions object
-        if connOrOptions? and typeof(connOrOptions) is 'object' and not (connOrOptions instanceof Connection)
+        if connOrOptions? and connOrOptions.constructor is Object
             useOutdated = !!connOrOptions.useOutdated
             noreply = !!connOrOptions.noreply
             for own key of connOrOptions
                 unless key in ['connection', 'useOutdated', 'noreply']
-                    throw new RqlDriverError "First argument to `run` must be an open connection or { connection: <connection>, useOutdated: <bool>, noreply: <bool>}."
+                    throw new err.RqlDriverError "First argument to `run` must be an open connection or { connection: <connection>, useOutdated: <bool>, noreply: <bool>}."
             conn = connOrOptions.connection
         else
             useOutdated = null
@@ -28,12 +58,12 @@ class TermBase
 
         # This only checks that the argument is of the right type, connection
         # closed errors will be handled elsewhere
-        unless conn instanceof Connection
-            throw new RqlDriverError "First argument to `run` must be an open connection or { connection: <connection>, useOutdated: <bool>, noreply: <bool> }."
+        unless conn? and conn._start?
+            throw new err.RqlDriverError "First argument to `run` must be an open connection or { connection: <connection>, useOutdated: <bool>, noreply: <bool> }."
 
         # We only require a callback if noreply isn't set
         if not noreply and typeof(cb) isnt 'function'
-            throw new RqlDriverError "Second argument to `run` must be a callback to invoke "+
+            throw new err.RqlDriverError "Second argument to `run` must be a callback to invoke "+
                                      "with either an error or the result of the query."
 
         try
@@ -48,7 +78,7 @@ class TermBase
             else
                 throw e
 
-    toString: -> RqlQueryPrinter::printQuery(@)
+    toString: -> err.printQuery(@)
 
 class RDBVal extends TermBase
     eq: varar(1, null, (others...) -> new Eq {}, @, others...)
@@ -73,7 +103,7 @@ class RDBVal extends TermBase
     setUnion: ar (val) -> new SetUnion {}, @, val
     setIntersection: ar (val) -> new SetIntersection {}, @, val
     setDifference: ar (val) -> new SetDifference {}, @, val
-    slice: ar (left, right) -> new Slice {}, @, left, right
+    slice: aropt (left, right, opts) -> new Slice opts, @, left, right
     skip: ar (index) -> new Skip {}, @, index
     limit: ar (index) -> new Limit {}, @, index
     getField: ar (field) -> new GetField {}, @, field
@@ -93,7 +123,7 @@ class RDBVal extends TermBase
 
     merge: ar (other) -> new Merge {}, @, other
     between: aropt (left, right, opts) -> new Between opts, @, left, right
-    reduce: aropt (func, base) -> new Reduce {base:base}, @, funcWrap(func)
+    reduce: varar(1, 2, (func, base) -> new Reduce {base:base}, @, funcWrap(func))
     map: ar (func) -> new Map {}, @, funcWrap(func)
     filter: aropt (predicate, opts) -> new Filter opts, @, funcWrap(predicate)
     concatMap: ar (func) -> new ConcatMap {}, @, funcWrap(func)
@@ -103,7 +133,7 @@ class RDBVal extends TermBase
     nth: ar (index) -> new Nth {}, @, index
     match: ar (pattern) -> new Match {}, @, pattern
     isEmpty: ar () -> new IsEmpty {}, @
-    groupedMapReduce: aropt (group, map, reduce, base) -> new GroupedMapReduce {base:base}, @, funcWrap(group), funcWrap(map), funcWrap(reduce)
+    groupedMapReduce: varar(3, 4, (group, map, reduce, base) -> new GroupedMapReduce {base:base}, @, funcWrap(group), funcWrap(map), funcWrap(reduce))
     innerJoin: ar (other, predicate) -> new InnerJoin {}, @, other, predicate
     outerJoin: ar (other, predicate) -> new OuterJoin {}, @, other, predicate
     eqJoin: aropt (left_attr, right, opts) -> new EqJoin opts, @, left_attr, right
@@ -124,7 +154,7 @@ class RDBVal extends TermBase
     groupBy: (attrs..., collector) ->
         unless collector? and attrs.length >= 1
             numArgs = attrs.length + (if collector? then 1 else 0)
-            throw new RqlDriverError "Expected 2 or more argument(s) but found #{numArgs}."
+            throw new err.RqlDriverError "Expected 2 or more argument(s) but found #{numArgs}."
         new GroupBy {}, @, attrs, collector
 
     info: ar () -> new Info {}, @
@@ -146,6 +176,46 @@ class RDBVal extends TermBase
 
         new OrderBy opts, @, attrs...
 
+    # Database operations
+
+    tableCreate: aropt (tblName, opts) -> new TableCreate opts, @, tblName
+    tableDrop: ar (tblName) -> new TableDrop {}, @, tblName
+    tableList: ar(-> new TableList {}, @)
+
+    table: aropt (tblName, opts) -> new Table opts, @, tblName
+
+    # Table operations
+
+    get: ar (key) -> new Get {}, @, key
+
+    getAll: (keysAndOpts...) ->
+        # Default if no opts dict provided
+        opts = {}
+        keys = keysAndOpts
+
+        # Look for opts dict
+        perhapsOptDict = keysAndOpts[keysAndOpts.length - 1]
+        if perhapsOptDict and
+                ((perhapsOptDict instanceof Object) and not (perhapsOptDict instanceof TermBase))
+            opts = perhapsOptDict
+            keys = keysAndOpts[0...(keysAndOpts.length - 1)]
+
+        new GetAll opts, @, keys...
+
+    # For this function only use `exprJSON` rather than letting it default to regular
+    # `expr`. This will attempt to serialize as much of the document as JSON as possible.
+    # This behavior can be manually overridden with either direct JSON serialization
+    # or ReQL datum serialization by first wrapping the argument with `r.expr` or `r.json`.
+    insert: aropt (doc, opts) -> new Insert opts, @, rethinkdb.exprJSON(doc)
+    indexCreate: varar(1, 2, (name, defun) ->
+        if defun?
+            new IndexCreate {}, @, name, funcWrap(defun)
+        else
+            new IndexCreate {}, @, name
+        )
+    indexDrop: ar (name) -> new IndexDrop {}, @, name
+    indexList: ar () -> new IndexList {}, @
+
 class DatumTerm extends RDBVal
     args: []
     optargs: {}
@@ -163,44 +233,26 @@ class DatumTerm extends RDBVal
                 ''+@data
 
     build: ->
-        datum = new DatumPB
+        datum = {}
         if @data is null
-            datum.setType "R_NULL"
+            datum.type = "R_NULL"
         else
             switch typeof @data
                 when 'number'
-                    datum.setType "R_NUM"
-                    datum.setRNum @data
+                    datum.type = "R_NUM"
+                    datum.r_num = @data
                 when 'boolean'
-                    datum.setType "R_BOOL"
-                    datum.setRBool @data
+                    datum.type = "R_BOOL"
+                    datum.r_bool = @data
                 when 'string'
-                    datum.setType "R_STR"
-                    datum.setRStr @data
+                    datum.type = "R_STR"
+                    datum.r_str = @data
                 else
-                    throw new RqlDriverError "Cannot convert `#{@data}` to Datum."
-        term = new TermPB
-        term.setType "DATUM"
-        term.setDatum datum
+                    throw new err.RqlDriverError "Cannot convert `#{@data}` to Datum."
+        term =
+            type: "DATUM"
+            datum: datum
         return term
-
-    deconstruct: (datum) ->
-        switch datum.getType()
-            when Datum.DatumType.R_NULL
-                null
-            when Datum.DatumType.R_BOOL
-                datum.getRBool()
-            when Datum.DatumType.R_NUM
-                datum.getRNum()
-            when Datum.DatumType.R_STR
-                datum.getRStr()
-            when Datum.DatumType.R_ARRAY
-                DatumTerm::deconstruct dt for dt in datum.rArrayArray()
-            when Datum.DatumType.R_OBJECT
-                obj = {}
-                for pair in datum.rObjectArray()
-                    obj[pair.getKey()] = DatumTerm::deconstruct pair.getVal()
-                obj
 
 translateOptargs = (optargs) ->
     result = {}
@@ -212,6 +264,8 @@ translateOptargs = (optargs) ->
             when 'useOutdated' then 'use_outdated'
             when 'nonAtomic' then 'non_atomic'
             when 'cacheSize' then 'cache_size'
+            when 'leftBound' then 'left_bound'
+            when 'rightBound' then 'right_bound'
             else key
 
         if key is undefined or val is undefined then continue
@@ -226,20 +280,20 @@ class RDBOp extends RDBVal
                 if arg isnt undefined
                     rethinkdb.expr arg
                 else
-                    throw new RqlDriverError "Argument #{i} to #{@st || @mt} may not be `undefined`."
+                    throw new err.RqlDriverError "Argument #{i} to #{@st || @mt} may not be `undefined`."
         self.optargs = translateOptargs(optargs)
         return self
 
     build: ->
-        term = new TermPB
-        term.setType @tt
+        term = {args:[], optargs:[]}
+        term.type = @tt
         for arg in @args
-            term.addArgs arg.build()
+            term.args.push(arg.build())
         for own key,val of @optargs
-            pair = new TermPB::AssocPair
-            pair.setKey key
-            pair.setVal val.build()
-            term.addOptargs pair
+            pair =
+                key: key
+                val: val.build()
+            term.optargs.push(pair)
         return term
 
     compose: (args, optargs) ->
@@ -288,7 +342,7 @@ class MakeObject extends RDBOp
         self.optargs = {}
         for own key,val of obj
             if typeof val is 'undefined'
-                throw new RqlDriverError "Object field '#{key}' may not be undefined"
+                throw new err.RqlDriverError "Object field '#{key}' may not be undefined"
             self.optargs[key] = rethinkdb.expr val
         return self
 
@@ -318,45 +372,9 @@ class Db extends RDBOp
     tt: "DB"
     st: 'db'
 
-    tableCreate: aropt (tblName, opts) -> new TableCreate opts, @, tblName
-    tableDrop: ar (tblName) -> new TableDrop {}, @, tblName
-    tableList: ar(-> new TableList {}, @)
-
-    table: aropt (tblName, opts) -> new Table opts, @, tblName
-
 class Table extends RDBOp
     tt: "TABLE"
     st: 'table'
-
-    get: ar (key) -> new Get {}, @, key
-
-    getAll: (keysAndOpts...) ->
-        # Default if no opts dict provided
-        opts = {}
-        keys = keysAndOpts
-
-        # Look for opts dict
-        perhapsOptDict = keysAndOpts[keysAndOpts.length - 1]
-        if perhapsOptDict and
-                ((perhapsOptDict instanceof Object) and not (perhapsOptDict instanceof TermBase))
-            opts = perhapsOptDict
-            keys = keysAndOpts[0...(keysAndOpts.length - 1)]
-
-        new GetAll opts, @, keys...
-
-    # For this function only use `exprJSON` rather than letting it default to regular
-    # `expr`. This will attempt to serialize as much of the document as JSON as possible.
-    # This behavior can be manually overridden with either direct JSON serialization
-    # or ReQL datum serialization by first wrapping the argument with `r.expr` or `r.json`.
-    insert: aropt (doc, opts) -> new Insert opts, @, rethinkdb.exprJSON(doc)
-    indexCreate: varar(1, 2, (name, defun) ->
-        if defun?
-            new IndexCreate {}, @, name, funcWrap(defun)
-        else
-            new IndexCreate {}, @, name
-        )
-    indexDrop: ar (name) -> new IndexDrop {}, @, name
-    indexList: ar () -> new IndexList {}, @
 
     compose: (args, optargs) ->
         if @args[0] instanceof Db
@@ -694,27 +712,6 @@ class ForEach extends RDBOp
     tt: "FOREACH"
     mt: 'forEach'
 
-funcWrap = (val) ->
-    if val is undefined
-        # Pass through the undefined value so it's caught by
-        # the appropriate undefined checker
-        return val
-
-    val = rethinkdb.expr(val)
-
-    ivarScan = (node) ->
-        unless node instanceof TermBase then return false
-        if node instanceof ImplicitVar then return true
-        if (node.args.map ivarScan).some((a)->a) then return true
-        if (v for own k,v of node.optargs).map(ivarScan).some((a)->a) then return true
-        return false
-
-    if ivarScan(val)
-        return new Func {}, (x) -> val
-
-    return val
-
-
 class Func extends RDBOp
     tt: "FUNC"
     @nextVarId: 0
@@ -731,7 +728,7 @@ class Func extends RDBOp
 
         body = func(args...)
         if body is undefined
-            throw new RqlDriverError "Annonymous function returned `undefined`. Did you forget a `return`?"
+            throw new err.RqlDriverError "Annonymous function returned `undefined`. Did you forget a `return`?"
 
         argsArr = new MakeArray({}, argNums...)
         return super(optargs, argsArr, body)
@@ -746,3 +743,109 @@ class Asc extends RDBOp
 class Desc extends RDBOp
     tt: "DESC"
     st: 'desc'
+
+
+# All top level exported functions
+
+# Wrap a native JS value in an ReQL datum
+rethinkdb.expr = ar (val) ->
+    if val is undefined
+        throw new err.RqlDriverError "Cannot wrap undefined with r.expr()."
+
+    else if val instanceof TermBase
+        val
+    else if val instanceof Function
+        new Func {}, val
+    else if Array.isArray val
+        new MakeArray {}, val...
+    else if val == Object(val)
+        new MakeObject val
+    else
+        new DatumTerm val
+
+# Use r.json to serialize as much of the obect as JSON as is
+# feasible to avoid doing too much protobuf serialization.
+rethinkdb.exprJSON = ar (val) ->
+    if isJSON(val)
+        rethinkdb.json(JSON.stringify(val))
+    else if (val instanceof TermBase)
+        val
+    else
+        if Array.isArray(val)
+            wrapped = []
+        else
+            wrapped = {}
+
+        for k,v of val
+            wrapped[k] = rethinkdb.exprJSON(v)
+        rethinkdb.expr(wrapped)
+
+# Is this JS value representable as JSON?
+isJSON = (val) ->
+    if (val instanceof TermBase)
+        false
+    else if (val instanceof Function)
+        false
+    else if (val instanceof Object)
+        # Covers array case as well
+        for own k,v of val
+            if not isJSON(v) then return false
+        true
+    else
+        # Primitive types can always be represented as JSON
+        true
+
+rethinkdb.js = aropt (jssrc, opts) -> new JavaScript opts, jssrc
+
+rethinkdb.json = ar (jsonsrc) -> new Json {}, jsonsrc
+
+rethinkdb.error = varar 0, 1, (args...) -> new UserError {}, args...
+
+rethinkdb.row = new ImplicitVar {}
+
+rethinkdb.table = aropt (tblName, opts) -> new Table opts, tblName
+
+rethinkdb.db = ar (dbName) -> new Db {}, dbName
+
+rethinkdb.dbCreate = ar (dbName) -> new DbCreate {}, dbName
+rethinkdb.dbDrop = ar (dbName) -> new DbDrop {}, dbName
+rethinkdb.dbList = ar () -> new DbList {}
+
+rethinkdb.tableCreate = aropt (tblName, opts) -> new TableCreate opts, tblName
+rethinkdb.tableDrop = ar (tblName) -> new TableDrop {}, tblName
+rethinkdb.tableList = ar () -> new TableList {}
+
+rethinkdb.do = varar 1, null, (args...) ->
+    new FunCall {}, funcWrap(args[-1..][0]), args[...-1]...
+
+rethinkdb.branch = ar (test, trueBranch, falseBranch) -> new Branch {}, test, trueBranch, falseBranch
+
+rethinkdb.count =              {'COUNT': true}
+rethinkdb.sum   = ar (attr) -> {'SUM': attr}
+rethinkdb.avg   = ar (attr) -> {'AVG': attr}
+
+rethinkdb.asc = (attr) -> new Asc {}, attr
+rethinkdb.desc = (attr) -> new Desc {}, attr
+
+rethinkdb.eq = varar 2, null, (args...) -> new Eq {}, args...
+rethinkdb.ne = varar 2, null, (args...) -> new Ne {}, args...
+rethinkdb.lt = varar 2, null, (args...) -> new Lt {}, args...
+rethinkdb.le = varar 2, null, (args...) -> new Le {}, args...
+rethinkdb.gt = varar 2, null, (args...) -> new Gt {}, args...
+rethinkdb.ge = varar 2, null, (args...) -> new Ge {}, args...
+rethinkdb.or = varar 2, null, (args...) -> new Any {}, args...
+rethinkdb.and = varar 2, null, (args...) -> new All {}, args...
+
+rethinkdb.not = ar (x) -> new Not {}, x
+
+rethinkdb.add = varar 2, null, (args...) -> new Add {}, args...
+rethinkdb.sub = varar 2, null, (args...) -> new Sub {}, args...
+rethinkdb.mul = varar 2, null, (args...) -> new Mul {}, args...
+rethinkdb.div = varar 2, null, (args...) -> new Div {}, args...
+rethinkdb.mod = ar (a, b) -> new Mod {}, a, b
+
+rethinkdb.typeOf = ar (val) -> new TypeOf {}, val
+rethinkdb.info = ar (val) -> new Info {}, val
+
+# Export all names defined on rethinkdb
+module.exports = rethinkdb
