@@ -30,42 +30,74 @@ __Example:__ What is the maximum number of points scored by each
 player, with the highest scorers first?
 
 ```rb
-> r.table('games') \
-   .group('player').max('points')['points'] \
+r.table('games')
+   .group('player').max('points')['points']
    .ungroup().order_by(r.desc('reduction')).run(conn)
-[{"group"=>"Bob", "reduction"=>15}, {"group"=>"Alice", "reduction"=>7}, ...]
+```
+
+Result: 
+
+```rb
+[
+    {
+        "group" => "Bob",
+        "reduction" => 15
+    },
+    {
+        "group" => "Alice",
+        "reduction" => 7
+    },
+    ...
+]
 ```
 
 __Example:__ Select one random player and all their games.
 
 ```rb
-> r.table('games').group('player').ungroup().sample(1).run(conn)
-[{"group"=>"Bob",
-  "reduction"=>
-   [{"id"=>0, "player"=>"Bob", "points"=>1},
-    {"id"=>2, "player"=>"Bob", "points"=>15},
-    ...]}]
+r.table('games').group('player').ungroup().sample(1).run(conn)
+```
+
+Result:
+
+```rb
+[
+    {
+        "group" => "Bob",
+        "reduction" => [
+            {"id" => 0, "player" => "Bob", "points" => 1},
+            {"id" => 2, "player" => "Bob", "points" => 15},
+            ...
+        ]
+    }
+]
 ```
 
 Note that if you didn't call `ungroup`, you would instead select one
 random game from each player:
 
 ```rb
-> r.table('games').group('player').sample(1).run(conn)
-{"Alice"=>[{"id"=>5, "player"=>"Alice", "points"=>7}],
- "Bob"=>[{"id"=>2, "player"=>"Bob", "points"=>15}],
- ...}
+r.table('games').group('player').sample(1).run(conn)
+```
+
+Result:
+
+```rb
+{
+    "Alice" => [
+        {"id" => 5, "player" => "Alice", "points" => 7}
+    ],
+    "Bob" => [
+        {"id" => 2, "player" => "Bob", "points" => 15}
+    ],
+    ...
+}
 ```
 
 __Example:__ Types!
 
 ```rb
-> r.table('games').group('player').type_of().run(conn)
-"GROUPED_STREAM"
-> r.table('games').group('player').ungroup().type_of().run(conn)
-"ARRAY"
-> r.table('games').group('player').avg('points').run(conn)
-"GROUPED_DATA"
-> r.table('games').group('player').avg('points').ungroup().run(conn)
-"ARRAY"
+r.table('games').group('player').type_of().run(conn) # Returns "GROUPED_STREAM"
+r.table('games').group('player').ungroup().type_of().run(conn) # Returns "ARRAY"
+r.table('games').group('player').avg('points').run(conn) # Returns "GROUPED_DATA"
+r.table('games').group('player').avg('points').ungroup().run(conn) #Returns "ARRAY"
 ```

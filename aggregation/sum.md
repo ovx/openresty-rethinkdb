@@ -26,9 +26,9 @@ sums all the values of that field in the sequence, skipping elements
 of the sequence that lack that field.  If called with a function,
 calls that function on every element of the sequence and sums the
 results, skipping elements of the sequence where that function returns
-`null` or a non-existence error.
+`nil` or a non-existence error.
 
-Returns 0 when called on an empty sequence.
+Returns `0` when called on an empty sequence.
 
 __Example:__ What's 3 + 5 + 7?
 
