@@ -72,7 +72,7 @@ __Example:__ Return all the changes that increase a player's score.
 ```rb
 r.table('test').changes().filter{|row|
   row['new_val']['score'] > row['old_val']['score']
-}
+}.run(conn)
 ```
 
 __Example:__ Return all the changes to Bob's score.
@@ -81,7 +81,7 @@ __Example:__ Return all the changes to Bob's score.
 # Note that this will have to look at and discard all the changes to
 # rows besides Bob's.  This is currently no way to filter with an index
 # on change feeds.
-r.table('test').changes().filter{|row| row['new_val]['name'].eq('Bob')}
+r.table('test').changes().filter{|row| row['new_val]['name'].eq('Bob')}.run(conn)
 ```
 
 __Example:__ Return all the inserts on a table.
