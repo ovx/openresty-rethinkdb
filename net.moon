@@ -14,7 +14,7 @@ protoResponseType = protodef.Response.ResponseType
 r = require('./ast')
 Promise = require('bluebird')
 
-# Import some names to this namespace for convienience
+-- Import some names to this namespace for convienience
 ar = util.ar
 varar = util.varar
 aropt = util.aropt
@@ -25,7 +25,7 @@ class Connection extends events.EventEmitter
     DEFAULT_HOST: 'localhost'
     DEFAULT_PORT: 28015
     DEFAULT_AUTH_KEY: ''
-    DEFAULT_TIMEOUT: 20 # In seconds
+    DEFAULT_TIMEOUT: 20 -- In seconds
 
     constructor: (host, callback) ->
         if typeof host is 'undefined'
@@ -35,7 +35,7 @@ class Connection extends events.EventEmitter
 
         @host = host.host || @DEFAULT_HOST
         @port = host.port || @DEFAULT_PORT
-        @db = host.db # left undefined if this is not set
+        @db = host.db -- left undefined if this is not set
         @authKey = host.authKey || @DEFAULT_AUTH_KEY
         @timeout = host.timeout || @DEFAULT_TIMEOUT
 
@@ -63,7 +63,7 @@ class Connection extends events.EventEmitter
 
 
     _data: (buf) ->
-        # Buffer data, execute return results if need be
+        -- Buffer data, execute return results if need be
         @buffer = Buffer.concat([@buffer, buf])
 
         while @buffer.length >= 12
@@ -80,7 +80,7 @@ class Connection extends events.EventEmitter
             @buffer = @buffer.slice(12 + responseLength)
 
     _delQuery: (token) ->
-        # This query is done, delete this cursor
+        -- This query is done, delete this cursor
         delete @outstandingCallbacks[token]
 
         if Object.keys(@outstandingCallbacks).length < 1 and not @open
@@ -101,7 +101,7 @@ class Connection extends events.EventEmitter
                 if feed._endFlag && feed._outstandingRequests is 0
                     @_delQuery(token)
             else if cb?
-                # Behavior varies considerably based on response type
+                -- Behavior varies considerably based on response type
                 switch response.t
                     when protoResponseType.COMPILE_ERROR
                         cb mkErr(err.RqlCompileError, response, root)
@@ -147,7 +147,7 @@ class Connection extends events.EventEmitter
                     else
                         cb new err.RqlDriverError "Unknown response type"
         else
-            # Unexpected token
+            -- Unexpected token
             @emit 'error', new err.RqlDriverError "Unexpected token #{token}."
 
     close: (varar 0, 2, (optsOrCallback, callback) ->
@@ -202,15 +202,15 @@ class Connection extends events.EventEmitter
                 return new Promise (resolve, reject) ->
                     reject(new err.RqlDriverError "Connection is closed.")
 
-        # Assign token
+        -- Assign token
         token = @nextToken++
 
-        # Construct query
+        -- Construct query
         query = {}
         query.type = protoQueryType.NOREPLY_WAIT
         query.token = token
 
-        # Save callback
+        -- Save callback
         if typeof callback is 'function'
             @outstandingCallbacks[token] = {cb:callback, root:null, opts:null}
             @_sendQuery(query)
@@ -271,16 +271,16 @@ class Connection extends events.EventEmitter
     _start: (term, cb, opts) ->
         unless @open then throw new err.RqlDriverError "Connection is closed."
 
-        # Assign token
+        -- Assign token
         token = @nextToken++
 
-        # Construct query
+        -- Construct query
         query = {}
         query.global_optargs = {}
         query.type = protoQueryType.START
         query.query = term.build()
         query.token = token
-        # Set global options
+        -- Set global options
         if @db?
             query.global_optargs['db'] = r.db(@db).build()
 
@@ -302,14 +302,14 @@ class Connection extends events.EventEmitter
         if opts.arrayLimit?
             query.global_optargs['array_limit'] = r.expr(opts.arrayLimit).build()
 
-        # Save callback
+        -- Save callback
         if (not opts.noreply?) or !opts.noreply
             @outstandingCallbacks[token] = {cb:cb, root:term, opts:opts}
 
         @_sendQuery(query)
 
         if opts.noreply? and opts.noreply and typeof(cb) is 'function'
-            cb null # There is no error and result is `undefined`
+            cb null -- There is no error and result is `undefined`
 
     _continueQuery: (token) ->
         query =
@@ -326,7 +326,7 @@ class Connection extends events.EventEmitter
         @_sendQuery(query)
 
     _sendQuery: (query) ->
-        # Serialize query to JSON
+        -- Serialize query to JSON
         data = [query.type]
         if !(query.query is undefined)
             data.push(query.query)
@@ -359,7 +359,7 @@ class TcpConnection extends Connection
         @rawSocket.once 'error', => clearTimeout(timeout)
 
         @rawSocket.once 'connect', =>
-            # Initialize connection with magic number to validate version
+            -- Initialize connection with magic number to validate version
             version = new Buffer(4)
             version.writeUInt32LE(protoVersion, 0)
 
@@ -367,14 +367,14 @@ class TcpConnection extends Connection
             auth_length = new Buffer(4)
             auth_length.writeUInt32LE(auth_buffer.length, 0)
 
-            # Send the protocol type that we will be using to communicate with the server
+            -- Send the protocol type that we will be using to communicate with the server
             protocol = new Buffer(4)
             protocol.writeUInt32LE(protoProtocol, 0)
 
             @rawSocket.write Buffer.concat([version, auth_length, auth_buffer, protocol])
 
-            # Now we have to wait for a response from the server
-            # acknowledging the new connection
+            -- Now we have to wait for a response from the server
+            -- acknowledging the new connection
             handshake_callback = (buf) =>
                 @buffer = Buffer.concat([@buffer, buf])
                 for b,i in @buffer
@@ -387,7 +387,7 @@ class TcpConnection extends Connection
 
                         clearTimeout(timeout)
                         if status_str == "SUCCESS"
-                            # We're good, finish setting up the connection
+                            -- We're good, finish setting up the connection
                             @rawSocket.on 'data', (buf) => @_data(buf)
 
                             @emit 'connect'
@@ -403,7 +403,7 @@ class TcpConnection extends Connection
 
         @rawSocket.on 'close', => @open = false; @emit 'close', {noreplyWait: false}
 
-        # In case the raw socket timesout, we close it and re-emit the event for the user
+        -- In case the raw socket timesout, we close it and re-emit the event for the user
         @rawSocket.on 'timeout', => @open = false; @emit 'timeout'
 
     close: (varar 0, 2, (optsOrCallback, callback) ->
@@ -426,8 +426,8 @@ class TcpConnection extends Connection
                 if cb?
                     cb(args...)
 
-            # This would simply be super(opts, wrappedCb), if we were not in the varar
-            # anonymous function
+            -- This would simply be super(opts, wrappedCb), if we were not in the varar
+            -- anonymous function
             TcpConnection.__super__.close.call(@, opts, wrappedCb)
         else
             new Promise (resolve, reject) =>
@@ -484,7 +484,7 @@ class HttpConnection extends Connection
                     @emit 'error', new err.RqlDriverError "XHR error, http status #{xhr.status}."
         xhr.send()
 
-        @xhr = xhr # We allow only one query at a time per HTTP connection
+        @xhr = xhr -- We allow only one query at a time per HTTP connection
 
     cancel: ->
         @xhr.abort()
@@ -513,8 +513,8 @@ class HttpConnection extends Connection
             if cb?
                 cb(args...)
 
-        # This would simply be super(opts, wrappedCb), if we were not in the varar
-        # anonymous function
+        -- This would simply be super(opts, wrappedCb), if we were not in the varar
+        -- anonymous function
         HttpConnection.__super__.close.call(this, opts, wrappedCb)
     )
 
@@ -532,12 +532,12 @@ class HttpConnection extends Connection
 
         xhr.onreadystatechange = (e) =>
             if xhr.readyState is 4 and xhr.status is 200
-                # Convert response from ArrayBuffer to node buffer
+                -- Convert response from ArrayBuffer to node buffer
 
                 buf = new Buffer(b for b in (new Uint8Array(xhr.response)))
                 @_data(buf)
 
-        # Convert the chunk from node buffer to ArrayBuffer
+        -- Convert the chunk from node buffer to ArrayBuffer
         array = new ArrayBuffer(chunk.length)
         view = new Uint8Array(array)
         i = 0
@@ -546,12 +546,12 @@ class HttpConnection extends Connection
             i++
 
         xhr.send array
-        @xhr = xhr # We allow only one query at a time per HTTP connection
+        @xhr = xhr -- We allow only one query at a time per HTTP connection
 
 module.exports.isConnection = (connection) ->
     return connection instanceof Connection
 
-# The main function of this module
+-- The main function of this module
 module.exports.connect = varar 0, 2, (hostOrCallback, callback) ->
     if typeof hostOrCallback is 'function'
         host = {}

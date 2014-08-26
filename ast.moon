@@ -4,21 +4,21 @@ net = require('./net')
 protoTermType = require('./proto-def').Term.TermType
 Promise = require('bluebird')
 
-# Import some names to this namespace for convienience
+-- Import some names to this namespace for convienience
 ar = util.ar
 varar = util.varar
 aropt = util.aropt
 
-# rethinkdb is both the main export object for the module
-# and a function that shortcuts `r.expr`.
+-- rethinkdb is both the main export object for the module
+-- and a function that shortcuts `r.expr`.
 rethinkdb = (args...) -> rethinkdb.expr(args...)
 
-# Utilities
+-- Utilities
 
 funcWrap = (val) ->
     if val is undefined
-        # Pass through the undefined value so it's caught by
-        # the appropriate undefined checker
+        -- Pass through the undefined value so it's caught by
+        -- the appropriate undefined checker
         return val
 
     val = rethinkdb.expr(val)
@@ -36,8 +36,8 @@ funcWrap = (val) ->
     return val
 
 hasImplicit = (args) ->
-    # args is an array of (strings and arrays)
-    # We recurse to look for `r.row` which is an implicit var
+    -- args is an array of (strings and arrays)
+    -- We recurse to look for `r.row` which is an implicit var
     if Array.isArray(args)
         for arg in args
             if hasImplicit(arg) is true
@@ -46,7 +46,7 @@ hasImplicit = (args) ->
         return true
     return false
 
-# AST classes
+-- AST classes
 
 class TermBase
     showRunWarning: true
@@ -56,18 +56,18 @@ class TermBase
         return self
 
     run: (connection, options, callback) ->
-        # Valid syntaxes are
-        # connection, callback
-        # connection, options # return a Promise
-        # connection, options, callback
-        # connection, null, callback
-        # connection, null # return a Promise
-        #
-        # Depreciated syntaxes are
-        # optionsWithConnection, callback
+        -- Valid syntaxes are
+        -- connection, callback
+        -- connection, options -- return a Promise
+        -- connection, options, callback
+        -- connection, null, callback
+        -- connection, null -- return a Promise
+        --
+        -- Depreciated syntaxes are
+        -- optionsWithConnection, callback
 
         if net.isConnection(connection) is true
-            # Handle run(connection, callback)
+            -- Handle run(connection, callback)
             if typeof options is "function"
                 if callback is undefined
                     callback = options
@@ -75,12 +75,12 @@ class TermBase
                 else
                     options new err.RqlDriverError("Second argument to `run` cannot be a function if a third argument is provided.")
                     return
-            # else we suppose that we have run(connection[, options][, callback])
+            -- else we suppose that we have run(connection[, options][, callback])
         else if connection?.constructor is Object
             if @showRunWarning is true
                 process?.stderr.write("RethinkDB warning: This syntax is deprecated. Please use `run(connection[, options], callback)`.")
                 @showRunWarning = false
-            # Handle run(connectionWithOptions, callback)
+            -- Handle run(connectionWithOptions, callback)
             callback = options
             options = connection
             connection = connection.connection
@@ -88,7 +88,7 @@ class TermBase
 
         options = {} if not options?
 
-        # Check if the arguments are valid types
+        -- Check if the arguments are valid types
         try
             for own key of options
                 unless key in ['useOutdated', 'noreply', 'timeFormat', 'profile', 'durability', 'groupFormat', 'binaryFormat', 'batchConf', 'arrayLimit']
@@ -106,10 +106,10 @@ class TermBase
             try
                 connection._start @, callback, options
             catch e
-                # It was decided that, if we can, we prefer to invoke the callback
-                # with any errors rather than throw them as normal exceptions.
-                # Thus we catch errors here and invoke the callback instead of
-                # letting the error bubble up.
+                -- It was decided that, if we can, we prefer to invoke the callback
+                -- with any errors rather than throw them as normal exceptions.
+                -- Thus we catch errors here and invoke the callback instead of
+                -- letting the error bubble up.
                 if typeof(callback) is 'function'
                     callback(e)
         else
@@ -154,7 +154,7 @@ class RDBVal extends TermBase
         if opts?
             new Slice opts, @, left, right_or_opts
         else if typeof right_or_opts isnt 'undefined'
-            # FIXME
+            -- FIXME
             if (Object::toString.call(right_or_opts) is '[object Object]') and not (right_or_opts instanceof TermBase)
                 new Slice right_or_opts, @, left
             else
@@ -176,7 +176,7 @@ class RDBVal extends TermBase
     keys: (args...) -> new Keys {}, @, args...
     changes: (args...) -> new Changes {}, @, args...
 
-    # pluck and without on zero fields are allowed
+    -- pluck and without on zero fields are allowed
     pluck: (args...) -> new Pluck {}, @, args...
     without: (args...) -> new Without {}, @, args...
 
@@ -227,11 +227,11 @@ class RDBVal extends TermBase
     sample: (args...) -> new Sample {}, @, args...
 
     group: (fieldsAndOpts...) ->
-        # Default if no opts dict provided
+        -- Default if no opts dict provided
         opts = {}
         fields = fieldsAndOpts
 
-        # Look for opts dict
+        -- Look for opts dict
         if fieldsAndOpts.length > 0
             perhapsOptDict = fieldsAndOpts[fieldsAndOpts.length - 1]
             if perhapsOptDict and
@@ -243,11 +243,11 @@ class RDBVal extends TermBase
         new Group opts, @, fields.map(funcWrap)...
 
     orderBy: (attrsAndOpts...) ->
-        # Default if no opts dict provided
+        -- Default if no opts dict provided
         opts = {}
         attrs = attrsAndOpts
 
-        # Look for opts dict
+        -- Look for opts dict
         perhapsOptDict = attrsAndOpts[attrsAndOpts.length - 1]
         if perhapsOptDict and
                 (Object::toString.call(perhapsOptDict) is '[object Object]') and
@@ -264,14 +264,14 @@ class RDBVal extends TermBase
 
         new OrderBy opts, @, attrs...
 
-    # Geo operations
+    -- Geo operations
     toGeojson: (args...) -> new ToGeojson {}, @, args...
     distance: aropt (g, opts) -> new Distance opts, @, g
     intersects: (args...) -> new Intersects {}, @, args...
     includes: (args...) -> new Includes {}, @, args...
     fill: (args...) -> new Fill {}, @, args...
 
-    # Database operations
+    -- Database operations
 
     tableCreate: aropt (tblName, opts) -> new TableCreate opts, @, tblName
     tableDrop: (args...) -> new TableDrop {}, @, args...
@@ -279,16 +279,16 @@ class RDBVal extends TermBase
 
     table: aropt (tblName, opts) -> new Table opts, @, tblName
 
-    # Table operations
+    -- Table operations
 
     get: (args...) -> new Get {}, @, args...
 
     getAll: (keysAndOpts...) ->
-        # Default if no opts dict provided
+        -- Default if no opts dict provided
         opts = {}
         keys = keysAndOpts
 
-        # Look for opts dict
+        -- Look for opts dict
         if keysAndOpts.length > 1
             perhapsOptDict = keysAndOpts[keysAndOpts.length - 1]
             if perhapsOptDict and
@@ -303,7 +303,7 @@ class RDBVal extends TermBase
         if opts?
             new IndexCreate opts, @, name, funcWrap(defun_or_opts)
         else if defun_or_opts?
-            # FIXME?
+            -- FIXME?
             if (Object::toString.call(defun_or_opts) is '[object Object]') and not (defun_or_opts instanceof Function) and not (defun_or_opts instanceof TermBase)
                 new IndexCreate defun_or_opts, @, name
             else
@@ -390,7 +390,7 @@ translateBackOptargs = (optargs) ->
 translateOptargs = (optargs) ->
     result = {}
     for own key,val of optargs
-        # We translate known two word opt-args to camel case for your convience
+        -- We translate known two word opt-args to camel case for your convience
         key = switch key
             when 'primaryKey' then 'primary_key'
             when 'returnVals' then 'return_vals'
@@ -473,13 +473,13 @@ shouldWrap = (arg) ->
 
 class MakeArray extends RDBOp
     tt: protoTermType.MAKE_ARRAY
-    st: '[...]' # This is only used by the `undefined` argument checker
+    st: '[...]' -- This is only used by the `undefined` argument checker
 
     compose: (args) -> ['[', intsp(args), ']']
 
 class MakeObject extends RDBOp
     tt: protoTermType.MAKE_OBJECT
-    st: '{...}' # This is only used by the `undefined` argument checker
+    st: '{...}' -- This is only used by the `undefined` argument checker
 
     constructor: (obj, nestingDepth=20) ->
         self = super({})
@@ -673,7 +673,7 @@ class GetField extends RDBOp
 
 class Bracket extends RDBOp
     tt: protoTermType.BRACKET
-    st: '(...)' # This is only used by the `undefined` argument checker
+    st: '(...)' -- This is only used by the `undefined` argument checker
 
     compose: (args) -> [args[0], '(', args[1], ')']
 
@@ -924,7 +924,7 @@ class Sync extends RDBOp
 
 class FunCall extends RDBOp
     tt: protoTermType.FUNCALL
-    st: 'do' # This is only used by the `undefined` argument checker
+    st: 'do' -- This is only used by the `undefined` argument checker
 
     compose: (args) ->
         if args.length > 2
@@ -980,7 +980,7 @@ class Func extends RDBOp
             [args[1]]
         else
             varStr = ""
-            for arg, i in args[0][1] # ['0', ', ', '1']
+            for arg, i in args[0][1] -- ['0', ', ', '1']
                 if i%2 is 0
                     varStr += Var::compose(arg)
                 else
@@ -1128,9 +1128,9 @@ class UUID extends RDBOp
     st: 'uuid'
 
 
-# All top level exported functions
+-- All top level exported functions
 
-# Wrap a native JS value in an ReQL datum
+-- Wrap a native JS value in an ReQL datum
 rethinkdb.expr = varar 1, 2, (val, nestingDepth=20) ->
     if val is undefined
         throw new err.RqlDriverError "Cannot wrap undefined with r.expr()."
@@ -1168,11 +1168,11 @@ rethinkdb.json = (args...) -> new Json {}, args...
 rethinkdb.error = (args...) -> new UserError {}, args...
 
 rethinkdb.random = (limitsAndOpts...) ->
-        # Default if no opts dict provided
+        -- Default if no opts dict provided
         opts = {}
         limits = limitsAndOpts
 
-        # Look for opts dict
+        -- Look for opts dict
         perhapsOptDict = limitsAndOpts[limitsAndOpts.length - 1]
         if perhapsOptDict and
                 ((Object::toString.call(perhapsOptDict) is '[object Object]') and not (perhapsOptDict instanceof TermBase))
@@ -1269,5 +1269,5 @@ rethinkdb.circle = aropt (cen, rad, opts) -> new Circle opts, cen, rad
 
 rethinkdb.uuid = (args...) -> new UUID {}, args...
 
-# Export all names defined on rethinkdb
+-- Export all names defined on rethinkdb
 module.exports = rethinkdb

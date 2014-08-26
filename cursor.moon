@@ -5,13 +5,13 @@ protoResponseType = require('./proto-def').Response.ResponseType
 Promise = require('bluebird')
 EventEmitter = require('events').EventEmitter
 
-# Import some names to this namespace for convenience
+-- Import some names to this namespace for convenience
 ar = util.ar
 varar = util.varar
 aropt = util.aropt
 mkErr = util.mkErr
 
-# setImmediate is not defined in some browsers (including Chrome)
+-- setImmediate is not defined in some browsers (including Chrome)
 if not setImmediate?
     setImmediate = (cb) ->
         setTimeout cb, 0
@@ -23,11 +23,11 @@ class IterableResult
         @_conn = conn
         @_token = token
         @_opts = opts
-        @_root = root # current query
+        @_root = root -- current query
 
         @_responses = []
         @_responseIndex = 0
-        @_outstandingRequests = 1 # Because we haven't add the response yet
+        @_outstandingRequests = 1 -- Because we haven't add the response yet
         @_iterations = 0
         @_endFlag = false
         @_contFlag = false
@@ -40,7 +40,7 @@ class IterableResult
 
     _addResponse: (response) ->
         if response.t is @_type or response.t is protoResponseType.SUCCESS_SEQUENCE
-            # We push a "ok" response only if it's not empty
+            -- We push a "ok" response only if it's not empty
             if response.r.length > 0
                 @_responses.push response
         else
@@ -49,7 +49,7 @@ class IterableResult
 
         @_outstandingRequests -= 1
         if response.t isnt @_type
-            # We got an error or a SUCCESS_SEQUENCE
+            -- We got an error or a SUCCESS_SEQUENCE
             @_endFlag = true
 
             if @_closeCb?
@@ -87,7 +87,7 @@ class IterableResult
 
         @_responseIndex += 1
 
-        # If we're done with this response, discard it
+        -- If we're done with this response, discard it
         if @_responseIndex is response.r.length
             @_responses.shift()
             @_responseIndex = 0
@@ -98,10 +98,10 @@ class IterableResult
         @_responses.length is 0 or @_responses[0].r.length <= @_responseIndex
 
     _promptNext: ->
-        # If there are no more waiting callbacks, just wait until the next event
+        -- If there are no more waiting callbacks, just wait until the next event
         while @_cbQueue[0]?
             if @bufferEmpty() is true
-                # We prefetch things here, set `is 0` to avoid prefectch
+                -- We prefetch things here, set `is 0` to avoid prefectch
                 if @_endFlag is true
                     cb = @_getCallback()
                     cb new err.RqlDriverError "No more rows in the cursor."
@@ -111,14 +111,14 @@ class IterableResult
                 return
             else
 
-                # Try to get a row out of the responses
+                -- Try to get a row out of the responses
                 response = @_responses[0]
 
                 if @_responses.length is 1
-                    # We're low on data, prebuffer
+                    -- We're low on data, prebuffer
                     @_promptCont()
 
-                # Error responses are not discarded, and the error will be sent to all future callbacks
+                -- Error responses are not discarded, and the error will be sent to all future callbacks
                 switch response.t
                     when protoResponseType.SUCCESS_PARTIAL
                         @_handleRow()
@@ -147,14 +147,14 @@ class IterableResult
                         cb new err.RqlDriverError "Unknown response type for cursor"
 
     _promptCont: ->
-        # Let's ask the server for more data if we haven't already
+        -- Let's ask the server for more data if we haven't already
         if !@_contFlag && !@_endFlag
             @_contFlag = true
             @_outstandingRequests += 1
             @_conn._continueQuery(@_token)
 
 
-    ## Implement IterableResult
+    -- Implement IterableResult
     hasNext: ->
         throw new err.RqlDriverError "The `hasNext` command has been removed since 1.13. Use `next` instead."
 
@@ -345,11 +345,11 @@ class Feed extends IterableResult
     toString: ar () -> "[object Feed]"
 
 
-# Used to wrap array results so they support the same iterable result
-# API as cursors.
+-- Used to wrap array results so they support the same iterable result
+-- API as cursors.
 
 class ArrayResult extends IterableResult
-    # We store @__index as soon as the user starts using the cursor interface
+    -- We store @__index as soon as the user starts using the cursor interface
     _hasNext: ar () ->
         if not @__index?
             @__index = 0
@@ -360,7 +360,7 @@ class ArrayResult extends IterableResult
             if @_hasNext() is true
                 self = @
                 if self.__index%@stackSize is @stackSize-1
-                    # Reset the stack
+                    -- Reset the stack
                     setImmediate ->
                         cb(null, self[self.__index++])
                 else
@@ -382,7 +382,7 @@ class ArrayResult extends IterableResult
 
     toArray: varar 0, 1, (cb) ->
         fn = (cb) =>
-            # IterableResult.toArray would create a copy
+            -- IterableResult.toArray would create a copy
             if @__index?
                 cb(null, @.slice(@__index, @.length))
             else
