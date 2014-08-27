@@ -2,7 +2,6 @@ util = require('./util')
 err = require('./errors')
 net = require('./net')
 protoTermType = require('./proto-def').Term.TermType
-Promise = require('bluebird')
 
 -- Import some names to this namespace for convienience
 ar = util.ar
@@ -58,13 +57,8 @@ class TermBase
     run: (connection, options, callback) ->
         -- Valid syntaxes are
         -- connection, callback
-        -- connection, options -- return a Promise
         -- connection, options, callback
         -- connection, null, callback
-        -- connection, null -- return a Promise
-        --
-        -- Depreciated syntaxes are
-        -- optionsWithConnection, callback
 
         if net.isConnection(connection) is true
             -- Handle run(connection, callback)
@@ -111,18 +105,6 @@ class TermBase
                 -- Thus we catch errors here and invoke the callback instead of
                 -- letting the error bubble up.
                 if typeof(callback) is 'function'
-                    callback(e)
-        else
-            new Promise (resolve, reject) =>
-                callback = (err, result) ->
-                    if err?
-                        reject(err)
-                    else
-                        resolve(result)
-
-                try
-                    connection._start @, callback, options
-                catch e
                     callback(e)
 
     toString: -> err.printQuery(@)
