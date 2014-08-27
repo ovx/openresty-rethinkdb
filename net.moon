@@ -87,19 +87,19 @@ class Connection extends events.EventEmitter
 
     _processResponse: (response, token) ->
         profile = response.p
-        if @outstandingCallbacks[token]?
+        if @outstandingCallbacks[token]
             {cb:cb, root:root, cursor: cursor, opts: opts, feed: feed} = @outstandingCallbacks[token]
-            if cursor?
+            if cursor
                 cursor._addResponse(response)
 
                 if cursor._endFlag and cursor._outstandingRequests == 0
                     @_delQuery(token)
-            else if feed?
+            else if feed
                 feed._addResponse(response)
 
                 if feed._endFlag and feed._outstandingRequests == 0
                     @_delQuery(token)
-            else if cb?
+            else if cb
                 -- Behavior varies considerably based on response type
                 switch response.t
                     when protoResponseType.COMPILE_ERROR
@@ -115,28 +115,28 @@ class Connection extends events.EventEmitter
                         response = mkAtom response, opts
                         if Array.isArray response
                             response = cursors.makeIterable response
-                        if profile?
+                        if profile
                             response = {profile: profile, value: response}
                         cb null, response
                         @_delQuery(token)
                     when protoResponseType.SUCCESS_PARTIAL
                         cursor = new cursors.Cursor @, token, opts, root
                         @outstandingCallbacks[token].cursor = cursor
-                        if profile?
+                        if profile
                             cb null, {profile: profile, value: cursor._addResponse(response)}
                         else
                             cb null, cursor._addResponse(response)
                     when protoResponseType.SUCCESS_SEQUENCE
                         cursor = new cursors.Cursor @, token, opts, root
                         @_delQuery(token)
-                        if profile?
+                        if profile
                             cb null, {profile: profile, value: cursor._addResponse(response)}
                         else
                             cb null, cursor._addResponse(response)
                     when protoResponseType.SUCCESS_FEED
                         feed = new cursors.Feed @, token, opts, root
                         @outstandingCallbacks[token].feed = feed
-                        if profile?
+                        if profile
                             cb null, {profile: profile, value: feed._addResponse(response)}
                         else
                             cb null, feed._addResponse(response)
@@ -150,7 +150,7 @@ class Connection extends events.EventEmitter
             @emit 'error', new err.RqlDriverError "Unexpected token #{token}."
 
     close: (varar 0, 2, (optsOrCallback, callback) ->
-        if callback?
+        if callback
             opts = optsOrCallback
             unless Object::toString.call(opts) == '[object Object]'
                 throw err.RqlDriverError "First argument to two-argument `close` must be an object."
@@ -169,7 +169,7 @@ class Connection extends events.EventEmitter
             unless key in ['noreplyWait']
                 throw new err.RqlDriverError "First argument to two-argument `close` must be { noreplyWait: <bool> }."
 
-        noreplyWait = ((not opts.noreplyWait?) or opts.noreplyWait) and @open
+        noreplyWait = ((not opts.noreplyWait) or opts.noreplyWait) and @open
 
         wrappedCb = (args...) =>
             @open = false
@@ -202,14 +202,14 @@ class Connection extends events.EventEmitter
         @outstandingCallbacks = {}
 
     reconnect: (varar 0, 2, (optsOrCallback, callback) ->
-        if callback?
+        if callback
             opts = optsOrCallback
             cb = callback
         else if typeof optsOrCallback == "function"
             opts = {}
             cb = optsOrCallback
         else
-            if optsOrCallback?
+            if optsOrCallback
                 opts = optsOrCallback
             else
                 opts = {}

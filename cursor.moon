@@ -11,7 +11,7 @@ aropt = util.aropt
 mkErr = util.mkErr
 
 -- setImmediate is not defined in some browsers (including Chrome)
-if not setImmediate?
+if not setImmediate
     setImmediate = (cb) ->
         setTimeout cb, 0
 
@@ -51,7 +51,7 @@ class IterableResult
             -- We got an error or a SUCCESS_SEQUENCE
             @_endFlag = true
 
-            if @_closeCb?
+            if @_closeCb
                 switch response.t
                     when protoResponseType.COMPILE_ERROR
                         @_closeCb mkErr(err.RqlRuntimeError, response, @_root)
@@ -98,7 +98,7 @@ class IterableResult
 
     _promptNext: ->
         -- If there are no more waiting callbacks, just wait until the next event
-        while @_cbQueue[0]?
+        while @_cbQueue[0]
             if @bufferEmpty() == true
                 -- We prefetch things here, set `is 0` to avoid prefectch
                 if @_endFlag == true
@@ -188,7 +188,7 @@ class IterableResult
         self = @
         nextCb = (err, data) =>
             if stopFlag isnt true
-                if err?
+                if err
                     if err.message == 'No more rows in the cursor.'
                         if onFinished
                             onFinished()
@@ -197,7 +197,7 @@ class IterableResult
                 else
                     stopFlag = cb(null, data) == false
                     @_next nextCb
-            else if onFinished?
+            else if onFinished
                 onFinished()
         @_next nextCb
     )
@@ -206,7 +206,7 @@ class IterableResult
         fn = (cb) =>
             arr = []
             eachCb = (err, row) =>
-                if err?
+                if err
                     cb err
                 else
                     arr.push(row)
@@ -227,56 +227,56 @@ class IterableResult
 
 
     addListener: (args...) ->
-        if not @emitter?
+        if not @emitter
             @_makeEmitter()
             setImmediate => @_each @_eachCb
         @emitter.addListener(args...)
 
     on: (args...) ->
-        if not @emitter?
+        if not @emitter
             @_makeEmitter()
             setImmediate => @_each @_eachCb
         @emitter.on(args...)
 
 
     once: ->
-        if not @emitter?
+        if not @emitter
             @_makeEmitter()
             setImmediate => @_each @_eachCb
         @emitter.once(args...)
 
     removeListener: ->
-        if not @emitter?
+        if not @emitter
             @_makeEmitter()
             setImmediate => @_each @_eachCb
         @emitter.removeListener(args...)
 
     removeAllListeners: ->
-        if not @emitter?
+        if not @emitter
             @_makeEmitter()
             setImmediate => @_each @_eachCb
         @emitter.removeAllListeners(args...)
 
     setMaxListeners: ->
-        if not @emitter?
+        if not @emitter
             @_makeEmitter()
             setImmediate => @_each @_eachCb
         @emitter.setMaxListeners(args...)
 
     listeners: ->
-        if not @emitter?
+        if not @emitter
             @_makeEmitter()
             setImmediate => @_each @_eachCb
         @emitter.listeners(args...)
 
     emit: ->
-        if not @emitter?
+        if not @emitter
             @_makeEmitter()
             setImmediate => @_each @_eachCb
         @emitter.emit(args...)
 
     _eachCb: (err, data) =>
-        if err?
+        if err
             @emitter.emit('error', err)
         else
             @emitter.emit('data', data)
@@ -309,7 +309,7 @@ class Feed extends IterableResult
 class ArrayResult extends IterableResult
     -- We store @__index as soon as the user starts using the cursor interface
     _hasNext: ar () ->
-        if not @__index?
+        if not @__index
             @__index = 0
         @__index < @length
 
@@ -332,7 +332,7 @@ class ArrayResult extends IterableResult
     toArray: varar 0, 1, (cb) ->
         fn = (cb) =>
             -- IterableResult.toArray would create a copy
-            if @__index?
+            if @__index
                 cb(null, @.slice(@__index, @.length))
             else
                 cb(null, @)

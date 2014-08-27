@@ -9,7 +9,7 @@ class RqlServerError extends Error
         @name = @constructor.name
         @msg = msg
         @frames = frames[0..]
-        if term?
+        if term
             if msg[msg.length-1] == '.'
                 @message = "#{msg.slice(0, msg.length-1)} in:\n#{RqlQueryPrinter::printQuery(term)}\n#{RqlQueryPrinter::printCarrots(term, frames)}"
             else
@@ -58,7 +58,7 @@ class RqlQueryPrinter
             else
                 optargs[key] = composeTerm(arg)
 
-        if frame?
+        if frame
             term.compose(args, optargs)
         else
             carrotify(term.compose(args, optargs))

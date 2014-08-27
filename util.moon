@@ -12,12 +12,12 @@ module.exports.ar = (fun) -> (args...) ->
 -- Like ar for variable argument functions. Takes minimum
 -- and maximum argument parameters.
 module.exports.varar = (min, max, fun) -> (args...) ->
-    if (min? and args.length < min) or (max? and args.length > max)
-        if min? and not max?
-            throw new err.RqlDriverError "Expected #{min} or more arguments but found #{args.length}."
-        if max? and not min?
-            throw new err.RqlDriverError "Expected #{max} or fewer arguments but found #{args.length}."
-        throw new err.RqlDriverError "Expected between #{min} and #{max} arguments but found #{args.length}."
+    if (min and args.length < min) or (max and args.length > max)
+        if min and not max
+            throw err.RqlDriverError "Expected #{min} or more arguments but found #{args.length}."
+        if max and not min
+            throw err.RqlDriverError "Expected #{max} or fewer arguments but found #{args.length}."
+        throw err.RqlDriverError "Expected between #{min} and #{max} arguments but found #{args.length}."
     fun.apply(@, args)
 
 -- Like ar but for functions that take an optional options dict as the last argument
@@ -25,10 +25,10 @@ module.exports.aropt = (fun) -> (args...) ->
     expectedPosArgs = fun.length - 1
     perhapsOptDict = args[expectedPosArgs]
 
-    if perhapsOptDict? and (Object::toString.call(perhapsOptDict) isnt '[object Object]')
+    if perhapsOptDict and (Object::toString.call(perhapsOptDict) isnt '[object Object]')
         perhapsOptDict = null
 
-    numPosArgs = args.length - (if perhapsOptDict? then 1 else 0)
+    numPosArgs = args.length - (if perhapsOptDict then 1 else 0)
 
     if expectedPosArgs isnt numPosArgs
         if expectedPosArgs isnt 1

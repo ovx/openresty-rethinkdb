@@ -133,9 +133,9 @@ class RDBVal extends TermBase
     setIntersection: (args...) -> new SetIntersection {}, @, args...
     setDifference: (args...) -> new SetDifference {}, @, args...
     slice: varar(1, 3, (left, right_or_opts, opts) ->
-        if opts?
-            new Slice opts, @, left, right_or_opts
-        else if typeof right_or_opts isnt 'undefined'
+        if opts
+            Slice opts, @, left, right_or_opts
+        else if right_or_opts
             -- FIXME
             if (Object::toString.call(right_or_opts) == '[object Object]') and not (right_or_opts.instanceof(TermBase)
                 Slice right_or_opts, @, left
@@ -431,7 +431,7 @@ class RDBOp extends RDBVal
             return [args[0], '.', @mt, '(', intspallargs(args[1..], optargs), ')']
 
 intsp = (seq) ->
-    unless seq[0]? then return []
+    unless seq[0] then return []
     res = [seq[0]]
     for e in seq[1..]
         res.push(', ', e)
