@@ -1,7 +1,7 @@
 util = require('./util')
 err = require('./errors')
 net = require('./net')
-protoTermType = require('./proto-def').Term.TermType
+protoTermType = require('./proto-def').TermType
 
 -- Import some names to this namespace for convienience
 ar = util.ar

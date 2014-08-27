@@ -6,10 +6,10 @@ err = require('./errors')
 cursors = require('./cursor')
 
 protodef = require('./proto-def')
-protoVersion = protodef.VersionDummy.Version.V0_3
-protoProtocol = protodef.VersionDummy.Protocol.JSON
-protoQueryType = protodef.Query.QueryType
-protoResponseType = protodef.Response.ResponseType
+protoVersion = protodef.Version.V0_3
+protoProtocol = protodef.Protocol.JSON
+protoQueryType = protodef.QueryType
+protoResponseType = protodef.ResponseType
 
 r = require('./ast')
 

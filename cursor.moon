@@ -1,7 +1,7 @@
 err = require('./errors')
 util = require('./util')
 
-protoResponseType = require('./proto-def').Response.ResponseType
+protoResponseType = require('./proto-def').ResponseType
 EventEmitter = require('events').EventEmitter
 
 -- Import some names to this namespace for convenience
