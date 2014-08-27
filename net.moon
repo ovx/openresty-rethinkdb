@@ -12,7 +12,6 @@ protoQueryType = protodef.Query.QueryType
 protoResponseType = protodef.Response.ResponseType
 
 r = require('./ast')
-Promise = require('bluebird')
 
 -- Import some names to this namespace for convienience
 ar = util.ar
@@ -172,35 +171,20 @@ class Connection extends events.EventEmitter
 
         noreplyWait = ((not opts.noreplyWait?) or opts.noreplyWait) and @open
 
-        if typeof cb == 'function'
-            wrappedCb = (args...) =>
-                @open = false
-                if cb?
-                    cb(args...)
+        wrappedCb = (args...) =>
+            @open = false
+            if cb
+                cb(args...)
 
-            if noreplyWait
-                @noreplyWait(wrappedCb)
-            else
-                wrappedCb()
+        if noreplyWait
+            @noreplyWait(wrappedCb)
         else
-            new Promise (resolve, reject) =>
-                wrappedCb = (err, result) =>
-                    @open = false
-                    if err?
-                        reject err
-                    else
-                        resolve result
-
-                @noreplyWait(wrappedCb)
+            wrappedCb()
     )
 
     noreplyWait: varar 0, 1, (callback) ->
         unless @open
-            if typeof callback == 'function'
-                return callback(err.RqlDriverError "Connection == closed.")
-            else
-                return new Promise (resolve, reject) ->
-                    reject(new err.RqlDriverError "Connection is closed.")
+            return callback(err.RqlDriverError "Connection is closed.")
 
         -- Assign token
         token = @nextToken++
@@ -211,18 +195,8 @@ class Connection extends events.EventEmitter
         query.token = token
 
         -- Save callback
-        if typeof callback == 'function'
-            @outstandingCallbacks[token] = {cb:callback, root:null, opts:null}
-            @_sendQuery(query)
-        else
-            new Promise (resolve, reject) =>
-                callback = (err, result) ->
-                    if (err)
-                        reject(err)
-                    else
-                        resolve(result)
-                @outstandingCallbacks[token] = {cb:callback, root:null, opts:null}
-                @_sendQuery(query)
+        @outstandingCallbacks[token] = {cb:callback, root:null, opts:null}
+        @_sendQuery(query)
 
     cancel: ar () ->
         @outstandingCallbacks = {}
@@ -241,28 +215,13 @@ class Connection extends events.EventEmitter
                 opts = {}
             cb = callback
 
-        if typeof cb == 'function'
-            closeCb = (err) =>
-                if err?
-                    cb(err)
-                else
-                    constructCb = => @constructor.call(@, {host:@host, port:@port}, cb)
-                    setTimeout(constructCb, 0)
-            @close(opts, closeCb)
-        else
-            new Promise (resolve, reject) =>
-                closeCb = (err) =>
-                    if err?
-                        reject err
-                    else
-                        constructCb = =>
-                            @constructor.call @, {host:@host, port:@port}, (err, conn) ->
-                                if err?
-                                    reject err
-                                else
-                                    resolve conn
-                        setTimeout(constructCb, 0)
-                @close(opts, closeCb)
+        closeCb = (err) =>
+            if err
+                cb(err)
+            else
+                constructCb = => @constructor.call(@, {host:@host, port:@port}, cb)
+                setTimeout(constructCb, 0)
+        @close(opts, closeCb)
     )
 
     use: ar (db) ->
@@ -420,24 +379,14 @@ class TcpConnection extends Connection
             opts = {}
 
 
-        if typeof cb is 'function'
-            wrappedCb = (args...) =>
-                @rawSocket.end()
-                if cb?
-                    cb(args...)
+        wrappedCb = (args...) =>
+            @rawSocket.end()
+            if cb
+                cb(args...)
 
-            -- This would simply be super(opts, wrappedCb), if we were not in the varar
-            -- anonymous function
-            TcpConnection.__super__.close.call(@, opts, wrappedCb)
-        else
-            new Promise (resolve, reject) =>
-                wrappedCb = (err, result) =>
-                    @rawSocket.end()
-                    if err?
-                        reject err
-                    else
-                        resolve result
-                TcpConnection.__super__.close.call(@, opts, wrappedCb)
+        -- This would simply be super(opts, wrappedCb), if we were not in the varar
+        -- anonymous function
+        TcpConnection.__super__.close.call(@, opts, wrappedCb)
 
     )
 
@@ -568,13 +517,4 @@ module.exports.connect = varar 0, 2, (hostOrCallback, callback) ->
             throw new err.RqlDriverError "Neither TCP nor HTTP avaiable in this environment"
 
 
-    if typeof callback is 'function'
-        create_connection(host, callback)
-    else
-        p = new Promise (resolve, reject) ->
-            callback = (err, result) ->
-                if (err)
-                    reject(err)
-                else
-                    resolve(result)
-            create_connection(host, callback)
+    create_connection(host, callback)
