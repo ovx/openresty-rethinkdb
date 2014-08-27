@@ -28,9 +28,9 @@ class Connection extends events.EventEmitter
     DEFAULT_TIMEOUT: 20 -- In seconds
 
     constructor: (host, callback) ->
-        if typeof host is 'undefined'
+        unless host
             host = {}
-        else if typeof host is 'string'
+        else if typeof host == 'string'
             host = {host: host}
 
         @host = host.host || @DEFAULT_HOST
@@ -93,12 +93,12 @@ class Connection extends events.EventEmitter
             if cursor?
                 cursor._addResponse(response)
 
-                if cursor._endFlag && cursor._outstandingRequests is 0
+                if cursor._endFlag and cursor._outstandingRequests == 0
                     @_delQuery(token)
             else if feed?
                 feed._addResponse(response)
 
-                if feed._endFlag && feed._outstandingRequests is 0
+                if feed._endFlag and feed._outstandingRequests == 0
                     @_delQuery(token)
             else if cb?
                 -- Behavior varies considerably based on response type
@@ -153,13 +153,13 @@ class Connection extends events.EventEmitter
     close: (varar 0, 2, (optsOrCallback, callback) ->
         if callback?
             opts = optsOrCallback
-            unless Object::toString.call(opts) is '[object Object]'
-                throw new err.RqlDriverError "First argument to two-argument `close` must be an object."
+            unless Object::toString.call(opts) == '[object Object]'
+                throw err.RqlDriverError "First argument to two-argument `close` must be an object."
             cb = callback
-        else if Object::toString.call(optsOrCallback) is '[object Object]'
+        else if Object::toString.call(optsOrCallback) == '[object Object]'
             opts = optsOrCallback
             cb = null
-        else if typeof optsOrCallback is 'function'
+        else if typeof optsOrCallback == 'function'
             opts = {}
             cb = optsOrCallback
         else
@@ -172,7 +172,7 @@ class Connection extends events.EventEmitter
 
         noreplyWait = ((not opts.noreplyWait?) or opts.noreplyWait) and @open
 
-        if typeof cb is 'function'
+        if typeof cb == 'function'
             wrappedCb = (args...) =>
                 @open = false
                 if cb?
@@ -196,8 +196,8 @@ class Connection extends events.EventEmitter
 
     noreplyWait: varar 0, 1, (callback) ->
         unless @open
-            if typeof callback is 'function'
-                return callback(new err.RqlDriverError "Connection is closed.")
+            if typeof callback == 'function'
+                return callback(err.RqlDriverError "Connection == closed.")
             else
                 return new Promise (resolve, reject) ->
                     reject(new err.RqlDriverError "Connection is closed.")
@@ -211,7 +211,7 @@ class Connection extends events.EventEmitter
         query.token = token
 
         -- Save callback
-        if typeof callback is 'function'
+        if typeof callback == 'function'
             @outstandingCallbacks[token] = {cb:callback, root:null, opts:null}
             @_sendQuery(query)
         else
@@ -231,7 +231,7 @@ class Connection extends events.EventEmitter
         if callback?
             opts = optsOrCallback
             cb = callback
-        else if typeof optsOrCallback is "function"
+        else if typeof optsOrCallback == "function"
             opts = {}
             cb = optsOrCallback
         else
@@ -241,7 +241,7 @@ class Connection extends events.EventEmitter
                 opts = {}
             cb = callback
 
-        if typeof cb is 'function'
+        if typeof cb == 'function'
             closeCb = (err) =>
                 if err?
                     cb(err)
@@ -308,8 +308,8 @@ class Connection extends events.EventEmitter
 
         @_sendQuery(query)
 
-        if opts.noreply? and opts.noreply and typeof(cb) is 'function'
-            cb null -- There is no error and result is `undefined`
+        if opts.noreply and opts.noreply and typeof(cb) == 'function'
+            cb null -- There is no error and result is `nil`
 
     _continueQuery: (token) ->
         query =
@@ -378,7 +378,7 @@ class TcpConnection extends Connection
             handshake_callback = (buf) =>
                 @buffer = Buffer.concat([@buffer, buf])
                 for b,i in @buffer
-                    if b is 0
+                    if b == 0
                         @rawSocket.removeListener('data', handshake_callback)
 
                         status_buf = @buffer.slice(0, i)
@@ -410,10 +410,10 @@ class TcpConnection extends Connection
         if callback?
             opts = optsOrCallback
             cb = callback
-        else if Object::toString.call(optsOrCallback) is '[object Object]'
+        else if Object::toString.call(optsOrCallback) == '[object Object]'
             opts = optsOrCallback
             cb = null
-        else if typeof optsOrCallback is "function"
+        else if typeof optsOrCallback == "function"
             opts = {}
             cb = optsOrCallback
         else
@@ -468,15 +468,15 @@ class HttpConnection extends Connection
 
         super(host, callback)
 
-        protocol = if host.protocol is 'https' then 'https' else @DEFAULT_PROTOCOL
+        protocol = if host.protocol == 'https' then 'https' else @DEFAULT_PROTOCOL
         url = "#{protocol}://#{@host}:#{@port}#{host.pathname}ajax/reql/"
         xhr = new XMLHttpRequest
         xhr.open("GET", url+"open-new-connection", true)
         xhr.responseType = "arraybuffer"
 
         xhr.onreadystatechange = (e) =>
-            if xhr.readyState is 4
-                if xhr.status is 200
+            if xhr.readyState == 4
+                if xhr.status == 200
                     @_url = url
                     @_connId = (new DataView xhr.response).getInt32(0, true)
                     @emit 'connect'
@@ -499,14 +499,14 @@ class HttpConnection extends Connection
         if callback?
             opts = optsOrCallback
             cb = callback
-        else if Object::toString.call(optsOrCallback) is '[object Object]'
+        else if Object::toString.call(optsOrCallback) == '[object Object]'
             opts = optsOrCallback
             cb = null
         else
             opts = {}
             cb = optsOrCallback
-        unless not cb? or typeof cb is 'function'
-            throw new err.RqlDriverError "Final argument to `close` must be a callback function or object."
+        unless not cb or typeof cb == 'function'
+            throw err.RqlDriverError "Final argument to `close` must be a callback function or object."
 
         wrappedCb = (args...) =>
             @cancel()
@@ -531,7 +531,7 @@ class HttpConnection extends Connection
         xhr.responseType = "arraybuffer"
 
         xhr.onreadystatechange = (e) =>
-            if xhr.readyState is 4 and xhr.status is 200
+            if xhr.readyState == 4 and xhr.status == 200
                 -- Convert response from ArrayBuffer to node buffer
 
                 buf = new Buffer(b for b in (new Uint8Array(xhr.response)))
@@ -553,7 +553,7 @@ module.exports.isConnection = (connection) ->
 
 -- The main function of this module
 module.exports.connect = varar 0, 2, (hostOrCallback, callback) ->
-    if typeof hostOrCallback is 'function'
+    if typeof hostOrCallback == 'function'
         host = {}
         callback = hostOrCallback
     else

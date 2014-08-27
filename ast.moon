@@ -15,9 +15,9 @@ rethinkdb = (args...) -> rethinkdb.expr(args...)
 -- Utilities
 
 funcWrap = (val) ->
-    if val is undefined
-        -- Pass through the undefined value so it's caught by
-        -- the appropriate undefined checker
+    unless val
+        -- Pass through the nil value so it's caught by
+        -- the appropriate nil checker
         return val
 
     val = rethinkdb.expr(val)
@@ -39,9 +39,9 @@ hasImplicit = (args) ->
     -- We recurse to look for `r.row` which is an implicit var
     if Array.isArray(args)
         for arg in args
-            if hasImplicit(arg) is true
+            if hasImplicit(arg) == true
                 return true
-    else if args is 'r.row'
+    else if args == 'r.row'
         return true
     return false
 
@@ -60,10 +60,10 @@ class TermBase
         -- connection, options, callback
         -- connection, null, callback
 
-        if net.isConnection(connection) is true
+        if net.isConnection(connection) == true
             -- Handle run(connection, callback)
-            if typeof options is "function"
-                if callback is undefined
+            if typeof options == "function"
+                unless callback
                     callback = options
                     options = {}
                 else
@@ -137,8 +137,8 @@ class RDBVal extends TermBase
             new Slice opts, @, left, right_or_opts
         else if typeof right_or_opts isnt 'undefined'
             -- FIXME
-            if (Object::toString.call(right_or_opts) is '[object Object]') and not (right_or_opts instanceof TermBase)
-                new Slice right_or_opts, @, left
+            if (Object::toString.call(right_or_opts) == '[object Object]') and not (right_or_opts.instanceof(TermBase)
+                Slice right_or_opts, @, left
             else
                 new Slice {}, @, left, right_or_opts
         else
@@ -217,8 +217,8 @@ class RDBVal extends TermBase
         if fieldsAndOpts.length > 0
             perhapsOptDict = fieldsAndOpts[fieldsAndOpts.length - 1]
             if perhapsOptDict and
-                    (Object::toString.call(perhapsOptDict) is '[object Object]') and
-                    not (perhapsOptDict instanceof TermBase)
+                    (Object::toString.call(perhapsOptDict) == '[object Object]') and
+                    not (TermBase.instanceof(perhapsOptDict))
                 opts = perhapsOptDict
                 fields = fieldsAndOpts[0...(fieldsAndOpts.length - 1)]
 
@@ -232,8 +232,8 @@ class RDBVal extends TermBase
         -- Look for opts dict
         perhapsOptDict = attrsAndOpts[attrsAndOpts.length - 1]
         if perhapsOptDict and
-                (Object::toString.call(perhapsOptDict) is '[object Object]') and
-                not (perhapsOptDict instanceof TermBase)
+                (Object::toString.call(perhapsOptDict) == '[object Object]') and
+                not (TermBase.instanceof(perhapsOptDict))
             opts = perhapsOptDict
             attrs = attrsAndOpts[0...(attrsAndOpts.length - 1)]
 
@@ -274,7 +274,7 @@ class RDBVal extends TermBase
         if keysAndOpts.length > 1
             perhapsOptDict = keysAndOpts[keysAndOpts.length - 1]
             if perhapsOptDict and
-                    ((Object::toString.call(perhapsOptDict) is '[object Object]') and not (perhapsOptDict instanceof TermBase))
+                    ((Object::toString.call(perhapsOptDict) == '[object Object]') and not (TermBase.instanceof(perhapsOptDict)))
                 opts = perhapsOptDict
                 keys = keysAndOpts[0...(keysAndOpts.length - 1)]
 
@@ -341,7 +341,7 @@ class DatumTerm extends RDBVal
                 ''+@data
 
     build: ->
-        if typeof(@data) is 'number'
+        if typeof(@data) == 'number'
             if !isFinite(@data)
                 throw new TypeError("Illegal non-finite number `" + @data.toString() + "`.")
         @data
@@ -390,7 +390,7 @@ translateOptargs = (optargs) ->
             when 'maxDist' then 'max_dist'
             else key
 
-        if key is undefined or val is undefined then continue
+        continue unless key and val
         result[key] = rethinkdb.expr val
     return result
 
@@ -399,7 +399,7 @@ class RDBOp extends RDBVal
         self = super()
         self.args =
             for arg,i in args
-                if arg isnt undefined
+                if arg
                     rethinkdb.expr arg
                 else
                     throw new err.RqlDriverError "Argument #{i} to #{@st || @mt} may not be `undefined`."
@@ -467,8 +467,8 @@ class MakeObject extends RDBOp
         self = super({})
         self.optargs = {}
         for own key,val of obj
-            if typeof val is 'undefined'
-                throw new err.RqlDriverError "Object field '#{key}' may not be undefined"
+            unless val
+                throw err.RqlDriverError "Object field '#{key}' may not be nil"
             self.optargs[key] = rethinkdb.expr val, nestingDepth-1
         return self
 
@@ -958,12 +958,12 @@ class Func extends RDBOp
         return super(optargs, argsArr, body)
 
     compose: (args) ->
-        if hasImplicit(args[1]) is true
+        if hasImplicit(args[1]) == true
             [args[1]]
         else
             varStr = ""
             for arg, i in args[0][1] -- ['0', ', ', '1']
-                if i%2 is 0
+                if i%2 == 0
                     varStr += Var::compose(arg)
                 else
                     varStr += arg
@@ -1114,8 +1114,8 @@ class UUID extends RDBOp
 
 -- Wrap a native JS value in an ReQL datum
 rethinkdb.expr = varar 1, 2, (val, nestingDepth=20) ->
-    if val is undefined
-        throw new err.RqlDriverError "Cannot wrap undefined with r.expr()."
+    unless val
+        throw err.RqlDriverError "Cannot wrap nil with r.expr()."
 
     if nestingDepth <= 0
         throw new err.RqlDriverError "Nesting depth limit exceeded"
@@ -1133,11 +1133,11 @@ rethinkdb.expr = varar 1, 2, (val, nestingDepth=20) ->
         new Binary val
     else if Array.isArray val
         val = (rethinkdb.expr(v, nestingDepth - 1) for v in val)
-        new MakeArray {}, val...
-    else if typeof(val) is 'number'
-        new DatumTerm val
-    else if Object::toString.call(val) is '[object Object]'
-        new MakeObject val, nestingDepth
+        MakeArray {}, val...
+    else if typeof(val) == 'number'
+        DatumTerm val
+    else if Object::toString.call(val) == '[object Object]'
+        MakeObject val, nestingDepth
     else
         new DatumTerm val
 

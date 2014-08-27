@@ -10,7 +10,7 @@ class RqlServerError extends Error
         @msg = msg
         @frames = frames[0..]
         if term?
-            if msg[msg.length-1] is '.'
+            if msg[msg.length-1] == '.'
                 @message = "#{msg.slice(0, msg.length-1)} in:\n#{RqlQueryPrinter::printQuery(term)}\n#{RqlQueryPrinter::printCarrots(term, frames)}"
             else
                 @message = "#{msg} in:\n#{RqlQueryPrinter::printQuery(term)}\n#{RqlQueryPrinter::printCarrots(term, frames)}"
@@ -36,7 +36,7 @@ class RqlQueryPrinter
         term.compose(args, optargs)
 
     printCarrots: (term, frames) ->
-        if frames.length is 0
+        if frames.length == 0
             tree = [carrotify(composeTerm(term))]
         else
             tree = composeCarrots(term, frames)
@@ -46,14 +46,14 @@ class RqlQueryPrinter
         frame = frames.shift()
 
         args = for arg,i in term.args
-                    if frame is i
+                    if frame == i
                         composeCarrots(arg, frames)
                     else
                         composeTerm(arg)
 
         optargs = {}
         for own key,arg of term.optargs
-            if frame is key
+            if frame == key
                 optargs[key] = composeCarrots(arg, frames)
             else
                 optargs[key] = composeTerm(arg)
@@ -71,7 +71,7 @@ class RqlQueryPrinter
         str = ''
         for term in tree
             if Array.isArray term
-                if term.length == 2 and term[0] is carrotMarker
+                if term.length == 2 and term[0] == carrotMarker
                     str += (joinTree term[1]).replace(/./g, '^')
                 else
                     str += joinTree term

@@ -38,7 +38,7 @@ class IterableResult
         @each = @_each
 
     _addResponse: (response) ->
-        if response.t is @_type or response.t is protoResponseType.SUCCESS_SEQUENCE
+        if response.t == @_type or response.t == protoResponseType.SUCCESS_SEQUENCE
             -- We push a "ok" response only if it's not empty
             if response.r.length > 0
                 @_responses.push response
@@ -63,7 +63,7 @@ class IterableResult
                         @_closeCb()
 
         @_contFlag = false
-        if @_closeAsap is false
+        if @_closeAsap == false
             @_promptNext()
         else
             @close @_closeCb
@@ -73,7 +73,7 @@ class IterableResult
         @_iterations += 1
         cb = @_cbQueue.shift()
 
-        if @_iterations % @stackSize is @stackSize - 1
+        if @_iterations % @stackSize == @stackSize - 1
             immediateCb = ((err, row) -> setImmediate -> cb(err, row))
             return immediateCb
         else
@@ -87,21 +87,21 @@ class IterableResult
         @_responseIndex += 1
 
         -- If we're done with this response, discard it
-        if @_responseIndex is response.r.length
+        if @_responseIndex == response.r.length
             @_responses.shift()
             @_responseIndex = 0
 
         cb null, row
 
     bufferEmpty: ->
-        @_responses.length is 0 or @_responses[0].r.length <= @_responseIndex
+        @_responses.length == 0 or @_responses[0].r.length <= @_responseIndex
 
     _promptNext: ->
         -- If there are no more waiting callbacks, just wait until the next event
         while @_cbQueue[0]?
-            if @bufferEmpty() is true
+            if @bufferEmpty() == true
                 -- We prefetch things here, set `is 0` to avoid prefectch
-                if @_endFlag is true
+                if @_endFlag == true
                     cb = @_getCallback()
                     cb new err.RqlDriverError "No more rows in the cursor."
                 else if @_responses.length <= 1
@@ -113,7 +113,7 @@ class IterableResult
                 -- Try to get a row out of the responses
                 response = @_responses[0]
 
-                if @_responses.length is 1
+                if @_responses.length == 1
                     -- We're low on data, prebuffer
                     @_promptCont()
 
@@ -124,7 +124,7 @@ class IterableResult
                     when protoResponseType.SUCCESS_FEED
                         @_handleRow()
                     when protoResponseType.SUCCESS_SEQUENCE
-                        if response.r.length is 0
+                        if response.r.length == 0
                             @_responses.shift()
                         else
                             @_handleRow()
@@ -179,23 +179,23 @@ class IterableResult
 
 
     _each: varar(1, 2, (cb, onFinished) ->
-        unless typeof cb is 'function'
-            throw new err.RqlDriverError "First argument to each must be a function."
-        if onFinished? and typeof onFinished isnt 'function'
-            throw new err.RqlDriverError "Optional second argument to each must be a function."
+        unless typeof cb == 'function'
+            throw err.RqlDriverError "First argument to each must be a function."
+        if onFinished and typeof onFinished isnt 'function'
+            throw err.RqlDriverError "Optional second argument to each must be a function."
 
         stopFlag = false
         self = @
         nextCb = (err, data) =>
             if stopFlag isnt true
                 if err?
-                    if err.message is 'No more rows in the cursor.'
-                        if onFinished?
+                    if err.message == 'No more rows in the cursor.'
+                        if onFinished
                             onFinished()
                     else
                         cb(err)
                 else
-                    stopFlag = cb(null, data) is false
+                    stopFlag = cb(null, data) == false
                     @_next nextCb
             else if onFinished?
                 onFinished()
@@ -315,9 +315,9 @@ class ArrayResult extends IterableResult
 
     _next: varar 0, 1, (cb) ->
         fn = (cb) =>
-            if @_hasNext() is true
+            if @_hasNext() == true
                 self = @
-                if self.__index%@stackSize is @stackSize-1
+                if self.__index%@stackSize == @stackSize-1
                     -- Reset the stack
                     setImmediate ->
                         cb(null, self[self.__index++])
@@ -347,10 +347,10 @@ class ArrayResult extends IterableResult
         response.__proto__ = {}
         for name, method of ArrayResult.prototype
             if name isnt 'constructor'
-                if name is '_each'
+                if name == '_each'
                     response.__proto__['each'] = method
                     response.__proto__['_each'] = method
-                else if name is '_next'
+                else if name == '_next'
                     response.__proto__['next'] = method
                     response.__proto__['_next'] = method
                 else
