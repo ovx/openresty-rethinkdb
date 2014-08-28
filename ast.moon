@@ -26,7 +26,7 @@ funcWrap = (val) ->
         unless node instanceof TermBase then return false
         if node instanceof ImplicitVar then return true
         if (node.args.map ivarScan).some((a)->a) then return true
-        if (v for own k,v of node.optargs).map(ivarScan).some((a)->a) then return true
+        if (v for k,v in node.optargs).map(ivarScan).some((a)->a) then return true
         return false
 
     if ivarScan(val)
@@ -84,7 +84,7 @@ class TermBase
 
         -- Check if the arguments are valid types
         try
-            for own key of options
+            for key in options
                 unless key in ['useOutdated', 'noreply', 'timeFormat', 'profile', 'durability', 'groupFormat', 'binaryFormat', 'batchConf', 'arrayLimit']
                     throw new err.RqlDriverError "Found "+key+" which is not a valid option. valid options are {useOutdated: <bool>, noreply: <bool>, timeFormat: <string>, groupFormat: <string>, binaryFormat: <string>, profile: <bool>, durability: <string>, arrayLimit: <number>}."
             if net.isConnection(connection) is false
@@ -348,7 +348,7 @@ class DatumTerm extends RDBVal
 
 translateBackOptargs = (optargs) ->
     result = {}
-    for own key,val of optargs
+    for key,val in optargs
         key = switch key
             when 'primary_key' then 'primaryKey'
             when 'return_vals' then 'returnVals'
@@ -371,7 +371,7 @@ translateBackOptargs = (optargs) ->
 
 translateOptargs = (optargs) ->
     result = {}
-    for own key,val of optargs
+    for key,val in optargs
         -- We translate known two word opt-args to camel case for your convience
         key = switch key
             when 'primaryKey' then 'primary_key'
@@ -414,7 +414,7 @@ class RDBOp extends RDBVal
         opts = {}
         add_opts = false
 
-        for own key,val of @optargs
+        for key,val in @optargs
             add_opts = true
             opts[key] = val.build()
 
@@ -438,7 +438,7 @@ intsp = (seq) ->
     return res
 
 kved = (optargs) ->
-    ['{', intsp([k, ': ', v] for own k,v of optargs), '}']
+    ['{', intsp([k, ': ', v] for k,v in optargs), '}']
 
 intspallargs = (args, optargs) ->
     argrepr = []
@@ -466,7 +466,7 @@ class MakeObject extends RDBOp
     constructor: (obj, nestingDepth=20) ->
         self = super({})
         self.optargs = {}
-        for own key,val of obj
+        for key,val in obj
             unless val
                 throw err.RqlDriverError "Object field '#{key}' may not be nil"
             self.optargs[key] = rethinkdb.expr val, nestingDepth-1
@@ -476,7 +476,7 @@ class MakeObject extends RDBOp
 
     build: ->
         res = {}
-        for own key,val of @optargs
+        for key,val in @optargs
             res[key] = val.build()
         return res
 
