@@ -26,7 +26,8 @@ funcWrap = (val) ->
         unless node instanceof TermBase then return false
         if node instanceof ImplicitVar then return true
         if (node.args.map ivarScan).some((a)->a) then return true
-        if (v for k,v in node.optargs).map(ivarScan).some((a)->a) then return true
+        for k, v in node.optargs
+            return true if ivarScan v
         return false
 
     if ivarScan(val)
