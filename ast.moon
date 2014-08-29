@@ -83,29 +83,21 @@ class TermBase
         options = {} if not options?
 
         -- Check if the arguments are valid types
-        try
-            for key in options
-                unless key in ['useOutdated', 'noreply', 'timeFormat', 'profile', 'durability', 'groupFormat', 'binaryFormat', 'batchConf', 'arrayLimit']
-                    throw new err.RqlDriverError "Found "+key+" which is not a valid option. valid options are {useOutdated: <bool>, noreply: <bool>, timeFormat: <string>, groupFormat: <string>, binaryFormat: <string>, profile: <bool>, durability: <string>, arrayLimit: <number>}."
-            if net.isConnection(connection) is false
-                throw new err.RqlDriverError "First argument to `run` must be an open connection."
-        catch e
-            if typeof callback is 'function'
-                return callback(e)
-            else
-                return new Promise (resolve, reject) =>
-                    reject(e)
+        for key in options
+            unless key in ['useOutdated', 'noreply', 'timeFormat', 'profile', 'durability', 'groupFormat', 'binaryFormat', 'batchConf', 'arrayLimit']
+                callback new err.RqlDriverError "Found "+key+" which is not a valid option. valid options are {useOutdated: <bool>, noreply: <bool>, timeFormat: <string>, groupFormat: <string>, binaryFormat: <string>, profile: <bool>, durability: <string>, arrayLimit: <number>}."
+        if net.isConnection(connection) is false
+            callback new err.RqlDriverError "First argument to `run` must be an open connection."
 
         if options.noreply is true or typeof callback is 'function'
-            try
-                connection._start @, callback, options
-            catch e
+            status, err = pcall(connection._start @, callback, options)
+            unless status
                 -- It was decided that, if we can, we prefer to invoke the callback
                 -- with any errors rather than throw them as normal exceptions.
                 -- Thus we catch errors here and invoke the callback instead of
                 -- letting the error bubble up.
                 if typeof(callback) is 'function'
-                    callback(e)
+                    callback(err)
 
     toString: -> err.printQuery(@)
 
@@ -343,7 +335,7 @@ class DatumTerm extends RDBVal
     build: ->
         if typeof(@data) == 'number'
             if !isFinite(@data)
-                throw new TypeError("Illegal non-finite number `" + @data.toString() + "`.")
+                error(new TypeError("Illegal non-finite number `" + @data.toString() + "`."))
         @data
 
 translateBackOptargs = (optargs) ->
@@ -402,7 +394,7 @@ class RDBOp extends RDBVal
                 if arg
                     rethinkdb.expr arg
                 else
-                    throw new err.RqlDriverError "Argument #{i} to #{@st || @mt} may not be `undefined`."
+                    error(new err.RqlDriverError "Argument #{i} to #{@st || @mt} may not be `undefined`.")
         self.optargs = translateOptargs(optargs)
         return self
 
@@ -468,7 +460,7 @@ class MakeObject extends RDBOp
         self.optargs = {}
         for key,val in obj
             unless val
-                throw err.RqlDriverError "Object field '#{key}' may not be nil"
+                error(err.RqlDriverError "Object field '#{key}' may not be nil")
             self.optargs[key] = rethinkdb.expr val, nestingDepth-1
         return self
 
@@ -507,7 +499,7 @@ class Binary extends RDBOp
             self = super()
             self.base64_data = data.toString("base64")
         else
-            throw new TypeError("Parameter to `r.binary` must be a Buffer object or RQL query.")
+            error(new TypeError("Parameter to `r.binary` must be a Buffer object or RQL query.")
 
         return self
 
@@ -952,7 +944,7 @@ class Func extends RDBOp
 
         body = func(args...)
         if body is undefined
-            throw new err.RqlDriverError "Anonymous function returned `undefined`. Did you forget a `return`?"
+            error(new err.RqlDriverError "Anonymous function returned `undefined`. Did you forget a `return`?")
 
         argsArr = new MakeArray({}, argNums...)
         return super(optargs, argsArr, body)
@@ -1115,13 +1107,13 @@ class UUID extends RDBOp
 -- Wrap a native JS value in an ReQL datum
 rethinkdb.expr = varar 1, 2, (val, nestingDepth=20) ->
     unless val
-        throw err.RqlDriverError "Cannot wrap nil with r.expr()."
+        error(err.RqlDriverError "Cannot wrap nil with r.expr().")
 
     if nestingDepth <= 0
-        throw new err.RqlDriverError "Nesting depth limit exceeded"
+        error(new err.RqlDriverError "Nesting depth limit exceeded")
 
     if typeof nestingDepth isnt "number" or isNaN(nestingDepth)
-        throw new err.RqlDriverError "Second argument to `r.expr` must be a number or undefined."
+        error(new err.RqlDriverError "Second argument to `r.expr` must be a number or undefined.")
 
     else if val instanceof TermBase
         val

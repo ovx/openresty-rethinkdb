@@ -155,7 +155,7 @@ class IterableResult
 
     -- Implement IterableResult
     hasNext: ->
-        throw new err.RqlDriverError "The `hasNext` command has been removed since 1.13. Use `next` instead."
+        error(new err.RqlDriverError "The `hasNext` command has been removed since 1.13. Use `next` instead.")
 
     _next: varar 0, 1, (cb) ->
         fn = (cb) =>
@@ -180,9 +180,9 @@ class IterableResult
 
     _each: varar(1, 2, (cb, onFinished) ->
         unless typeof cb == 'function'
-            throw err.RqlDriverError "First argument to each must be a function."
+            error(err.RqlDriverError "First argument to each must be a function.")
         if onFinished and typeof onFinished isnt 'function'
-            throw err.RqlDriverError "Optional second argument to each must be a function."
+            error(err.RqlDriverError "Optional second argument to each must be a function.")
 
         stopFlag = false
         self = @
@@ -221,9 +221,9 @@ class IterableResult
     _makeEmitter: ->
         @emitter = new EventEmitter
         @each = ->
-            throw new err.RqlDriverError "You cannot use the cursor interface and the EventEmitter interface at the same time."
+            error(new err.RqlDriverError "You cannot use the cursor interface and the EventEmitter interface at the same time.")
         @next = ->
-            throw new err.RqlDriverError "You cannot use the cursor interface and the EventEmitter interface at the same time."
+            error(new err.RqlDriverError "You cannot use the cursor interface and the EventEmitter interface at the same time.")
 
 
     addListener: (args...) ->
@@ -296,9 +296,9 @@ class Feed extends IterableResult
         super
 
     hasNext: ->
-        throw new err.RqlDriverError "`hasNext` is not available for feeds."
+        error(new err.RqlDriverError "`hasNext` is not available for feeds.")
     toArray: ->
-        throw new err.RqlDriverError "`toArray` is not available for feeds."
+        error(new err.RqlDriverError "`toArray` is not available for feeds.")
 
     toString: ar () -> "[object Feed]"
 

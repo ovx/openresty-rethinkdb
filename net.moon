@@ -153,7 +153,7 @@ class Connection extends events.EventEmitter
         if callback
             opts = optsOrCallback
             unless Object::toString.call(opts) == '[object Object]'
-                throw err.RqlDriverError "First argument to two-argument `close` must be an object."
+                error(err.RqlDriverError "First argument to two-argument `close` must be an object.")
             cb = callback
         else if Object::toString.call(optsOrCallback) == '[object Object]'
             opts = optsOrCallback
@@ -167,7 +167,7 @@ class Connection extends events.EventEmitter
 
         for own key of opts
             unless key in ['noreplyWait']
-                throw new err.RqlDriverError "First argument to two-argument `close` must be { noreplyWait: <bool> }."
+                error(new err.RqlDriverError "First argument to two-argument `close` must be { noreplyWait: <bool> }.")
 
         noreplyWait = ((not opts.noreplyWait) or opts.noreplyWait) and @open
 
@@ -228,7 +228,7 @@ class Connection extends events.EventEmitter
         @db = db
 
     _start: (term, cb, opts) ->
-        unless @open then throw new err.RqlDriverError "Connection is closed."
+        unless @open then error(new err.RqlDriverError "Connection is closed.")
 
         -- Assign token
         token = @nextToken++
@@ -300,7 +300,7 @@ class TcpConnection extends Connection
 
     constructor: (host, callback) ->
         unless TcpConnection.isAvailable()
-            throw new err.RqlDriverError "TCP sockets are not available in this environment"
+            error(new err.RqlDriverError "TCP sockets are not available in this environment")
 
         super(host, callback)
 
@@ -413,7 +413,7 @@ class HttpConnection extends Connection
     @isAvailable: -> typeof XMLHttpRequest isnt "undefined"
     constructor: (host, callback) ->
         unless HttpConnection.isAvailable()
-            throw new err.RqlDriverError "XMLHttpRequest is not available in this environment"
+            error(new err.RqlDriverError "XMLHttpRequest is not available in this environment")
 
         super(host, callback)
 
@@ -455,7 +455,7 @@ class HttpConnection extends Connection
             opts = {}
             cb = optsOrCallback
         unless not cb or typeof cb == 'function'
-            throw err.RqlDriverError "Final argument to `close` must be a callback function or object."
+            error(err.RqlDriverError "Final argument to `close` must be a callback function or object.")
 
         wrappedCb = (args...) =>
             @cancel()
@@ -514,7 +514,7 @@ module.exports.connect = varar 0, 2, (hostOrCallback, callback) ->
         else if HttpConnection.isAvailable()
             new HttpConnection host, callback
         else
-            throw new err.RqlDriverError "Neither TCP nor HTTP avaiable in this environment"
+            error(new err.RqlDriverError "Neither TCP nor HTTP avaiable in this environment")
 
 
     create_connection(host, callback)
