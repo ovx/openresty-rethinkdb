@@ -79,8 +79,8 @@ class RqlQueryPrinter
                 str += term
         return str
 
-module.exports.RqlDriverError = RqlDriverError
-module.exports.RqlRuntimeError = RqlRuntimeError
-module.exports.RqlCompileError = RqlCompileError
-module.exports.RqlClientError = RqlClientError
-module.exports.printQuery = RqlQueryPrinter::printQuery
+{RqlDriverError: RqlDriverError
+RqlRuntimeError: RqlRuntimeError
+RqlCompileError: RqlCompileError
+RqlClientError: RqlClientError
+printQuery: RqlQueryPrinter.printQuery}
