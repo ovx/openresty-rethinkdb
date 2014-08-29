@@ -71,15 +71,6 @@ class TermBase
                     options new err.RqlDriverError("Second argument to `run` cannot be a function if a third argument is provided.")
                     return
             -- else we suppose that we have run(connection[, options][, callback])
-        else if connection?.constructor is Object
-            if @showRunWarning is true
-                process?.stderr.write("RethinkDB warning: This syntax is deprecated. Please use `run(connection[, options], callback)`.")
-                @showRunWarning = false
-            -- Handle run(connectionWithOptions, callback)
-            callback = options
-            options = connection
-            connection = connection.connection
-            delete options["connection"]
 
         options = {} if not options?
 
