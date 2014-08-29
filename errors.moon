@@ -29,7 +29,7 @@ class RqlQueryPrinter
         joinTree tree
 
     composeTerm = (term) ->
-        args = (composeTerm arg for arg in term.args)
+        args = [composeTerm arg for arg in term.args]
         optargs = {}
         for key,arg in term.optargs
             optargs[key] = composeTerm(arg)
@@ -37,7 +37,7 @@ class RqlQueryPrinter
 
     printCarrots: (term, frames) ->
         if frames.length == 0
-            tree = [carrotify(composeTerm(term))]
+            tree = {carrotify(composeTerm(term))}
         else
             tree = composeCarrots(term, frames)
         (joinTree tree).replace(/[^\^]/g, ' ')
@@ -65,7 +65,7 @@ class RqlQueryPrinter
 
     carrotMarker = {}
 
-    carrotify = (tree) -> [carrotMarker, tree]
+    carrotify = (tree) -> {carrotMarker, tree}
 
     joinTree = (tree) ->
         str = ''
