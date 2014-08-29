@@ -331,7 +331,7 @@ class DatumTerm extends RDBVal
     build: ->
         if typeof(@data) == 'number'
             if !isFinite(@data)
-                error(new TypeError("Illegal non-finite number `" + @data.toString() + "`."))
+                error(TypeError("Illegal non-finite number `" + @data.toString() + "`."))
         @data
 
 translateBackOptargs = (optargs) ->
@@ -390,7 +390,7 @@ class RDBOp extends RDBVal
                 if a
                     rethinkdb.expr a
                 else
-                    error(new err.RqlDriverError "Argument #{i} to #{@st || @mt} may not be `undefined`.")
+                    error(err.RqlDriverError "Argument #{i} to #{@st || @mt} may not be `undefined`.")
         self.optargs = translateOptargs(optargs)
         return self
 
@@ -426,7 +426,7 @@ class RDBOpWrap extends RDBOp
                 if arg
                     rethinkdb.expr funcWrap arg
                 else
-                    error(new err.RqlDriverError "Argument #{i} to #{@st || @mt} may not be `undefined`.")
+                    error(err.RqlDriverError "Argument #{i} to #{@st || @mt} may not be `undefined`.")
         self.optargs = translateOptargs(optargs)
         return self
 
@@ -507,7 +507,7 @@ class Binary extends RDBOp
             self = super()
             self.base64_data = data.toString("base64")
         else
-            error(new TypeError("Parameter to `r.binary` must be a Buffer object or RQL query.")
+            error(TypeError("Parameter to `r.binary` must be a Buffer object or RQL query.")
 
         return self
 
@@ -952,7 +952,7 @@ class Func extends RDBOp
 
         body = func(unpack args)
         if body is undefined
-            error(new err.RqlDriverError "Anonymous function returned `undefined`. Did you forget a `return`?")
+            error(err.RqlDriverError "Anonymous function returned `undefined`. Did you forget a `return`?")
 
         argsArr = MakeArray({}, unpack argNums)
         return super(optargs, argsArr, body)
@@ -1118,10 +1118,10 @@ rethinkdb.expr = varar 1, 2, (val, nestingDepth=20) ->
         error(err.RqlDriverError "Cannot wrap nil with r.expr().")
 
     if nestingDepth <= 0
-        error(new err.RqlDriverError "Nesting depth limit exceeded")
+        error(err.RqlDriverError "Nesting depth limit exceeded")
 
     if typeof nestingDepth isnt "number" or isNaN(nestingDepth)
-        error(new err.RqlDriverError "Second argument to `r.expr` must be a number or undefined.")
+        error(err.RqlDriverError "Second argument to `r.expr` must be a number or undefined.")
 
     else if val instanceof TermBase
         val

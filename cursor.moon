@@ -155,7 +155,7 @@ class IterableResult
 
     -- Implement IterableResult
     hasNext: ->
-        error(new err.RqlDriverError "The `hasNext` command has been removed since 1.13. Use `next` instead.")
+        error(err.RqlDriverError "The `hasNext` command has been removed since 1.13. Use `next` instead.")
 
     _next: varar 0, 1, (cb) ->
         fn = (cb) =>
@@ -221,9 +221,9 @@ class IterableResult
     _makeEmitter: ->
         @emitter = EventEmitter
         @each = ->
-            error(new err.RqlDriverError "You cannot use the cursor interface and the EventEmitter interface at the same time.")
+            error(err.RqlDriverError "You cannot use the cursor interface and the EventEmitter interface at the same time.")
         @next = ->
-            error(new err.RqlDriverError "You cannot use the cursor interface and the EventEmitter interface at the same time.")
+            error(err.RqlDriverError "You cannot use the cursor interface and the EventEmitter interface at the same time.")
 
 
     addListener: (...) ->
@@ -296,9 +296,9 @@ class Feed extends IterableResult
         super
 
     hasNext: ->
-        error(new err.RqlDriverError "`hasNext` is not available for feeds.")
+        error(err.RqlDriverError "`hasNext` is not available for feeds.")
     toArray: ->
-        error(new err.RqlDriverError "`toArray` is not available for feeds.")
+        error(err.RqlDriverError "`toArray` is not available for feeds.")
 
     toString: ar () -> "[object Feed]"
 

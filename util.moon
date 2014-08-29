@@ -6,7 +6,7 @@ plural = (number) -> if number == 1 then "" else "s"
 -- called with the correct number of arguments
 module.exports.ar = (fun) -> (...) ->
     if args.length isnt fun.length
-        error(new err.RqlDriverError "Expected #{fun.length} argument#{plural(fun.length)} but found #{args.length}.")
+        error(err.RqlDriverError "Expected #{fun.length} argument#{plural(fun.length)} but found #{args.length}.")
     fun(unpack arg)
 
 -- Like ar for variable argument functions. Takes minimum
@@ -32,9 +32,9 @@ module.exports.aropt = (fun) -> (...) ->
 
     if expectedPosArgs isnt numPosArgs
         if expectedPosArgs isnt 1
-            error(new err.RqlDriverError "Expected #{expectedPosArgs} arguments (not including options) but found #{numPosArgs}.")
+            error(err.RqlDriverError "Expected #{expectedPosArgs} arguments (not including options) but found #{numPosArgs}.")
         else
-            error(new err.RqlDriverError "Expected #{expectedPosArgs} argument (not including options) but found #{numPosArgs}.")
+            error(err.RqlDriverError "Expected #{expectedPosArgs} argument (not including options) but found #{numPosArgs}.")
     fun(unpack arg)
 
 module.exports.toArrayBuffer = (node_buffer) ->
@@ -53,18 +53,18 @@ convertPseudotype = (obj, opts) ->
                 -- Default is native
                 when 'native', undefined
                     if not obj['epoch_time']?
-                        error(new err.RqlDriverError "pseudo-type TIME #{obj} object missing expected field 'epoch_time'.")
+                        error(err.RqlDriverError "pseudo-type TIME #{obj} object missing expected field 'epoch_time'.")
 
                     -- We ignore the timezone field of the pseudo-type TIME object. JS dates do not support timezones.
                     -- By converting to a native date object we are intentionally throwing out timezone information.
 
                     -- field "epoch_time" is in seconds but the Date constructor expects milliseconds
-                    (new Date(obj['epoch_time']*1000))
+                    (Date(obj['epoch_time']*1000))
                 when 'raw'
                     -- Just return the raw (`{'$reql_type$'...}`) object
                     obj
                 else
-                    error(new err.RqlDriverError "Unknown timeFormat run option #{opts.timeFormat}.")
+                    error(err.RqlDriverError "Unknown timeFormat run option #{opts.timeFormat}.")
         when 'GROUPED_DATA'
             switch opts.groupFormat
                 when 'native', undefined
@@ -75,17 +75,17 @@ convertPseudotype = (obj, opts) ->
                 when 'raw'
                     obj
                 else
-                    error(new err.RqlDriverError "Unknown groupFormat run option #{opts.groupFormat}.")
+                    error(err.RqlDriverError "Unknown groupFormat run option #{opts.groupFormat}.")
         when 'BINARY'
             switch opts.binaryFormat
                 when 'native', undefined
                     if not obj['data']?
-                        error(new err.RqlDriverError "pseudo-type BINARY object missing expected field 'data'.")
-                    (new Buffer(obj['data'], 'base64'))
+                        error(err.RqlDriverError "pseudo-type BINARY object missing expected field 'data'.")
+                    (Buffer(obj['data'], 'base64'))
                 when 'raw'
                     obj
                 else
-                    error(new err.RqlDriverError "Unknown binaryFormat run option #{opts.binaryFormat}.")
+                    error(err.RqlDriverError "Unknown binaryFormat run option #{opts.binaryFormat}.")
         else
             -- Regular object or unknown pseudo type
             obj

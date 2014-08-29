@@ -167,7 +167,7 @@ class Connection extends events.EventEmitter
 
         for own key of opts
             unless key in ['noreplyWait']
-                error(new err.RqlDriverError "First argument to two-argument `close` must be { noreplyWait: <bool> }.")
+                error(err.RqlDriverError "First argument to two-argument `close` must be { noreplyWait: <bool> }.")
 
         noreplyWait = ((not opts.noreplyWait) or opts.noreplyWait) and @open
 
@@ -228,7 +228,7 @@ class Connection extends events.EventEmitter
         @db = db
 
     _start: (term, cb, opts) ->
-        unless @open then error(new err.RqlDriverError "Connection is closed.")
+        unless @open then error(err.RqlDriverError "Connection is closed.")
 
         -- Assign token
         token = @nextToken++
@@ -300,7 +300,7 @@ class TcpConnection extends Connection
 
     constructor: (host, callback) ->
         unless TcpConnection.isAvailable()
-            error(new err.RqlDriverError "TCP sockets are not available in this environment")
+            error(err.RqlDriverError "TCP sockets are not available in this environment")
 
         super(host, callback)
 
@@ -413,7 +413,7 @@ class HttpConnection extends Connection
     @isAvailable: -> typeof XMLHttpRequest isnt "undefined"
     constructor: (host, callback) ->
         unless HttpConnection.isAvailable()
-            error(new err.RqlDriverError "XMLHttpRequest is not available in this environment")
+            error(err.RqlDriverError "XMLHttpRequest is not available in this environment")
 
         super(host, callback)
 
@@ -427,7 +427,7 @@ class HttpConnection extends Connection
             if xhr.readyState == 4
                 if xhr.status == 200
                     @_url = url
-                    @_connId = (new DataView xhr.response).getInt32(0, true)
+                    @_connId = (DataView xhr.response).getInt32(0, true)
                     @emit 'connect'
                 else
                     @emit 'error', err.RqlDriverError "XHR error, http status #{xhr.status}."
@@ -483,7 +483,7 @@ class HttpConnection extends Connection
             if xhr.readyState == 4 and xhr.status == 200
                 -- Convert response from ArrayBuffer to node buffer
 
-                buf = Buffer(b for b in (new Uint8Array(xhr.response)))
+                buf = Buffer(b for b in (Uint8Array(xhr.response)))
                 @_data(buf)
 
         -- Convert the chunk from node buffer to ArrayBuffer
