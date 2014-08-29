@@ -72,7 +72,7 @@ class TermBase
                     return
             -- else we suppose that we have run(connection[, options][, callback])
 
-        options = {} if not options?
+        options = {} unless options
 
         -- Check if the arguments are valid types
         for key in options
