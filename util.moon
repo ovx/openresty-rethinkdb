@@ -4,24 +4,24 @@ plural = (number) -> if number == 1 then "" else "s"
 
 -- Function wrapper that enforces that the function is
 -- called with the correct number of arguments
-module.exports.ar = (fun) -> (args...) ->
+module.exports.ar = (fun) -> (...) ->
     if args.length isnt fun.length
         error(new err.RqlDriverError "Expected #{fun.length} argument#{plural(fun.length)} but found #{args.length}.")
-    fun.apply(@, args)
+    fun(unpack arg)
 
 -- Like ar for variable argument functions. Takes minimum
 -- and maximum argument parameters.
-module.exports.varar = (min, max, fun) -> (args...) ->
+module.exports.varar = (min, max, fun) -> (...) ->
     if (min and args.length < min) or (max and args.length > max)
         if min and not max
             error(err.RqlDriverError "Expected #{min} or more arguments but found #{args.length}.")
         if max and not min
             error(err.RqlDriverError "Expected #{max} or fewer arguments but found #{args.length}.")
         error(err.RqlDriverError "Expected between #{min} and #{max} arguments but found #{args.length}.")
-    fun.apply(@, args)
+    fun(unpack arg)
 
 -- Like ar but for functions that take an optional options dict as the last argument
-module.exports.aropt = (fun) -> (args...) ->
+module.exports.aropt = (fun) -> (...) ->
     expectedPosArgs = fun.length - 1
     perhapsOptDict = args[expectedPosArgs]
 
@@ -35,7 +35,7 @@ module.exports.aropt = (fun) -> (args...) ->
             error(new err.RqlDriverError "Expected #{expectedPosArgs} arguments (not including options) but found #{numPosArgs}.")
         else
             error(new err.RqlDriverError "Expected #{expectedPosArgs} argument (not including options) but found #{numPosArgs}.")
-    fun.apply(@, args)
+    fun(unpack arg)
 
 module.exports.toArrayBuffer = (node_buffer) ->
     -- Convert from node buffer to array buffer

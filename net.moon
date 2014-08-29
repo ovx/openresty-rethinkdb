@@ -171,10 +171,10 @@ class Connection extends events.EventEmitter
 
         noreplyWait = ((not opts.noreplyWait) or opts.noreplyWait) and @open
 
-        wrappedCb = (args...) =>
+        wrappedCb = (...) =>
             @open = false
             if cb
-                cb(args...)
+                cb(unpack arg)
 
         if noreplyWait
             @noreplyWait(wrappedCb)
@@ -358,7 +358,7 @@ class TcpConnection extends Connection
 
             @rawSocket.on 'data', handshake_callback
 
-        @rawSocket.on 'error', (args...) => @emit 'error', args...
+        @rawSocket.on 'error', (...) => @emit 'error', unpack arg
 
         @rawSocket.on 'close', => @open = false; @emit 'close', {noreplyWait: false}
 
@@ -379,10 +379,10 @@ class TcpConnection extends Connection
             opts = {}
 
 
-        wrappedCb = (args...) =>
+        wrappedCb = (...) =>
             @rawSocket.end()
             if cb
-                cb(args...)
+                cb(unpack arg)
 
         -- This would simply be super(opts, wrappedCb), if we were not in the varar
         -- anonymous function
@@ -457,10 +457,10 @@ class HttpConnection extends Connection
         unless not cb or type(cb) == 'function'
             error(err.RqlDriverError "Final argument to `close` must be a callback function or object.")
 
-        wrappedCb = (args...) =>
+        wrappedCb = (...) =>
             @cancel()
             if cb?
-                cb(args...)
+                cb(unpack arg)
 
         -- This would simply be super(opts, wrappedCb), if we were not in the varar
         -- anonymous function
