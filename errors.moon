@@ -31,7 +31,7 @@ class RqlQueryPrinter
     composeTerm = (term) ->
         args = (composeTerm arg for arg in term.args)
         optargs = {}
-        for own key,arg of term.optargs
+        for key,arg in term.optargs
             optargs[key] = composeTerm(arg)
         term.compose(args, optargs)
 
@@ -52,7 +52,7 @@ class RqlQueryPrinter
                         composeTerm(arg)
 
         optargs = {}
-        for own key,arg of term.optargs
+        for key,arg in term.optargs
             if frame == key
                 optargs[key] = composeCarrots(arg, frames)
             else
