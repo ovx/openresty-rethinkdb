@@ -1252,4 +1252,4 @@ rethinkdb.circle = aropt (cen, rad, opts) -> Circle opts, cen, rad
 rethinkdb.uuid = (...) -> UUID {}, unpack arg
 
 -- Export all names defined on rethinkdb
-module.exports = rethinkdb
+rethinkdb

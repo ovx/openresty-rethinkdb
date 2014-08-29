@@ -497,24 +497,21 @@ class HttpConnection extends Connection
         xhr.send array
         @xhr = xhr -- We allow only one query at a time per HTTP connection
 
-module.exports.isConnection = (connection) ->
-    return connection instanceof Connection
+{isConnection: (connection) ->
+    Connection.instanceof connection
 
 -- The main function of this module
-module.exports.connect = varar 0, 2, (hostOrCallback, callback) ->
+connect: varar 0, 2, (hostOrCallback, callback) ->
     if type(hostOrCallback) == 'function'
         host = {}
         callback = hostOrCallback
     else
         host = hostOrCallback
 
-    create_connection = (host, callback) =>
-        if TcpConnection.isAvailable()
-            TcpConnection host, callback
-        else if HttpConnection.isAvailable()
-            HttpConnection host, callback
-        else
-            error(new err.RqlDriverError "Neither TCP nor HTTP avaiable in this environment")
-
-
-    create_connection(host, callback)
+    if TcpConnection.isAvailable()
+        TcpConnection host, callback
+    else if HttpConnection.isAvailable()
+        HttpConnection host, callback
+    else
+        error(err.RqlDriverError "Neither TCP nor HTTP avaiable in this environment")
+}

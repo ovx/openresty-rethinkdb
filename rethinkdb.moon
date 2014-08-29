@@ -8,4 +8,4 @@ rethinkdb.connect = net.connect
 -- Export Rql Errors
 rethinkdb.Error = error
 
-module.exports = rethinkdb
+rethinkdb
