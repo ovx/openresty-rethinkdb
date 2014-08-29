@@ -42,7 +42,7 @@ class Connection extends events.EventEmitter
         @nextToken = 1
         @open = false
 
-        @buffer = new Buffer(0)
+        @buffer = Buffer(0)
 
         @_events = @_events || {}
 
@@ -51,7 +51,7 @@ class Connection extends events.EventEmitter
             if e instanceof err.RqlDriverError
                 callback e
             else
-                callback new err.RqlDriverError "Could not connect to #{@host}:#{@port}.\n#{e.message}"
+                callback err.RqlDriverError "Could not connect to #{@host}:#{@port}.\n#{e.message}"
         @once 'error', errCallback
 
         conCallback = =>
@@ -120,21 +120,21 @@ class Connection extends events.EventEmitter
                         cb nil, response
                         @_delQuery(token)
                     when protoResponseType.SUCCESS_PARTIAL
-                        cursor = new cursors.Cursor @, token, opts, root
+                        cursor = cursors.Cursor @, token, opts, root
                         @outstandingCallbacks[token].cursor = cursor
                         if profile
                             cb nil, {profile: profile, value: cursor._addResponse(response)}
                         else
                             cb nil, cursor._addResponse(response)
                     when protoResponseType.SUCCESS_SEQUENCE
-                        cursor = new cursors.Cursor @, token, opts, root
+                        cursor = cursors.Cursor @, token, opts, root
                         @_delQuery(token)
                         if profile
                             cb nil, {profile: profile, value: cursor._addResponse(response)}
                         else
                             cb nil, cursor._addResponse(response)
                     when protoResponseType.SUCCESS_FEED
-                        feed = new cursors.Feed @, token, opts, root
+                        feed = cursors.Feed @, token, opts, root
                         @outstandingCallbacks[token].feed = feed
                         if profile
                             cb nil, {profile: profile, value: feed._addResponse(response)}
@@ -144,10 +144,10 @@ class Connection extends events.EventEmitter
                         @_delQuery(token)
                         cb nil, nil
                     else
-                        cb new err.RqlDriverError "Unknown response type"
+                        cb err.RqlDriverError "Unknown response type"
         else
             -- Unexpected token
-            @emit 'error', new err.RqlDriverError "Unexpected token #{token}."
+            @emit 'error', err.RqlDriverError "Unexpected token #{token}."
 
     close: (varar 0, 2, (optsOrCallback, callback) ->
         if callback
@@ -312,28 +312,28 @@ class TcpConnection extends Connection
 
         timeout = setTimeout( (()=>
             @rawSocket.destroy()
-            @emit 'error', new err.RqlDriverError "Handshake timedout"
+            @emit 'error', err.RqlDriverError "Handshake timedout"
         ), @timeout*1000)
 
         @rawSocket.once 'error', => clearTimeout(timeout)
 
         @rawSocket.once 'connect', =>
             -- Initialize connection with magic number to validate version
-            version = new Buffer(4)
+            version = Buffer(4)
             version.writeUInt32LE(protoVersion, 0)
 
-            auth_buffer = new Buffer(@authKey, 'ascii')
-            auth_length = new Buffer(4)
+            auth_buffer = Buffer(@authKey, 'ascii')
+            auth_length = Buffer(4)
             auth_length.writeUInt32LE(auth_buffer.length, 0)
 
             -- Send the protocol type that we will be using to communicate with the server
-            protocol = new Buffer(4)
+            protocol = Buffer(4)
             protocol.writeUInt32LE(protoProtocol, 0)
 
             @rawSocket.write Buffer.concat([version, auth_length, auth_buffer, protocol])
 
             -- Now we have to wait for a response from the server
-            -- acknowledging the new connection
+            -- acknowledging the connection
             handshake_callback = (buf) =>
                 @buffer = Buffer.concat([@buffer, buf])
                 for b,i in @buffer
@@ -352,7 +352,7 @@ class TcpConnection extends Connection
                             @emit 'connect'
                             return
                         else
-                            @emit 'error', new err.RqlDriverError "Server dropped connection with message: \"" + status_str.trim() + "\""
+                            @emit 'error', err.RqlDriverError "Server dropped connection with message: \"" + status_str.trim() + "\""
                             return
 
 
@@ -395,14 +395,14 @@ class TcpConnection extends Connection
         super()
 
     _writeQuery: (token, data) ->
-        tokenBuf = new Buffer(8)
+        tokenBuf = Buffer(8)
         tokenBuf.writeUInt32LE(token & 0xFFFFFFFF, 0)
         tokenBuf.writeUInt32LE(Math.floor(token / 0xFFFFFFFF), 4)
         @rawSocket.write tokenBuf
-        @write new Buffer(data)
+        @write Buffer(data)
 
     write: (chunk) ->
-        lengthBuffer = new Buffer(4)
+        lengthBuffer = Buffer(4)
         lengthBuffer.writeUInt32LE(chunk.length, 0)
         @rawSocket.write lengthBuffer
         @rawSocket.write chunk
@@ -419,7 +419,7 @@ class HttpConnection extends Connection
 
         protocol = if host.protocol == 'https' then 'https' else @DEFAULT_PROTOCOL
         url = "#{protocol}://#{@host}:#{@port}#{host.pathname}ajax/reql/"
-        xhr = new XMLHttpRequest
+        xhr = XMLHttpRequest
         xhr.open("GET", url+"open-new-connection", true)
         xhr.responseType = "arraybuffer"
 
@@ -430,14 +430,14 @@ class HttpConnection extends Connection
                     @_connId = (new DataView xhr.response).getInt32(0, true)
                     @emit 'connect'
                 else
-                    @emit 'error', new err.RqlDriverError "XHR error, http status #{xhr.status}."
+                    @emit 'error', err.RqlDriverError "XHR error, http status #{xhr.status}."
         xhr.send()
 
         @xhr = xhr -- We allow only one query at a time per HTTP connection
 
     cancel: ->
         @xhr.abort()
-        xhr = new XMLHttpRequest
+        xhr = XMLHttpRequest
         xhr.open("POST", "#{@_url}close-connection?conn_id=#{@_connId}", true)
         xhr.send()
         @_url = nil
@@ -468,14 +468,14 @@ class HttpConnection extends Connection
     )
 
     _writeQuery: (token, data) ->
-        buf = new Buffer(encodeURI(data).split(/%..|./).length - 1 + 8)
+        buf = Buffer(encodeURI(data).split(/%..|./).length - 1 + 8)
         buf.writeUInt32LE(token & 0xFFFFFFFF, 0)
         buf.writeUInt32LE(Math.floor(token / 0xFFFFFFFF), 4)
         buf.write(data, 8)
         @write buf
 
     write: (chunk) ->
-        xhr = new XMLHttpRequest
+        xhr = XMLHttpRequest
         xhr.open("POST", "#{@_url}?conn_id=#{@_connId}", true)
         xhr.responseType = "arraybuffer"
 
@@ -483,12 +483,12 @@ class HttpConnection extends Connection
             if xhr.readyState == 4 and xhr.status == 200
                 -- Convert response from ArrayBuffer to node buffer
 
-                buf = new Buffer(b for b in (new Uint8Array(xhr.response)))
+                buf = Buffer(b for b in (new Uint8Array(xhr.response)))
                 @_data(buf)
 
         -- Convert the chunk from node buffer to ArrayBuffer
-        array = new ArrayBuffer(chunk.length)
-        view = new Uint8Array(array)
+        array = ArrayBuffer(chunk.length)
+        view = Uint8Array(array)
         i = 0
         while i < chunk.length
             view[i] = chunk[i]
@@ -510,9 +510,9 @@ module.exports.connect = varar 0, 2, (hostOrCallback, callback) ->
 
     create_connection = (host, callback) =>
         if TcpConnection.isAvailable()
-            new TcpConnection host, callback
+            TcpConnection host, callback
         else if HttpConnection.isAvailable()
-            new HttpConnection host, callback
+            HttpConnection host, callback
         else
             error(new err.RqlDriverError "Neither TCP nor HTTP avaiable in this environment")
 

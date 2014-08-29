@@ -31,7 +31,7 @@ funcWrap = (val) ->
         return false
 
     if ivarScan(val)
-        return new Func {}, (x) -> val
+        return Func {}, (x) -> val
 
     return val
 
@@ -68,7 +68,7 @@ class TermBase
                     callback = options
                     options = {}
                 else
-                    options new err.RqlDriverError("Second argument to `run` cannot be a function if a third argument is provided.")
+                    options err.RqlDriverError("Second argument to `run` cannot be a function if a third argument is provided.")
                     return
             -- else we suppose that we have run(connection[, options][, callback])
 
@@ -80,9 +80,9 @@ class TermBase
                 when 'useOutdated', 'noreply', 'timeFormat', 'profile', 'durability', 'groupFormat', 'binaryFormat', 'batchConf', 'arrayLimit'
                     nil
                 else
-                    callback new err.RqlDriverError "Found "+key+" which is not a valid option. valid options are {useOutdated: <bool>, noreply: <bool>, timeFormat: <string>, groupFormat: <string>, binaryFormat: <string>, profile: <bool>, durability: <string>, arrayLimit: <number>}."
+                    callback err.RqlDriverError "Found "+key+" which is not a valid option. valid options are {useOutdated: <bool>, noreply: <bool>, timeFormat: <string>, groupFormat: <string>, binaryFormat: <string>, profile: <bool>, durability: <string>, arrayLimit: <number>}."
         if net.isConnection(connection) is false
-            callback new err.RqlDriverError "First argument to `run` must be an open connection."
+            callback err.RqlDriverError "First argument to `run` must be an open connection."
 
         if options.noreply == true or type(callback) == 'function'
             status, err = pcall(connection._start @, callback, options)
@@ -97,28 +97,28 @@ class TermBase
     toString: -> err.printQuery(@)
 
 class RDBVal extends TermBase
-    eq: (...) -> new Eq {}, @, unpack arg
-    ne: (...) -> new Ne {}, @, unpack arg
-    lt: (...) -> new Lt {}, @, unpack arg
-    le: (...) -> new Le {}, @, unpack arg
-    gt: (...) -> new Gt {}, @, unpack arg
-    ge: (...) -> new Ge {}, @, unpack arg
+    eq: (...) -> Eq {}, @, unpack arg
+    ne: (...) -> Ne {}, @, unpack arg
+    lt: (...) -> Lt {}, @, unpack arg
+    le: (...) -> Le {}, @, unpack arg
+    gt: (...) -> Gt {}, @, unpack arg
+    ge: (...) -> Ge {}, @, unpack arg
 
-    not: (...) -> new Not {}, @, unpack arg
+    not: (...) -> Not {}, @, unpack arg
 
-    add: (...) -> new Add {}, @, unpack arg
-    sub: (...) -> new Sub {}, @, unpack arg
-    mul: (...) -> new Mul {}, @, unpack arg
-    div: (...) -> new Div {}, @, unpack arg
-    mod: (...) -> new Mod {}, @, unpack arg
+    add: (...) -> Add {}, @, unpack arg
+    sub: (...) -> Sub {}, @, unpack arg
+    mul: (...) -> Mul {}, @, unpack arg
+    div: (...) -> Div {}, @, unpack arg
+    mod: (...) -> Mod {}, @, unpack arg
 
-    append: (...) -> new Append {}, @, unpack arg
-    prepend: (...) -> new Prepend {}, @, unpack arg
-    difference: (...) -> new Difference {}, @, unpack arg
-    setInsert: (...) -> new SetInsert {}, @, unpack arg
-    setUnion: (...) -> new SetUnion {}, @, unpack arg
-    setIntersection: (...) -> new SetIntersection {}, @, unpack arg
-    setDifference: (...) -> new SetDifference {}, @, unpack arg
+    append: (...) -> Append {}, @, unpack arg
+    prepend: (...) -> Prepend {}, @, unpack arg
+    difference: (...) -> Difference {}, @, unpack arg
+    setInsert: (...) -> SetInsert {}, @, unpack arg
+    setUnion: (...) -> SetUnion {}, @, unpack arg
+    setIntersection: (...) -> SetIntersection {}, @, unpack arg
+    setDifference: (...) -> SetDifference {}, @, unpack arg
     slice: varar(1, 3, (left, right_or_opts, opts) ->
         if opts
             Slice opts, @, left, right_or_opts
@@ -127,73 +127,73 @@ class RDBVal extends TermBase
             if (Object::toString.call(right_or_opts) == '[object Object]') and not (right_or_opts.instanceof(TermBase)
                 Slice right_or_opts, @, left
             else
-                new Slice {}, @, left, right_or_opts
+                Slice {}, @, left, right_or_opts
         else
-            new Slice {}, @, left
+            Slice {}, @, left
         )
-    skip: (...) -> new Skip {}, @, unpack arg
-    limit: (...) -> new Limit {}, @, unpack arg
-    getField: (...) -> new GetField {}, @, unpack arg
-    contains: (...) -> new Contains {}, @, unpack arg
-    insertAt: (...) -> new InsertAt {}, @, unpack arg
-    spliceAt: (...) -> new SpliceAt {}, @, unpack arg
-    deleteAt: (...) -> new DeleteAt {}, @, unpack arg
-    changeAt: (...) -> new ChangeAt {}, @, unpack arg
-    indexesOf: (...) -> new IndexesOf {}, @, unpack arg
-    hasFields: (...) -> new HasFields {}, @, unpack arg
-    withFields: (...) -> new WithFields {}, @, unpack arg
-    keys: (...) -> new Keys {}, @, unpack arg
-    changes: (...) -> new Changes {}, @, unpack arg
+    skip: (...) -> Skip {}, @, unpack arg
+    limit: (...) -> Limit {}, @, unpack arg
+    getField: (...) -> GetField {}, @, unpack arg
+    contains: (...) -> Contains {}, @, unpack arg
+    insertAt: (...) -> InsertAt {}, @, unpack arg
+    spliceAt: (...) -> SpliceAt {}, @, unpack arg
+    deleteAt: (...) -> DeleteAt {}, @, unpack arg
+    changeAt: (...) -> ChangeAt {}, @, unpack arg
+    indexesOf: (...) -> IndexesOf {}, @, unpack arg
+    hasFields: (...) -> HasFields {}, @, unpack arg
+    withFields: (...) -> WithFields {}, @, unpack arg
+    keys: (...) -> Keys {}, @, unpack arg
+    changes: (...) -> Changes {}, @, unpack arg
 
     -- pluck and without on zero fields are allowed
-    pluck: (...) -> new Pluck {}, @, unpack arg
-    without: (...) -> new Without {}, @, unpack arg
+    pluck: (...) -> Pluck {}, @, unpack arg
+    without: (...) -> Without {}, @, unpack arg
 
-    merge: (...) -> new Merge {}, @, unpack arg
-    between: aropt (left, right, opts) -> new Between opts, @, left, right
-    reduce: (...) -> new Reduce {}, @, unpack arg
-    map: (...) -> new Map {}, @, unpack arg
-    filter: aropt (predicate, opts) -> new Filter opts, @, funcWrap(predicate)
-    concatMap: (...) -> new ConcatMap {}, @, unpack arg
-    distinct: aropt (opts) -> new Distinct opts, @
-    count: (...) -> new Count {}, @, unpack arg
-    union: (...) -> new Union {}, @, unpack arg
-    nth: (...) -> new Nth {}, @, unpack arg
-    bracket: (...) -> new Bracket {}, @, unpack arg
-    match: (...) -> new Match {}, @, unpack arg
-    split: (...) -> new Split {}, @, unpack arg
-    upcase: (...) -> new Upcase {}, @, unpack arg
-    downcase: (...) -> new Downcase {}, @, unpack arg
-    isEmpty: (...) -> new IsEmpty {}, @, unpack arg
-    innerJoin: (...) -> new InnerJoin {}, @, unpack arg
-    outerJoin: (...) -> new OuterJoin {}, @, unpack arg
-    eqJoin: aropt (left_attr, right, opts) -> new EqJoin opts, @, funcWrap(left_attr), right
-    zip: (...) -> new Zip {}, @, unpack arg
-    coerceTo: (...) -> new CoerceTo {}, @, unpack arg
-    ungroup: (...) -> new Ungroup {}, @, unpack arg
-    typeOf: (...) -> new TypeOf {}, @, unpack arg
-    update: aropt (func, opts) -> new Update opts, @, funcWrap(func)
-    delete: aropt (opts) -> new Delete opts, @
-    replace: aropt (func, opts) -> new Replace opts, @, funcWrap(func)
+    merge: (...) -> Merge {}, @, unpack arg
+    between: aropt (left, right, opts) -> Between opts, @, left, right
+    reduce: (...) -> Reduce {}, @, unpack arg
+    map: (...) -> Map {}, @, unpack arg
+    filter: aropt (predicate, opts) -> Filter opts, @, funcWrap(predicate)
+    concatMap: (...) -> ConcatMap {}, @, unpack arg
+    distinct: aropt (opts) -> Distinct opts, @
+    count: (...) -> Count {}, @, unpack arg
+    union: (...) -> Union {}, @, unpack arg
+    nth: (...) -> Nth {}, @, unpack arg
+    bracket: (...) -> Bracket {}, @, unpack arg
+    match: (...) -> Match {}, @, unpack arg
+    split: (...) -> Split {}, @, unpack arg
+    upcase: (...) -> Upcase {}, @, unpack arg
+    downcase: (...) -> Downcase {}, @, unpack arg
+    isEmpty: (...) -> IsEmpty {}, @, unpack arg
+    innerJoin: (...) -> InnerJoin {}, @, unpack arg
+    outerJoin: (...) -> OuterJoin {}, @, unpack arg
+    eqJoin: aropt (left_attr, right, opts) -> EqJoin opts, @, funcWrap(left_attr), right
+    zip: (...) -> Zip {}, @, unpack arg
+    coerceTo: (...) -> CoerceTo {}, @, unpack arg
+    ungroup: (...) -> Ungroup {}, @, unpack arg
+    typeOf: (...) -> TypeOf {}, @, unpack arg
+    update: aropt (func, opts) -> Update opts, @, funcWrap(func)
+    delete: aropt (opts) -> Delete opts, @
+    replace: aropt (func, opts) -> Replace opts, @, funcWrap(func)
     do: (...) ->
-        new FunCall {}, funcWrap(arg[arg.n]), @, unpack args[,arg.n-1]
+        FunCall {}, funcWrap(arg[arg.n]), @, unpack args[,arg.n-1]
 
-    default: (...) -> new Default {}, @, unpack arg
+    default: (...) -> Default {}, @, unpack arg
 
-    or: (...) -> new Any {}, @, unpack arg
-    any: (...) -> new Any {}, @, unpack arg
-    and: (...) -> new All {}, @, unpack arg
-    all: (...) -> new All {}, @, unpack arg
+    or: (...) -> Any {}, @, unpack arg
+    any: (...) -> Any {}, @, unpack arg
+    and: (...) -> All {}, @, unpack arg
+    all: (...) -> All {}, @, unpack arg
 
-    forEach: (...) -> new ForEach {}, @, unpack arg
+    forEach: (...) -> ForEach {}, @, unpack arg
 
-    sum: (...) -> new Sum {}, @, unpack arg
-    avg: (...) -> new Avg {}, @, unpack arg
-    min: (...) -> new Min {}, @, unpack arg
-    max: (...) -> new Max {}, @, unpack arg
+    sum: (...) -> Sum {}, @, unpack arg
+    avg: (...) -> Avg {}, @, unpack arg
+    min: (...) -> Min {}, @, unpack arg
+    max: (...) -> Max {}, @, unpack arg
 
-    info: (...) -> new Info {}, @, unpack arg
-    sample: (...) -> new Sample {}, @, unpack arg
+    info: (...) -> Info {}, @, unpack arg
+    sample: (...) -> Sample {}, @, unpack arg
 
     group: (...) ->
         -- Default if no opts dict provided
@@ -210,7 +210,7 @@ class RDBVal extends TermBase
                 fields = fieldsAndOpts[0...(fieldsAndOpts.length - 1)]
         fields = [funcWrap(field) for field in fields]
 
-        new Group opts, @, unpack fields
+        Group opts, @, unpack fields
 
     orderBy: (...) ->
         -- Default if no opts dict provided
@@ -232,26 +232,26 @@ class RDBVal extends TermBase
                 funcWrap(attr)
         )
 
-        new OrderBy opts, @, unpack attrs
+        OrderBy opts, @, unpack attrs
 
     -- Geo operations
-    toGeojson: (...) -> new ToGeojson {}, @, unpack arg
-    distance: aropt (g, opts) -> new Distance opts, @, g
-    intersects: (...) -> new Intersects {}, @, unpack arg
-    includes: (...) -> new Includes {}, @, unpack arg
-    fill: (...) -> new Fill {}, @, unpack arg
+    toGeojson: (...) -> ToGeojson {}, @, unpack arg
+    distance: aropt (g, opts) -> Distance opts, @, g
+    intersects: (...) -> Intersects {}, @, unpack arg
+    includes: (...) -> Includes {}, @, unpack arg
+    fill: (...) -> Fill {}, @, unpack arg
 
     -- Database operations
 
-    tableCreate: aropt (tblName, opts) -> new TableCreate opts, @, tblName
-    tableDrop: (...) -> new TableDrop {}, @, unpack arg
-    tableList: (...) -> new TableList {}, @, unpack arg
+    tableCreate: aropt (tblName, opts) -> TableCreate opts, @, tblName
+    tableDrop: (...) -> TableDrop {}, @, unpack arg
+    tableList: (...) -> TableList {}, @, unpack arg
 
-    table: aropt (tblName, opts) -> new Table opts, @, tblName
+    table: aropt (tblName, opts) -> Table opts, @, tblName
 
     -- Table operations
 
-    get: (...) -> new Get {}, @, unpack arg
+    get: (...) -> Get {}, @, unpack arg
 
     getAll: (...) ->
         -- Default if no opts dict provided
@@ -266,51 +266,51 @@ class RDBVal extends TermBase
                 opts = perhapsOptDict
                 keys = keysAndOpts[0...(keysAndOpts.length - 1)]
 
-        new GetAll opts, @, unpack keys
+        GetAll opts, @, unpack keys
 
-    insert: aropt (doc, opts) -> new Insert opts, @, rethinkdb.expr(doc)
+    insert: aropt (doc, opts) -> Insert opts, @, rethinkdb.expr(doc)
     indexCreate: varar(1, 3, (name, defun_or_opts, opts) ->
         if opts?
-            new IndexCreate opts, @, name, funcWrap(defun_or_opts)
+            IndexCreate opts, @, name, funcWrap(defun_or_opts)
         else if defun_or_opts?
             -- FIXME?
             if (Object::toString.call(defun_or_opts) is '[object Object]') and not (defun_or_opts instanceof Function) and not (defun_or_opts instanceof TermBase)
-                new IndexCreate defun_or_opts, @, name
+                IndexCreate defun_or_opts, @, name
             else
-                new IndexCreate {}, @, name, funcWrap(defun_or_opts)
+                IndexCreate {}, @, name, funcWrap(defun_or_opts)
         else
-            new IndexCreate {}, @, name
+            IndexCreate {}, @, name
         )
 
-    indexDrop: (...) -> new IndexDrop {}, @, unpack arg
-    indexList: (...) -> new IndexList {}, @, unpack arg
-    indexStatus: (...) -> new IndexStatus {}, @, unpack arg
-    indexWait: (...) -> new IndexWait {}, @, unpack arg
-    indexRename: aropt (old_name, new_name, opts) -> new IndexRename opts, @, old_name, new_name
+    indexDrop: (...) -> IndexDrop {}, @, unpack arg
+    indexList: (...) -> IndexList {}, @, unpack arg
+    indexStatus: (...) -> IndexStatus {}, @, unpack arg
+    indexWait: (...) -> IndexWait {}, @, unpack arg
+    indexRename: aropt (old_name, new_name, opts) -> IndexRename opts, @, old_name, new_name
 
-    sync: (...) -> new Sync {}, @, unpack arg
+    sync: (...) -> Sync {}, @, unpack arg
 
-    toISO8601: (...) -> new ToISO8601 {}, @, unpack arg
-    toEpochTime: (...) -> new ToEpochTime {}, @, unpack arg
-    inTimezone: (...) -> new InTimezone {}, @, unpack arg
-    during: aropt (t2, t3, opts) -> new During opts, @, t2, t3
-    date: (...) -> new RQLDate {}, @, unpack arg
-    timeOfDay: (...) -> new TimeOfDay {}, @, unpack arg
-    timezone: (...) -> new Timezone {}, @, unpack arg
+    toISO8601: (...) -> ToISO8601 {}, @, unpack arg
+    toEpochTime: (...) -> ToEpochTime {}, @, unpack arg
+    inTimezone: (...) -> InTimezone {}, @, unpack arg
+    during: aropt (t2, t3, opts) -> During opts, @, t2, t3
+    date: (...) -> RQLDate {}, @, unpack arg
+    timeOfDay: (...) -> TimeOfDay {}, @, unpack arg
+    timezone: (...) -> Timezone {}, @, unpack arg
 
-    year: (...) -> new Year {}, @, unpack arg
-    month: (...) -> new Month {}, @, unpack arg
-    day: (...) -> new Day {}, @, unpack arg
-    dayOfWeek: (...) -> new DayOfWeek {}, @, unpack arg
-    dayOfYear: (...) -> new DayOfYear {}, @, unpack arg
-    hours: (...) -> new Hours {}, @, unpack arg
-    minutes: (...) -> new Minutes {}, @, unpack arg
-    seconds: (...) -> new Seconds {}, @, unpack arg
+    year: (...) -> Year {}, @, unpack arg
+    month: (...) -> Month {}, @, unpack arg
+    day: (...) -> Day {}, @, unpack arg
+    dayOfWeek: (...) -> DayOfWeek {}, @, unpack arg
+    dayOfYear: (...) -> DayOfYear {}, @, unpack arg
+    hours: (...) -> Hours {}, @, unpack arg
+    minutes: (...) -> Minutes {}, @, unpack arg
+    seconds: (...) -> Seconds {}, @, unpack arg
 
-    uuid: (...) -> new UUID {}, @, unpack arg
+    uuid: (...) -> UUID {}, @, unpack arg
 
-    getIntersecting: aropt (g, opts) -> new GetIntersecting opts, @, g
-    getNearest: aropt (g, opts) -> new GetNearest opts, @, g
+    getIntersecting: aropt (g, opts) -> GetIntersecting opts, @, g
+    getNearest: aropt (g, opts) -> GetNearest opts, @, g
 
 class DatumTerm extends RDBVal
     args: []
@@ -946,7 +946,7 @@ class Func extends RDBOp
         i = 0
         while i < func.length
             argNums.push Func.nextVarId
-            args.push new Var {}, Func.nextVarId
+            args.push Var {}, Func.nextVarId
             Func.nextVarId++
             i++
 
@@ -954,7 +954,7 @@ class Func extends RDBOp
         if body is undefined
             error(new err.RqlDriverError "Anonymous function returned `undefined`. Did you forget a `return`?")
 
-        argsArr = new MakeArray({}, unpack argNums)
+        argsArr = MakeArray({}, unpack argNums)
         return super(optargs, argsArr, body)
 
     compose: (args) ->
@@ -1126,11 +1126,11 @@ rethinkdb.expr = varar 1, 2, (val, nestingDepth=20) ->
     else if val instanceof TermBase
         val
     else if val instanceof Function
-        new Func {}, val
+        Func {}, val
     else if val instanceof Date
-        new ISO8601 {}, val.toISOString()
+        ISO8601 {}, val.toISOString()
     else if val instanceof Buffer
-        new Binary val
+        Binary val
     else if Array.isArray val
         val = (rethinkdb.expr(v, nestingDepth - 1) for v in val)
         MakeArray {}, unpack val
@@ -1139,15 +1139,15 @@ rethinkdb.expr = varar 1, 2, (val, nestingDepth=20) ->
     else if Object::toString.call(val) == '[object Object]'
         MakeObject val, nestingDepth
     else
-        new DatumTerm val
+        DatumTerm val
 
-rethinkdb.js = aropt (jssrc, opts) -> new JavaScript opts, jssrc
+rethinkdb.js = aropt (jssrc, opts) -> JavaScript opts, jssrc
 
-rethinkdb.http = aropt (url, opts) -> new Http opts, url
+rethinkdb.http = aropt (url, opts) -> Http opts, url
 
-rethinkdb.json = (...) -> new Json {}, unpack arg
+rethinkdb.json = (...) -> Json {}, unpack arg
 
-rethinkdb.error = (...) -> new UserError {}, unpack arg
+rethinkdb.error = (...) -> UserError {}, unpack arg
 
 rethinkdb.random = (...) ->
         -- Default if no opts dict provided
@@ -1161,95 +1161,95 @@ rethinkdb.random = (...) ->
             opts = perhapsOptDict
             limits = limitsAndOpts[0...(limitsAndOpts.length - 1)]
 
-        new Random opts, unpack limits
+        Random opts, unpack limits
 
-rethinkdb.binary = ar (data) -> new Binary data
+rethinkdb.binary = ar (data) -> Binary data
 
-rethinkdb.row = new ImplicitVar {}
+rethinkdb.row = ImplicitVar {}
 
-rethinkdb.table = aropt (tblName, opts) -> new Table opts, tblName
+rethinkdb.table = aropt (tblName, opts) -> Table opts, tblName
 
-rethinkdb.db = (...) -> new Db {}, unpack arg
+rethinkdb.db = (...) -> Db {}, unpack arg
 
-rethinkdb.dbCreate = (...) -> new DbCreate {}, unpack arg
-rethinkdb.dbDrop = (...) -> new DbDrop {}, unpack arg
-rethinkdb.dbList = (...) -> new DbList {}, unpack arg
+rethinkdb.dbCreate = (...) -> DbCreate {}, unpack arg
+rethinkdb.dbDrop = (...) -> DbDrop {}, unpack arg
+rethinkdb.dbList = (...) -> DbList {}, unpack arg
 
-rethinkdb.tableCreate = aropt (tblName, opts) -> new TableCreate opts, tblName
-rethinkdb.tableDrop = (...) -> new TableDrop {}, unpack arg
-rethinkdb.tableList = (...) -> new TableList {}, unpack arg
+rethinkdb.tableCreate = aropt (tblName, opts) -> TableCreate opts, tblName
+rethinkdb.tableDrop = (...) -> TableDrop {}, unpack arg
+rethinkdb.tableList = (...) -> TableList {}, unpack arg
 
 rethinkdb.do = varar 1, nil, (...) ->
-    new FunCall {}, funcWrap(arg[arg.n]), unpack *arg[,arg.n - 1]
+    FunCall {}, funcWrap(arg[arg.n]), unpack *arg[,arg.n - 1]
 
-rethinkdb.branch = (...) -> new Branch {}, unpack arg
+rethinkdb.branch = (...) -> Branch {}, unpack arg
 
-rethinkdb.asc = (...) -> new Asc {}, unpack arg
-rethinkdb.desc = (...) -> new Desc {}, unpack arg
+rethinkdb.asc = (...) -> Asc {}, unpack arg
+rethinkdb.desc = (...) -> Desc {}, unpack arg
 
-rethinkdb.eq = (...) -> new Eq {}, unpack arg
-rethinkdb.ne = (...) -> new Ne {}, unpack arg
-rethinkdb.lt = (...) -> new Lt {}, unpack arg
-rethinkdb.le = (...) -> new Le {}, unpack arg
-rethinkdb.gt = (...) -> new Gt {}, unpack arg
-rethinkdb.ge = (...) -> new Ge {}, unpack arg
-rethinkdb.or = (...) -> new Any {}, unpack arg
-rethinkdb.any = (...) -> new Any {}, unpack arg
-rethinkdb.and = (...) -> new All {}, unpack arg
-rethinkdb.all = (...) -> new All {}, unpack arg
+rethinkdb.eq = (...) -> Eq {}, unpack arg
+rethinkdb.ne = (...) -> Ne {}, unpack arg
+rethinkdb.lt = (...) -> Lt {}, unpack arg
+rethinkdb.le = (...) -> Le {}, unpack arg
+rethinkdb.gt = (...) -> Gt {}, unpack arg
+rethinkdb.ge = (...) -> Ge {}, unpack arg
+rethinkdb.or = (...) -> Any {}, unpack arg
+rethinkdb.any = (...) -> Any {}, unpack arg
+rethinkdb.and = (...) -> All {}, unpack arg
+rethinkdb.all = (...) -> All {}, unpack arg
 
-rethinkdb.not = (...) -> new Not {}, unpack arg
+rethinkdb.not = (...) -> Not {}, unpack arg
 
-rethinkdb.add = (...) -> new Add {}, unpack arg
-rethinkdb.sub = (...) -> new Sub {}, unpack arg
-rethinkdb.div = (...) -> new Div {}, unpack arg
-rethinkdb.mul = (...) -> new Mul {}, unpack arg
-rethinkdb.mod = (...) -> new Mod {}, unpack arg
+rethinkdb.add = (...) -> Add {}, unpack arg
+rethinkdb.sub = (...) -> Sub {}, unpack arg
+rethinkdb.div = (...) -> Div {}, unpack arg
+rethinkdb.mul = (...) -> Mul {}, unpack arg
+rethinkdb.mod = (...) -> Mod {}, unpack arg
 
-rethinkdb.typeOf = (...) -> new TypeOf {}, unpack arg
-rethinkdb.info = (...) -> new Info {}, unpack arg
+rethinkdb.typeOf = (...) -> TypeOf {}, unpack arg
+rethinkdb.info = (...) -> Info {}, unpack arg
 
-rethinkdb.literal = (...) -> new Literal {}, unpack arg
+rethinkdb.literal = (...) -> Literal {}, unpack arg
 
-rethinkdb.ISO8601 = aropt (str, opts) -> new ISO8601 opts, str
-rethinkdb.epochTime = (...) -> new EpochTime {}, unpack arg
-rethinkdb.now = (...) -> new Now {}, unpack arg
-rethinkdb.time = (...) -> new Time {}, unpack arg
+rethinkdb.ISO8601 = aropt (str, opts) -> ISO8601 opts, str
+rethinkdb.epochTime = (...) -> EpochTime {}, unpack arg
+rethinkdb.now = (...) -> Now {}, unpack arg
+rethinkdb.time = (...) -> Time {}, unpack arg
 
-rethinkdb.monday = new (class extends RDBOp then tt: protoTermType.MONDAY)()
-rethinkdb.tuesday = new (class extends RDBOp then tt: protoTermType.TUESDAY)()
-rethinkdb.wednesday = new (class extends RDBOp then tt: protoTermType.WEDNESDAY)()
-rethinkdb.thursday = new (class extends RDBOp then tt: protoTermType.THURSDAY)()
-rethinkdb.friday = new (class extends RDBOp then tt: protoTermType.FRIDAY)()
-rethinkdb.saturday = new (class extends RDBOp then tt: protoTermType.SATURDAY)()
-rethinkdb.sunday = new (class extends RDBOp then tt: protoTermType.SUNDAY)()
+rethinkdb.monday = (class extends RDBOp then tt: protoTermType.MONDAY)()
+rethinkdb.tuesday = (class extends RDBOp then tt: protoTermType.TUESDAY)()
+rethinkdb.wednesday = (class extends RDBOp then tt: protoTermType.WEDNESDAY)()
+rethinkdb.thursday = (class extends RDBOp then tt: protoTermType.THURSDAY)()
+rethinkdb.friday = (class extends RDBOp then tt: protoTermType.FRIDAY)()
+rethinkdb.saturday = (class extends RDBOp then tt: protoTermType.SATURDAY)()
+rethinkdb.sunday = (class extends RDBOp then tt: protoTermType.SUNDAY)()
 
-rethinkdb.january = new (class extends RDBOp then tt: protoTermType.JANUARY)()
-rethinkdb.february = new (class extends RDBOp then tt: protoTermType.FEBRUARY)()
-rethinkdb.march = new (class extends RDBOp then tt: protoTermType.MARCH)()
-rethinkdb.april = new (class extends RDBOp then tt: protoTermType.APRIL)()
-rethinkdb.may = new (class extends RDBOp then tt: protoTermType.MAY)()
-rethinkdb.june = new (class extends RDBOp then tt: protoTermType.JUNE)()
-rethinkdb.july = new (class extends RDBOp then tt: protoTermType.JULY)()
-rethinkdb.august = new (class extends RDBOp then tt: protoTermType.AUGUST)()
-rethinkdb.september = new (class extends RDBOp then tt: protoTermType.SEPTEMBER)()
-rethinkdb.october = new (class extends RDBOp then tt: protoTermType.OCTOBER)()
-rethinkdb.november = new (class extends RDBOp then tt: protoTermType.NOVEMBER)()
-rethinkdb.december = new (class extends RDBOp then tt: protoTermType.DECEMBER)()
+rethinkdb.january = (class extends RDBOp then tt: protoTermType.JANUARY)()
+rethinkdb.february = (class extends RDBOp then tt: protoTermType.FEBRUARY)()
+rethinkdb.march = (class extends RDBOp then tt: protoTermType.MARCH)()
+rethinkdb.april = (class extends RDBOp then tt: protoTermType.APRIL)()
+rethinkdb.may = (class extends RDBOp then tt: protoTermType.MAY)()
+rethinkdb.june = (class extends RDBOp then tt: protoTermType.JUNE)()
+rethinkdb.july = (class extends RDBOp then tt: protoTermType.JULY)()
+rethinkdb.august = (class extends RDBOp then tt: protoTermType.AUGUST)()
+rethinkdb.september = (class extends RDBOp then tt: protoTermType.SEPTEMBER)()
+rethinkdb.october = (class extends RDBOp then tt: protoTermType.OCTOBER)()
+rethinkdb.november = (class extends RDBOp then tt: protoTermType.NOVEMBER)()
+rethinkdb.december = (class extends RDBOp then tt: protoTermType.DECEMBER)()
 
-rethinkdb.object = (...) -> new Object_ {}, unpack arg
+rethinkdb.object = (...) -> Object_ {}, unpack arg
 
-rethinkdb.args = (...) -> new Args {}, unpack arg
+rethinkdb.args = (...) -> Args {}, unpack arg
 
-rethinkdb.geojson = (...) -> new Geojson {}, unpack arg
-rethinkdb.point = (...) -> new Point {}, unpack arg
-rethinkdb.line = (...) -> new Line {}, unpack arg
-rethinkdb.polygon = (...) -> new Polygon {}, unpack arg
-rethinkdb.intersects = (...) -> new Intersects {}, unpack arg
-rethinkdb.distance = aropt (g1, g2, opts) -> new Distance opts, g1, g2
-rethinkdb.circle = aropt (cen, rad, opts) -> new Circle opts, cen, rad
+rethinkdb.geojson = (...) -> Geojson {}, unpack arg
+rethinkdb.point = (...) -> Point {}, unpack arg
+rethinkdb.line = (...) -> Line {}, unpack arg
+rethinkdb.polygon = (...) -> Polygon {}, unpack arg
+rethinkdb.intersects = (...) -> Intersects {}, unpack arg
+rethinkdb.distance = aropt (g1, g2, opts) -> Distance opts, g1, g2
+rethinkdb.circle = aropt (cen, rad, opts) -> Circle opts, cen, rad
 
-rethinkdb.uuid = (...) -> new UUID {}, unpack arg
+rethinkdb.uuid = (...) -> UUID {}, unpack arg
 
 -- Export all names defined on rethinkdb
 module.exports = rethinkdb

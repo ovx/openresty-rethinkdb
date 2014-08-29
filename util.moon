@@ -39,7 +39,7 @@ module.exports.aropt = (fun) -> (...) ->
 
 module.exports.toArrayBuffer = (node_buffer) ->
     -- Convert from node buffer to array buffer
-    arr = new Uint8Array new ArrayBuffer node_buffer.length
+    arr = Uint8Array ArrayBuffer node_buffer.length
     for value,i in node_buffer
         arr[i] = value
     return arr.buffer
@@ -105,7 +105,7 @@ mkAtom = (response, opts) -> recursivelyConvertPseudotype(response.r[0], opts)
 mkSeq = (response, opts) -> recursivelyConvertPseudotype(response.r, opts)
 
 mkErr = (ErrClass, response, root) ->
-    new ErrClass(mkAtom(response), root, response.b)
+    ErrClass(mkAtom(response), root, response.b)
 
 module.exports.recursivelyConvertPseudotype = recursivelyConvertPseudotype
 module.exports.mkAtom = mkAtom

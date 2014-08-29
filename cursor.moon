@@ -103,7 +103,7 @@ class IterableResult
                 -- We prefetch things here, set `is 0` to avoid prefectch
                 if @_endFlag == true
                     cb = @_getCallback()
-                    cb new err.RqlDriverError "No more rows in the cursor."
+                    cb err.RqlDriverError "No more rows in the cursor."
                 else if @_responses.length <= 1
                     @_promptCont()
 
@@ -143,7 +143,7 @@ class IterableResult
                     else
                         @_responses.shift()
                         cb = @_getCallback()
-                        cb new err.RqlDriverError "Unknown response type for cursor"
+                        cb err.RqlDriverError "Unknown response type for cursor"
 
     _promptCont: ->
         -- Let's ask the server for more data if we haven't already
@@ -219,7 +219,7 @@ class IterableResult
         fn(cb)
 
     _makeEmitter: ->
-        @emitter = new EventEmitter
+        @emitter = EventEmitter
         @each = ->
             error(new err.RqlDriverError "You cannot use the cursor interface and the EventEmitter interface at the same time.")
         @next = ->
@@ -324,7 +324,7 @@ class ArrayResult extends IterableResult
                 else
                     cb(nil, self[self.__index++])
             else
-                cb new err.RqlDriverError "No more rows in the cursor."
+                cb err.RqlDriverError "No more rows in the cursor."
 
         fn(cb)
 
