@@ -40,7 +40,7 @@ class RqlQueryPrinter
             tree = {carrotify(composeTerm(term))}
         else
             tree = composeCarrots(term, frames)
-        (joinTree tree).replace(/[^\^]/g, ' ')
+        joinTree(tree).gsub('[^\^]', ' ')
 
     composeCarrots = (term, frames) ->
         frame = frames.shift()
@@ -72,7 +72,7 @@ class RqlQueryPrinter
         for term in tree
             if Array.isArray term
                 if term.length == 2 and term[0] == carrotMarker
-                    str += (joinTree term[1]).replace(/./g, '^')
+                    str += joinTree(term[1]).gsub('.', '^')
                 else
                     str += joinTree term
             else
