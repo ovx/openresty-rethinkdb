@@ -58,7 +58,7 @@ class TermBase
         -- Valid syntaxes are
         -- connection, callback
         -- connection, options, callback
-        -- connection, null, callback
+        -- connection, nil, callback
 
         if net.isConnection(connection) == true
             -- Handle run(connection, callback)
@@ -1179,7 +1179,7 @@ rethinkdb.tableCreate = aropt (tblName, opts) -> new TableCreate opts, tblName
 rethinkdb.tableDrop = (args...) -> new TableDrop {}, args...
 rethinkdb.tableList = (args...) -> new TableList {}, args...
 
-rethinkdb.do = varar 1, null, (args...) ->
+rethinkdb.do = varar 1, nil, (args...) ->
     new FunCall {}, funcWrap(args[-1..][0]), args[...-1]...
 
 rethinkdb.branch = (args...) -> new Branch {}, args...

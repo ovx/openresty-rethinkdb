@@ -26,7 +26,7 @@ module.exports.aropt = (fun) -> (args...) ->
     perhapsOptDict = args[expectedPosArgs]
 
     if perhapsOptDict and (Object::toString.call(perhapsOptDict) isnt '[object Object]')
-        perhapsOptDict = null
+        perhapsOptDict = nil
 
     numPosArgs = args.length - (if perhapsOptDict then 1 else 0)
 

@@ -31,7 +31,7 @@ class IterableResult
         @_endFlag = false
         @_contFlag = false
         @_closeAsap = false
-        @_cont = null
+        @_cont = nil
         @_cbQueue = []
 
         @next = @_next
@@ -91,7 +91,7 @@ class IterableResult
             @_responses.shift()
             @_responseIndex = 0
 
-        cb null, row
+        cb nil, row
 
     bufferEmpty: ->
         @_responses.length == 0 or @_responses[0].r.length <= @_responseIndex
@@ -195,7 +195,7 @@ class IterableResult
                     else
                         cb(err)
                 else
-                    stopFlag = cb(null, data) == false
+                    stopFlag = cb(nil, data) == false
                     @_next nextCb
             else if onFinished
                 onFinished()
@@ -212,7 +212,7 @@ class IterableResult
                     arr.push(row)
 
             onFinish = (err, ar) =>
-                cb null, arr
+                cb nil, arr
 
             @each eachCb, onFinish
 
@@ -320,9 +320,9 @@ class ArrayResult extends IterableResult
                 if self.__index%@stackSize == @stackSize-1
                     -- Reset the stack
                     setImmediate ->
-                        cb(null, self[self.__index++])
+                        cb(nil, self[self.__index++])
                 else
-                    cb(null, self[self.__index++])
+                    cb(nil, self[self.__index++])
             else
                 cb new err.RqlDriverError "No more rows in the cursor."
 
@@ -333,9 +333,9 @@ class ArrayResult extends IterableResult
         fn = (cb) =>
             -- IterableResult.toArray would create a copy
             if @__index
-                cb(null, @.slice(@__index, @.length))
+                cb(nil, @.slice(@__index, @.length))
             else
-                cb(null, @)
+                cb(nil, @)
 
         fn(cb)
 

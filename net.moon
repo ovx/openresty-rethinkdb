@@ -57,7 +57,7 @@ class Connection extends events.EventEmitter
         conCallback = =>
             @removeListener 'error', errCallback
             @open = true
-            callback null, @
+            callback nil, @
         @once 'connect', conCallback
 
 
@@ -117,32 +117,32 @@ class Connection extends events.EventEmitter
                             response = cursors.makeIterable response
                         if profile
                             response = {profile: profile, value: response}
-                        cb null, response
+                        cb nil, response
                         @_delQuery(token)
                     when protoResponseType.SUCCESS_PARTIAL
                         cursor = new cursors.Cursor @, token, opts, root
                         @outstandingCallbacks[token].cursor = cursor
                         if profile
-                            cb null, {profile: profile, value: cursor._addResponse(response)}
+                            cb nil, {profile: profile, value: cursor._addResponse(response)}
                         else
-                            cb null, cursor._addResponse(response)
+                            cb nil, cursor._addResponse(response)
                     when protoResponseType.SUCCESS_SEQUENCE
                         cursor = new cursors.Cursor @, token, opts, root
                         @_delQuery(token)
                         if profile
-                            cb null, {profile: profile, value: cursor._addResponse(response)}
+                            cb nil, {profile: profile, value: cursor._addResponse(response)}
                         else
-                            cb null, cursor._addResponse(response)
+                            cb nil, cursor._addResponse(response)
                     when protoResponseType.SUCCESS_FEED
                         feed = new cursors.Feed @, token, opts, root
                         @outstandingCallbacks[token].feed = feed
                         if profile
-                            cb null, {profile: profile, value: feed._addResponse(response)}
+                            cb nil, {profile: profile, value: feed._addResponse(response)}
                         else
-                            cb null, feed._addResponse(response)
+                            cb nil, feed._addResponse(response)
                     when protoResponseType.WAIT_COMPLETE
                         @_delQuery(token)
-                        cb null, null
+                        cb nil, nil
                     else
                         cb new err.RqlDriverError "Unknown response type"
         else
@@ -157,13 +157,13 @@ class Connection extends events.EventEmitter
             cb = callback
         else if Object::toString.call(optsOrCallback) == '[object Object]'
             opts = optsOrCallback
-            cb = null
+            cb = nil
         else if typeof optsOrCallback == 'function'
             opts = {}
             cb = optsOrCallback
         else
             opts = optsOrCallback
-            cb = null
+            cb = nil
 
         for own key of opts
             unless key in ['noreplyWait']
@@ -195,7 +195,7 @@ class Connection extends events.EventEmitter
         query.token = token
 
         -- Save callback
-        @outstandingCallbacks[token] = {cb:callback, root:null, opts:null}
+        @outstandingCallbacks[token] = {cb:callback, root:nil, opts:nil}
         @_sendQuery(query)
 
     cancel: ar () ->
@@ -268,7 +268,7 @@ class Connection extends events.EventEmitter
         @_sendQuery(query)
 
         if opts.noreply and opts.noreply and typeof(cb) == 'function'
-            cb null -- There is no error and result is `nil`
+            cb nil -- There is no error and result is `nil`
 
     _continueQuery: (token) ->
         query =
@@ -371,7 +371,7 @@ class TcpConnection extends Connection
             cb = callback
         else if Object::toString.call(optsOrCallback) == '[object Object]'
             opts = optsOrCallback
-            cb = null
+            cb = nil
         else if typeof optsOrCallback == "function"
             opts = {}
             cb = optsOrCallback
@@ -440,8 +440,8 @@ class HttpConnection extends Connection
         xhr = new XMLHttpRequest
         xhr.open("POST", "#{@_url}close-connection?conn_id=#{@_connId}", true)
         xhr.send()
-        @_url = null
-        @_connId = null
+        @_url = nil
+        @_connId = nil
         super()
 
     close: (varar 0, 2, (optsOrCallback, callback) ->
@@ -450,7 +450,7 @@ class HttpConnection extends Connection
             cb = callback
         else if Object::toString.call(optsOrCallback) == '[object Object]'
             opts = optsOrCallback
-            cb = null
+            cb = nil
         else
             opts = {}
             cb = optsOrCallback
