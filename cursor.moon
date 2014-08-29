@@ -179,9 +179,9 @@ class IterableResult
 
 
     _each: varar(1, 2, (cb, onFinished) ->
-        unless typeof cb == 'function'
+        unless type(cb) == 'function'
             error(err.RqlDriverError "First argument to each must be a function.")
-        if onFinished and typeof onFinished isnt 'function'
+        if onFinished and type(onFinished) != 'function'
             error(err.RqlDriverError "Optional second argument to each must be a function.")
 
         stopFlag = false

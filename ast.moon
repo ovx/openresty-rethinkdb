@@ -62,7 +62,7 @@ class TermBase
 
         if net.isConnection(connection) == true
             -- Handle run(connection, callback)
-            if typeof options == "function"
+            if type(options) == "function"
                 unless callback
                     callback = options
                     options = {}
@@ -89,14 +89,14 @@ class TermBase
         if net.isConnection(connection) is false
             callback new err.RqlDriverError "First argument to `run` must be an open connection."
 
-        if options.noreply is true or typeof callback is 'function'
+        if options.noreply == true or type(callback) == 'function'
             status, err = pcall(connection._start @, callback, options)
             unless status
                 -- It was decided that, if we can, we prefer to invoke the callback
                 -- with any errors rather than throw them as normal exceptions.
                 -- Thus we catch errors here and invoke the callback instead of
                 -- letting the error bubble up.
-                if typeof(callback) is 'function'
+                if type(callback) == 'function'
                     callback(err)
 
     toString: -> err.printQuery(@)

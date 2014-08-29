@@ -158,7 +158,7 @@ class Connection extends events.EventEmitter
         else if Object::toString.call(optsOrCallback) == '[object Object]'
             opts = optsOrCallback
             cb = nil
-        else if typeof optsOrCallback == 'function'
+        else if type(optsOrCallback) == 'function'
             opts = {}
             cb = optsOrCallback
         else
@@ -205,7 +205,7 @@ class Connection extends events.EventEmitter
         if callback
             opts = optsOrCallback
             cb = callback
-        else if typeof optsOrCallback == "function"
+        else if type(optsOrCallback) == "function"
             opts = {}
             cb = optsOrCallback
         else
@@ -267,7 +267,7 @@ class Connection extends events.EventEmitter
 
         @_sendQuery(query)
 
-        if opts.noreply and opts.noreply and typeof(cb) == 'function'
+        if opts.noreply and type(cb) == 'function'
             cb nil -- There is no error and result is `nil`
 
     _continueQuery: (token) ->
@@ -372,7 +372,7 @@ class TcpConnection extends Connection
         else if Object::toString.call(optsOrCallback) == '[object Object]'
             opts = optsOrCallback
             cb = nil
-        else if typeof optsOrCallback == "function"
+        else if type(optsOrCallback) == "function"
             opts = {}
             cb = optsOrCallback
         else
@@ -454,7 +454,7 @@ class HttpConnection extends Connection
         else
             opts = {}
             cb = optsOrCallback
-        unless not cb or typeof cb == 'function'
+        unless not cb or type(cb) == 'function'
             error(err.RqlDriverError "Final argument to `close` must be a callback function or object.")
 
         wrappedCb = (args...) =>
@@ -502,7 +502,7 @@ module.exports.isConnection = (connection) ->
 
 -- The main function of this module
 module.exports.connect = varar 0, 2, (hostOrCallback, callback) ->
-    if typeof hostOrCallback == 'function'
+    if type(hostOrCallback) == 'function'
         host = {}
         callback = hostOrCallback
     else
