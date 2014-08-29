@@ -1132,7 +1132,7 @@ rethinkdb.expr = varar 1, 2, (val, nestingDepth=20) ->
     else if val instanceof Buffer
         Binary val
     else if Array.isArray val
-        val = (rethinkdb.expr(v, nestingDepth - 1) for v in val)
+        val = [rethinkdb.expr(v, nestingDepth - 1) for v in val]
         MakeArray {}, unpack val
     else if typeof(val) == 'number'
         DatumTerm val
