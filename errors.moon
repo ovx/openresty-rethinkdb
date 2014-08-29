@@ -8,7 +8,7 @@ class RqlServerError extends Error
     constructor: (msg, term, frames) ->
         @name = @constructor.name
         @msg = msg
-        @frames = frames[0..]
+        @frames = frames
         if term
             if msg[msg.length-1] == '.'
                 @message = "#{msg.slice(0, msg.length-1)} in:\n#{RqlQueryPrinter::printQuery(term)}\n#{RqlQueryPrinter::printCarrots(term, frames)}"
