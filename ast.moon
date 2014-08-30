@@ -330,7 +330,7 @@ class DatumTerm extends RDBVal
 
     build: ->
         if typeof(@data) == 'number'
-            if !isFinite(@data)
+            unless isFinite(@data)
                 error(TypeError("Illegal non-finite number `" + @data.toString() + "`."))
         @data
 

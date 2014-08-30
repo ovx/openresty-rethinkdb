@@ -52,7 +52,7 @@ convertPseudotype = (obj, opts) ->
             switch opts.timeFormat
                 -- Default is native
                 when 'native', undefined
-                    if not obj['epoch_time']?
+                    unless obj['epoch_time']
                         error(err.RqlDriverError "pseudo-type TIME #{obj} object missing expected field 'epoch_time'.")
 
                     -- We ignore the timezone field of the pseudo-type TIME object. JS dates do not support timezones.

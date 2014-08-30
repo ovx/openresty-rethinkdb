@@ -287,7 +287,7 @@ class Connection extends events.EventEmitter
     _sendQuery: (query) ->
         -- Serialize query to JSON
         data = [query.type]
-        if !(query.query is undefined)
+        if query.query
             data.push(query.query)
             if query.global_optargs and Object.keys(query.global_optargs).length > 0
                 data.push(query.global_optargs)
@@ -296,7 +296,7 @@ class Connection extends events.EventEmitter
 
 
 class TcpConnection extends Connection
-    @isAvailable: () -> !(process.browser)
+    @isAvailable: () -> not (process.browser)
 
     new: (host, callback) ->
         unless TcpConnection.isAvailable()
@@ -304,7 +304,7 @@ class TcpConnection extends Connection
 
         super(host, callback)
 
-        if @rawSocket?
+        if @rawSocket
             @close({noreplyWait: false})
 
         @rawSocket = net.connect @port, @host
@@ -366,7 +366,7 @@ class TcpConnection extends Connection
         @rawSocket.on 'timeout', => @open = false; @emit 'timeout'
 
     close: (varar 0, 2, (optsOrCallback, callback) ->
-        if callback?
+        if callback
             opts = optsOrCallback
             cb = callback
         else if Object::toString.call(optsOrCallback) == '[object Object]'
