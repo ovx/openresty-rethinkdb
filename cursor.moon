@@ -18,7 +18,7 @@ if not setImmediate
 class IterableResult
     stackSize: 100
 
-    constructor: (conn, token, opts, root) ->
+    new: (conn, token, opts, root) ->
         @_conn = conn
         @_token = token
         @_opts = opts
@@ -284,14 +284,14 @@ class IterableResult
 
 
 class Cursor extends IterableResult
-    constructor: ->
+    new: ->
         @_type = protoResponseType.SUCCESS_PARTIAL
         super
 
     toString: ar () -> "[object Cursor]"
 
 class Feed extends IterableResult
-    constructor: ->
+    new: ->
         @_type = protoResponseType.SUCCESS_FEED
         super
 

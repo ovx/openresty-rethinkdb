@@ -26,7 +26,7 @@ class Connection extends events.EventEmitter
     DEFAULT_AUTH_KEY: ''
     DEFAULT_TIMEOUT: 20 -- In seconds
 
-    constructor: (host, callback) ->
+    new: (host, callback) ->
         unless host
             host = {}
         else if typeof host == 'string'
@@ -298,7 +298,7 @@ class Connection extends events.EventEmitter
 class TcpConnection extends Connection
     @isAvailable: () -> !(process.browser)
 
-    constructor: (host, callback) ->
+    new: (host, callback) ->
         unless TcpConnection.isAvailable()
             error(err.RqlDriverError "TCP sockets are not available in this environment")
 
@@ -411,7 +411,7 @@ class HttpConnection extends Connection
     DEFAULT_PROTOCOL: 'http'
 
     @isAvailable: -> typeof XMLHttpRequest isnt "undefined"
-    constructor: (host, callback) ->
+    new: (host, callback) ->
         unless HttpConnection.isAvailable()
             error(err.RqlDriverError "XMLHttpRequest is not available in this environment")
 

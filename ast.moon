@@ -50,7 +50,7 @@ hasImplicit = (args) ->
 
 class TermBase
     showRunWarning: true
-    constructor: ->
+    new: ->
         self = (ar (field) -> self.bracket(field))
         self.__proto__ = @.__proto__
         return self
@@ -316,7 +316,7 @@ class DatumTerm extends RDBVal
     args: []
     optargs: {}
 
-    constructor: (val) ->
+    new: (val) ->
         self = super()
         self.data = val
         return self
@@ -383,7 +383,7 @@ translateOptargs = (optargs) ->
     return result
 
 class RDBOp extends RDBVal
-    constructor: (optargs, ...) ->
+    new: (optargs, ...) ->
         self = super()
         self.args =
             for a,i in arg
@@ -419,7 +419,7 @@ class RDBOp extends RDBVal
             return [args[0], '.', @mt, '(', intspallargs(args[1..], optargs), ')']
 
 class RDBOpWrap extends RDBOp
-    constructor: (optargs, unpack arg) ->
+    new: (optargs, unpack arg) ->
         self = super()
         self.args =
             for arg,i in args
@@ -463,7 +463,7 @@ class MakeObject extends RDBOp
     tt: protoTermType.MAKE_OBJECT
     st: '{...}' -- This is only used by the `undefined` argument checker
 
-    constructor: (obj, nestingDepth=20) ->
+    new: (obj, nestingDepth=20) ->
         self = super({})
         self.optargs = {}
         for key,val in obj
@@ -500,7 +500,7 @@ class Binary extends RDBOp
     tt: protoTermType.BINARY
     st: 'binary'
 
-    constructor: (data) ->
+    new: (data) ->
         if data instanceof TermBase
             self = super({}, data)
         else if data instanceof Buffer
@@ -940,7 +940,7 @@ class Func extends RDBOp
     tt: protoTermType.FUNC
     @nextVarId: 0
 
-    constructor: (optargs, func) ->
+    new: (optargs, func) ->
         args = []
         argNums = []
         i = 0

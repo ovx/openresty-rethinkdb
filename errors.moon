@@ -1,11 +1,11 @@
 class RqlDriverError
-    constructor: (msg) ->
+    new: (msg) ->
         @name = @constructor.name
         @msg = msg
         @message = msg
 
 class RqlServerError
-    constructor: (msg, term, frames) ->
+    new: (msg, term, frames) ->
         @name = @constructor.name
         @msg = msg
         @frames = frames
