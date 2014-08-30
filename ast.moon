@@ -313,7 +313,7 @@ class RDBVal extends TermBase
     getNearest: aropt (g, opts) -> GetNearest opts, @, g
 
 class DatumTerm extends RDBVal
-    args: []
+    args: {}
     optargs: {}
 
     new: (val) ->
@@ -395,7 +395,7 @@ class RDBOp extends RDBVal
         return self
 
     build: ->
-        res = [@tt, []]
+        res = {@tt, {}}
         for arg in @args
             res[1].push(arg.build())
 
@@ -431,7 +431,7 @@ class RDBOpWrap extends RDBOp
         return self
 
 intsp = (seq) ->
-    unless seq[0] then return []
+    unless seq[0] then return {}
     res = [seq[0]]
     for e in seq[1..]
         res.push(', ', e)
@@ -441,7 +441,7 @@ kved = (optargs) ->
     ['{', intsp([k, ': ', v] for k,v in optargs), '}']
 
 intspallargs = (args, optargs) ->
-    argrepr = []
+    argrepr = {}
     if args.length > 0
         argrepr.push(intsp(args))
     if Object.keys(optargs).length > 0
@@ -941,8 +941,8 @@ class Func extends RDBOp
     @nextVarId: 0
 
     new: (optargs, func) ->
-        args = []
-        argNums = []
+        args = {}
+        argNums = {}
         i = 0
         while i < func.length
             argNums.push Func.nextVarId

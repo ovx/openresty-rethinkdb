@@ -24,7 +24,7 @@ class IterableResult
         @_opts = opts
         @_root = root -- current query
 
-        @_responses = []
+        @_responses = {}
         @_responseIndex = 0
         @_outstandingRequests = 1 -- Because we haven't add the response yet
         @_iterations = 0
@@ -32,7 +32,7 @@ class IterableResult
         @_contFlag = false
         @_closeAsap = false
         @_cont = nil
-        @_cbQueue = []
+        @_cbQueue = {}
 
         @next = @_next
         @each = @_each
@@ -204,7 +204,7 @@ class IterableResult
 
     toArray: varar 0, 1, (cb) ->
         fn = (cb) =>
-            arr = []
+            arr = {}
             eachCb = (err, row) =>
                 if err
                     cb err
