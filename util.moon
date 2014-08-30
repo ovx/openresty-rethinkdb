@@ -5,7 +5,7 @@ plural = (number) -> if number == 1 then "" else "s"
 -- Function wrapper that enforces that the function is
 -- called with the correct number of arguments
 module.exports.ar = (fun) -> (...) ->
-    if args.length isnt fun.length
+    if args.length != fun.length
         error(err.RqlDriverError "Expected #{fun.length} argument#{plural(fun.length)} but found #{args.length}.")
     fun(unpack arg)
 
@@ -25,13 +25,13 @@ module.exports.aropt = (fun) -> (...) ->
     expectedPosArgs = fun.length - 1
     perhapsOptDict = args[expectedPosArgs]
 
-    if perhapsOptDict and (Object::toString.call(perhapsOptDict) isnt '[object Object]')
+    if perhapsOptDict and (Object::toString.call(perhapsOptDict) != '[object Object]')
         perhapsOptDict = nil
 
     numPosArgs = args.length - (if perhapsOptDict then 1 else 0)
 
-    if expectedPosArgs isnt numPosArgs
-        if expectedPosArgs isnt 1
+    if expectedPosArgs != numPosArgs
+        if expectedPosArgs != 1
             error(err.RqlDriverError "Expected #{expectedPosArgs} arguments (not including options) but found #{numPosArgs}.")
         else
             error(err.RqlDriverError "Expected #{expectedPosArgs} argument (not including options) but found #{numPosArgs}.")

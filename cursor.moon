@@ -47,7 +47,7 @@ class IterableResult
 
 
         @_outstandingRequests -= 1
-        if response.t isnt @_type
+        if response.t != @_type
             -- We got an error or a SUCCESS_SEQUENCE
             @_endFlag = true
 
@@ -187,7 +187,7 @@ class IterableResult
         stopFlag = false
         self = @
         nextCb = (err, data) =>
-            if stopFlag isnt true
+            if stopFlag != true
                 if err
                     if err.message == 'No more rows in the cursor.'
                         if onFinished
@@ -348,7 +348,7 @@ class ArrayResult extends IterableResult
     makeIterable: (response) ->
         response.__proto__ = {}
         for name, method of ArrayResult.prototype
-            if name isnt 'constructor'
+            if name != 'constructor'
                 if name == '_each'
                     response.__proto__['each'] = method
                     response.__proto__['_each'] = method

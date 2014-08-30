@@ -412,7 +412,7 @@ class TcpConnection extends Connection
 class HttpConnection extends Connection
     DEFAULT_PROTOCOL: 'http'
 
-    @isAvailable: -> typeof XMLHttpRequest isnt "undefined"
+    @isAvailable: -> type(XMLHttpRequest) != "undefined"
     new: (host, callback) ->
         unless HttpConnection.isAvailable()
             error(err.RqlDriverError "XMLHttpRequest is not available in this environment")
