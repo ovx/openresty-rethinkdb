@@ -95,7 +95,7 @@ recursivelyConvertPseudotype = (obj, opts) ->
         for value, i in obj
             obj[i] = recursivelyConvertPseudotype(value, opts)
     else if obj instanceof Object
-        for key, value of obj
+        for key, value in obj
             obj[key] = recursivelyConvertPseudotype(value, opts)
         obj = convertPseudotype(obj, opts)
     obj

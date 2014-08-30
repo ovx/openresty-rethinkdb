@@ -165,7 +165,7 @@ class Connection extends events.EventEmitter
             opts = optsOrCallback
             cb = nil
 
-        for own key of opts
+        for key in opts
             unless key in ['noreplyWait']
                 error(err.RqlDriverError "First argument to two-argument `close` must be { noreplyWait: <bool> }.")
 
