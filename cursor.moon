@@ -320,9 +320,11 @@ class ArrayResult extends IterableResult
                 if self.__index%@stackSize == @stackSize-1
                     -- Reset the stack
                     setImmediate ->
-                        cb(nil, self[self.__index++])
+                        cb(nil, self[self.__index])
+                        self.__index += 1
                 else
-                    cb(nil, self[self.__index++])
+                    cb(nil, self[self.__index])
+                    self.__index += 1
             else
                 cb err.RqlDriverError "No more rows in the cursor."
 

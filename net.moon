@@ -187,7 +187,8 @@ class Connection extends events.EventEmitter
             return callback(err.RqlDriverError "Connection is closed.")
 
         -- Assign token
-        token = @nextToken++
+        token = @nextToken
+        @nextToken += 1
 
         -- Construct query
         query = {}
@@ -231,7 +232,8 @@ class Connection extends events.EventEmitter
         unless @open then error(err.RqlDriverError "Connection is closed.")
 
         -- Assign token
-        token = @nextToken++
+        token = @nextToken
+        @nextToken += 1
 
         -- Construct query
         query = {}
@@ -492,7 +494,7 @@ class HttpConnection extends Connection
         i = 0
         while i < chunk.length
             view[i] = chunk[i]
-            i++
+            i += 1
 
         xhr.send array
         @xhr = xhr -- We allow only one query at a time per HTTP connection

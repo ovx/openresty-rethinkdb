@@ -947,8 +947,8 @@ class Func extends RDBOp
         while i < func.length
             argNums.push Func.nextVarId
             args.push Var {}, Func.nextVarId
-            Func.nextVarId++
-            i++
+            Func.nextVarId += 1
+            i += 1
 
         body = func(unpack args)
         if body is undefined
