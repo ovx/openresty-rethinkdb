@@ -270,9 +270,9 @@ class RDBVal extends TermBase
 
     insert: aropt (doc, opts) -> Insert opts, @, rethinkdb.expr(doc)
     indexCreate: varar(1, 3, (name, defun_or_opts, opts) ->
-        if opts?
+        if opts
             IndexCreate opts, @, name, funcWrap(defun_or_opts)
-        else if defun_or_opts?
+        else if defun_or_opts
             -- FIXME?
             if (Object::toString.call(defun_or_opts) is '[object Object]') and not (defun_or_opts instanceof Function) and not (defun_or_opts instanceof TermBase)
                 IndexCreate defun_or_opts, @, name

@@ -79,7 +79,7 @@ convertPseudotype = (obj, opts) ->
         when 'BINARY'
             switch opts.binaryFormat
                 when 'native', undefined
-                    if not obj['data']?
+                    unless obj['data']
                         error(err.RqlDriverError "pseudo-type BINARY object missing expected field 'data'.")
                     (Buffer(obj['data'], 'base64'))
                 when 'raw'

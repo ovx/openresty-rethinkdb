@@ -240,29 +240,29 @@ class Connection extends events.EventEmitter
         query.query = term.build()
         query.token = token
         -- Set global options
-        if @db?
+        if @db
             query.global_optargs['db'] = r.db(@db).build()
 
-        if opts.useOutdated?
-            query.global_optargs['use_outdated'] = r.expr(!!opts.useOutdated).build()
+        if opts.useOutdated
+            query.global_optargs['use_outdated'] = r.expr(not not opts.useOutdated).build()
 
-        if opts.noreply?
-            query.global_optargs['noreply'] = r.expr(!!opts.noreply).build()
+        if opts.noreply
+            query.global_optargs['noreply'] = r.expr(not not opts.noreply).build()
 
-        if opts.profile?
-            query.global_optargs['profile'] = r.expr(!!opts.profile).build()
+        if opts.profile
+            query.global_optargs['profile'] = r.expr(not not opts.profile).build()
 
-        if opts.durability?
+        if opts.durability
             query.global_optargs['durability'] = r.expr(opts.durability).build()
 
-        if opts.batchConf?
+        if opts.batchConf
             query.global_optargs['batch_conf'] = r.expr(opts.batchConf).build()
 
-        if opts.arrayLimit?
+        if opts.arrayLimit
             query.global_optargs['array_limit'] = r.expr(opts.arrayLimit).build()
 
         -- Save callback
-        if (not opts.noreply?) or !opts.noreply
+        if not opts.noreply
             @outstandingCallbacks[token] = {cb:cb, root:term, opts:opts}
 
         @_sendQuery(query)
@@ -289,7 +289,7 @@ class Connection extends events.EventEmitter
         data = [query.type]
         if !(query.query is undefined)
             data.push(query.query)
-            if query.global_optargs? and Object.keys(query.global_optargs).length > 0
+            if query.global_optargs and Object.keys(query.global_optargs).length > 0
                 data.push(query.global_optargs)
 
         @_writeQuery(query.token, JSON.stringify(data))
