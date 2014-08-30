@@ -107,7 +107,7 @@ mkSeq = (response, opts) -> recursivelyConvertPseudotype(response.r, opts)
 mkErr = (ErrClass, response, root) ->
     ErrClass(mkAtom(response), root, response.b)
 
-module.exports.recursivelyConvertPseudotype = recursivelyConvertPseudotype
-module.exports.mkAtom = mkAtom
-module.exports.mkSeq = mkSeq
-module.exports.mkErr = mkErr
+{recursivelyConvertPseudotype: recursivelyConvertPseudotype,
+mkAtom: mkAtom,
+mkSeq: mkSeq,
+mkErr: mkErr}

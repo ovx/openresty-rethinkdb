@@ -359,6 +359,6 @@ class ArrayResult extends IterableResult
         response.__proto__.__proto__ = [].__proto__
         response
 
-module.exports.Cursor = Cursor
-module.exports.Feed = Feed
-module.exports.makeIterable = ArrayResult::makeIterable
+{Cursor: Cursor,
+Feed: Feed,
+makeIterable: ArrayResult.makeIterable}
