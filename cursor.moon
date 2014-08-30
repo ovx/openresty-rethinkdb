@@ -178,7 +178,7 @@ class IterableResult
                 @_conn._endQuery(@_token)
 
 
-    _each: varar(1, 2, (cb, onFinished) ->
+    _each: varar 1, 2, (cb, onFinished) ->
         unless type(cb) == 'function'
             error(err.RqlDriverError "First argument to each must be a function.")
         if onFinished and type(onFinished) != 'function'
@@ -200,7 +200,6 @@ class IterableResult
             else if onFinished
                 onFinished()
         @_next nextCb
-    )
 
     toArray: varar 0, 1, (cb) ->
         fn = (cb) =>
