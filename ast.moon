@@ -1204,26 +1204,64 @@ rethinkdb.epochTime = (...) -> EpochTime {}, unpack arg
 rethinkdb.now = (...) -> Now {}, unpack arg
 rethinkdb.time = (...) -> Time {}, unpack arg
 
-rethinkdb.monday = (class extends RDBOp then tt: protoTermType.MONDAY)()
-rethinkdb.tuesday = (class extends RDBOp then tt: protoTermType.TUESDAY)()
-rethinkdb.wednesday = (class extends RDBOp then tt: protoTermType.WEDNESDAY)()
-rethinkdb.thursday = (class extends RDBOp then tt: protoTermType.THURSDAY)()
-rethinkdb.friday = (class extends RDBOp then tt: protoTermType.FRIDAY)()
-rethinkdb.saturday = (class extends RDBOp then tt: protoTermType.SATURDAY)()
-rethinkdb.sunday = (class extends RDBOp then tt: protoTermType.SUNDAY)()
+class Monday extends RDBOp
+    tt: protoTermType.MONDAY
+class Tuesday extends RDBOp
+    tt: protoTermType.TUESDAY
+class Wednesday extends RDBOp
+    tt: protoTermType.WEDNESDAY
+class Thursday extends RDBOp
+    tt: protoTermType.THURSDAY
+class Friday extends RDBOp
+    tt: protoTermType.FRIDAY
+class Saturday extends RDBOp
+    tt: protoTermType.SATURDAY
+class Sunday extends RDBOp
+    tt: protoTermType.SUNDAY
+rethinkdb.monday = Monday()
+rethinkdb.tuesday = Tuesday()
+rethinkdb.wednesday = Wednesday()
+rethinkdb.thursday = Thursday()
+rethinkdb.friday = Friday()
+rethinkdb.saturday = Saturday()
+rethinkdb.sunday = Sunday()
 
-rethinkdb.january = (class extends RDBOp then tt: protoTermType.JANUARY)()
-rethinkdb.february = (class extends RDBOp then tt: protoTermType.FEBRUARY)()
-rethinkdb.march = (class extends RDBOp then tt: protoTermType.MARCH)()
-rethinkdb.april = (class extends RDBOp then tt: protoTermType.APRIL)()
-rethinkdb.may = (class extends RDBOp then tt: protoTermType.MAY)()
-rethinkdb.june = (class extends RDBOp then tt: protoTermType.JUNE)()
-rethinkdb.july = (class extends RDBOp then tt: protoTermType.JULY)()
-rethinkdb.august = (class extends RDBOp then tt: protoTermType.AUGUST)()
-rethinkdb.september = (class extends RDBOp then tt: protoTermType.SEPTEMBER)()
-rethinkdb.october = (class extends RDBOp then tt: protoTermType.OCTOBER)()
-rethinkdb.november = (class extends RDBOp then tt: protoTermType.NOVEMBER)()
-rethinkdb.december = (class extends RDBOp then tt: protoTermType.DECEMBER)()
+class January extends RDBOp
+    tt: protoTermType.JANUARY
+class February extends RDBOp
+    tt: protoTermType.FEBRUARY
+class March extends RDBOp
+    tt: protoTermType.MARCH
+class April extends RDBOp
+    tt: protoTermType.APRIL
+class May extends RDBOp
+    tt: protoTermType.MAY
+class June extends RDBOp
+    tt: protoTermType.JUNE
+class July extends RDBOp
+    tt: protoTermType.JULY
+class August extends RDBOp
+    tt: protoTermType.AUGUST
+class September extends RDBOp
+    tt: protoTermType.SEPTEMBER
+class October extends RDBOp
+    tt: protoTermType.OCTOBER
+class November extends RDBOp
+    tt: protoTermType.NOVEMBER
+class December extends RDBOp
+    tt: protoTermType.DECEMBER
+rethinkdb.january = January()
+rethinkdb.february = February()
+rethinkdb.march = March()
+rethinkdb.april = April()
+rethinkdb.may = May()
+rethinkdb.june = June()
+rethinkdb.july = July()
+rethinkdb.august = August()
+rethinkdb.september = September()
+rethinkdb.october = October()
+rethinkdb.november = November()
+rethinkdb.december = December()
 
 rethinkdb.object = (...) -> Object_ {}, unpack arg
 
