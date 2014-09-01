@@ -391,7 +391,7 @@ class TcpConnection extends Connection
 
     _writeQuery: (token, data) ->
         tokenBuf = Buffer(8)
-        tokenBuf.writeUInt32LE(token & 0xFFFFFFFF, 0)
+        tokenBuf.writeUInt32LE(token % 0xFFFFFFFF, 0)
         tokenBuf.writeUInt32LE(Math.floor(token / 0xFFFFFFFF), 4)
         @rawSocket.write tokenBuf
         @write Buffer(data)
@@ -454,7 +454,7 @@ class HttpConnection extends Connection
 
         wrappedCb = (...) =>
             @cancel()
-            if cb?
+            if cb
                 cb(unpack arg)
 
         -- This would simply be super(opts, wrappedCb), if we were not in the varar
@@ -462,8 +462,8 @@ class HttpConnection extends Connection
         HttpConnection.__super__.close.call(this, opts, wrappedCb)
 
     _writeQuery: (token, data) ->
-        buf = Buffer(encodeURI(data).split(/%..|./).length - 1 + 8)
-        buf.writeUInt32LE(token & 0xFFFFFFFF, 0)
+        buf = Buffer(encodeURI(data).length - 1 + 8)
+        buf.writeUInt32LE(token % 0xFFFFFFFF, 0)
         buf.writeUInt32LE(Math.floor(token / 0xFFFFFFFF), 4)
         buf.write(data, 8)
         @write buf

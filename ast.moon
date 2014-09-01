@@ -953,7 +953,7 @@ class Func extends RDBOp
             varStr = ""
             for arg, i in args[0][1] -- ['0', ', ', '1']
                 if i%2 == 0
-                    varStr += Var::compose(arg)
+                    varStr += Var.compose(arg)
                 else
                     varStr += arg
             {'function(', varStr, ') { return ', args[1], '; }'}
