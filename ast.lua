@@ -173,7 +173,7 @@ do
     ge = function(...)
       return Ge({ }, self, unpack(arg))
     end,
-    ["not"] = function(...)
+    not_ = function(...)
       return Not({ }, self, unpack(arg))
     end,
     add = function(...)
@@ -200,16 +200,16 @@ do
     difference = function(...)
       return Difference({ }, self, unpack(arg))
     end,
-    setInsert = function(...)
+    set_insert = function(...)
       return SetInsert({ }, self, unpack(arg))
     end,
-    setUnion = function(...)
+    set_union = function(...)
       return SetUnion({ }, self, unpack(arg))
     end,
-    setIntersection = function(...)
+    set_intersection = function(...)
       return SetIntersection({ }, self, unpack(arg))
     end,
-    setDifference = function(...)
+    set_difference = function(...)
       return SetDifference({ }, self, unpack(arg))
     end,
     slice = varar(1, 3, function(left, right_or_opts, opts)
@@ -233,31 +233,31 @@ do
     limit = function(...)
       return Limit({ }, self, unpack(arg))
     end,
-    getField = function(...)
+    get_field = function(...)
       return GetField({ }, self, unpack(arg))
     end,
     contains = function(...)
       return Contains({ }, self, unpack(arg))
     end,
-    insertAt = function(...)
+    insert_at = function(...)
       return InsertAt({ }, self, unpack(arg))
     end,
-    spliceAt = function(...)
+    splice_at = function(...)
       return SpliceAt({ }, self, unpack(arg))
     end,
-    deleteAt = function(...)
+    delete_at = function(...)
       return DeleteAt({ }, self, unpack(arg))
     end,
-    changeAt = function(...)
+    change_at = function(...)
       return ChangeAt({ }, self, unpack(arg))
     end,
-    indexesOf = function(...)
+    indexes_of = function(...)
       return IndexesOf({ }, self, unpack(arg))
     end,
-    hasFields = function(...)
+    has_fields = function(...)
       return HasFields({ }, self, unpack(arg))
     end,
-    withFields = function(...)
+    with_fields = function(...)
       return WithFields({ }, self, unpack(arg))
     end,
     keys = function(...)
@@ -289,7 +289,7 @@ do
     filter = aropt(function(predicate, opts)
       return Filter(opts, self, funcWrap(predicate))
     end),
-    concatMap = function(...)
+    concat_map = function(...)
       return ConcatMap({ }, self, unpack(arg))
     end,
     distinct = aropt(function(opts)
@@ -319,28 +319,28 @@ do
     downcase = function(...)
       return Downcase({ }, self, unpack(arg))
     end,
-    isEmpty = function(...)
+    is_empty = function(...)
       return IsEmpty({ }, self, unpack(arg))
     end,
-    innerJoin = function(...)
+    inner_join = function(...)
       return InnerJoin({ }, self, unpack(arg))
     end,
-    outerJoin = function(...)
+    outer_join = function(...)
       return OuterJoin({ }, self, unpack(arg))
     end,
-    eqJoin = aropt(function(left_attr, right, opts)
+    eq_join = aropt(function(left_attr, right, opts)
       return EqJoin(opts, self, funcWrap(left_attr), right)
     end),
     zip = function(...)
       return Zip({ }, self, unpack(arg))
     end,
-    coerceTo = function(...)
+    coerce_to = function(...)
       return CoerceTo({ }, self, unpack(arg))
     end,
     ungroup = function(...)
       return Ungroup({ }, self, unpack(arg))
     end,
-    typeOf = function(...)
+    type_of = function(...)
       return TypeOf({ }, self, unpack(arg))
     end,
     update = aropt(function(func, opts)
@@ -352,7 +352,7 @@ do
     replace = aropt(function(func, opts)
       return Replace(opts, self, funcWrap(func))
     end),
-    ["do"] = function(...)
+    do_ = function(...)
       local args
       do
         local _accum_0 = { }
@@ -371,19 +371,19 @@ do
     default = function(...)
       return Default({ }, self, unpack(arg))
     end,
-    ["or"] = function(...)
+    or_ = function(...)
       return Any({ }, self, unpack(arg))
     end,
     any = function(...)
       return Any({ }, self, unpack(arg))
     end,
-    ["and"] = function(...)
+    and_ = function(...)
       return All({ }, self, unpack(arg))
     end,
     all = function(...)
       return All({ }, self, unpack(arg))
     end,
-    forEach = function(...)
+    for_each = function(...)
       return ForEach({ }, self, unpack(arg))
     end,
     sum = function(...)
@@ -439,7 +439,7 @@ do
       end
       return Group(opts, self, unpack(fields))
     end,
-    orderBy = function(...)
+    order_by = function(...)
       -- Default if no opts dict provided
       local opts = { }
       local attrs = arg
@@ -478,8 +478,8 @@ do
     end,
 
     -- Geo operations
-    toGeojson = function(...)
-      return ToGeojson({ }, self, unpack(arg))
+    to_geojson = function(...)
+      return ToGeoJson({ }, self, unpack(arg))
     end,
     distance = aropt(function(g, opts)
       return Distance(opts, self, g)
@@ -496,13 +496,13 @@ do
 
     -- Database operations
 
-    tableCreate = aropt(function(tblName, opts)
+    table_create = aropt(function(tblName, opts)
       return TableCreate(opts, self, tblName)
     end),
-    tableDrop = function(...)
+    table_drop = function(...)
       return TableDrop({ }, self, unpack(arg))
     end,
-    tableList = function(...)
+    table_list = function(...)
       return TableList({ }, self, unpack(arg))
     end,
     table = aropt(function(tblName, opts)
@@ -514,7 +514,7 @@ do
     get = function(...)
       return Get({ }, self, unpack(arg))
     end,
-    getAll = function(...)
+    get_all = function(...)
       -- Default if no opts dict provided
       local opts = { }
       local keys = arg
@@ -543,7 +543,7 @@ do
     insert = aropt(function(doc, opts)
       return Insert(opts, self, rethinkdb.expr(doc))
     end),
-    indexCreate = varar(1, 3, function(name, defun_or_opts, opts)
+    index_create = varar(1, 3, function(name, defun_or_opts, opts)
       if opts then
         return IndexCreate(opts, self, name, funcWrap(defun_or_opts))
       else
@@ -559,31 +559,31 @@ do
         end
       end
     end),
-    indexDrop = function(...)
+    index_drop = function(...)
       return IndexDrop({ }, self, unpack(arg))
     end,
-    indexList = function(...)
+    index_list = function(...)
       return IndexList({ }, self, unpack(arg))
     end,
-    indexStatus = function(...)
+    index_status = function(...)
       return IndexStatus({ }, self, unpack(arg))
     end,
-    indexWait = function(...)
+    index_wait = function(...)
       return IndexWait({ }, self, unpack(arg))
     end,
-    indexRename = aropt(function(old_name, new_name, opts)
+    index_rename = aropt(function(old_name, new_name, opts)
       return IndexRename(opts, self, old_name, new_name)
     end),
     sync = function(...)
       return Sync({ }, self, unpack(arg))
     end,
-    toISO8601 = function(...)
+    to_iso8601 = function(...)
       return ToISO8601({ }, self, unpack(arg))
     end,
-    toEpochTime = function(...)
+    to_epoch_time = function(...)
       return ToEpochTime({ }, self, unpack(arg))
     end,
-    inTimezone = function(...)
+    in_timezone = function(...)
       return InTimezone({ }, self, unpack(arg))
     end,
     during = aropt(function(t2, t3, opts)
@@ -592,7 +592,7 @@ do
     date = function(...)
       return RQLDate({ }, self, unpack(arg))
     end,
-    timeOfDay = function(...)
+    time_of_day = function(...)
       return TimeOfDay({ }, self, unpack(arg))
     end,
     timezone = function(...)
@@ -607,10 +607,10 @@ do
     day = function(...)
       return Day({ }, self, unpack(arg))
     end,
-    dayOfWeek = function(...)
+    day_of_week = function(...)
       return DayOfWeek({ }, self, unpack(arg))
     end,
-    dayOfYear = function(...)
+    day_of_year = function(...)
       return DayOfYear({ }, self, unpack(arg))
     end,
     hours = function(...)
@@ -625,10 +625,10 @@ do
     uuid = function(...)
       return UUID({ }, self, unpack(arg))
     end,
-    getIntersecting = aropt(function(g, opts)
+    get_intersecting = aropt(function(g, opts)
       return GetIntersecting(opts, self, g)
     end),
-    getNearest = aropt(function(g, opts)
+    get_nearest = aropt(function(g, opts)
       return GetNearest(opts, self, g)
     end)
   }
@@ -716,98 +716,6 @@ do
     _parent_0.__inherited(_parent_0, _class_0)
   end
   DatumTerm = _class_0
-end
-local translateBackOptargs
-translateBackOptargs = function(optargs)
-  local result = { }
-  for key, val in optargs do
-    local _exp_0 = key
-    if 'primary_key' == _exp_0 then
-      key = 'primaryKey'
-    elseif 'return_vals' == _exp_0 then
-      key = 'returnVals'
-    elseif 'return_changes' == _exp_0 then
-      key = 'returnChanges'
-    elseif 'use_outdated' == _exp_0 then
-      key = 'useOutdated'
-    elseif 'non_atomic' == _exp_0 then
-      key = 'nonAtomic'
-    elseif 'left_bound' == _exp_0 then
-      key = 'leftBound'
-    elseif 'right_bound' == _exp_0 then
-      key = 'rightBound'
-    elseif 'default_timezone' == _exp_0 then
-      key = 'defaultTimezone'
-    elseif 'result_format' == _exp_0 then
-      key = 'resultFormat'
-    elseif 'page_limit' == _exp_0 then
-      key = 'pageLimit'
-    elseif 'num_vertices' == _exp_0 then
-      key = 'numVertices'
-    elseif 'geo_system' == _exp_0 then
-      key = 'geoSystem'
-    elseif 'max_results' == _exp_0 then
-      key = 'maxResults'
-    elseif 'max_dist' == _exp_0 then
-      key = 'maxDist'
-    else
-      key = key
-    end
-    result[key] = val
-  end
-  return result
-end
-local translateOptargs
-translateOptargs = function(optargs)
-  local result = { }
-  for key, val in optargs do
-    -- We translate known two word opt-args to camel case for your convience
-    local _continue_0 = false
-    repeat
-      local _exp_0 = key
-      if 'primaryKey' == _exp_0 then
-        key = 'primary_key'
-      elseif 'returnVals' == _exp_0 then
-        key = 'return_vals'
-      elseif 'returnChanges' == _exp_0 then
-        key = 'return_changes'
-      elseif 'useOutdated' == _exp_0 then
-        key = 'use_outdated'
-      elseif 'nonAtomic' == _exp_0 then
-        key = 'non_atomic'
-      elseif 'leftBound' == _exp_0 then
-        key = 'left_bound'
-      elseif 'rightBound' == _exp_0 then
-        key = 'right_bound'
-      elseif 'defaultTimezone' == _exp_0 then
-        key = 'default_timezone'
-      elseif 'resultFormat' == _exp_0 then
-        key = 'result_format'
-      elseif 'pageLimit' == _exp_0 then
-        key = 'page_limit'
-      elseif 'numVertices' == _exp_0 then
-        key = 'num_vertices'
-      elseif 'geoSystem' == _exp_0 then
-        key = 'geo_system'
-      elseif 'maxResults' == _exp_0 then
-        key = 'max_results'
-      elseif 'maxDist' == _exp_0 then
-        key = 'max_dist'
-      else
-        key = key
-      end
-      if not (key and val) then
-        _continue_0 = true
-        break
-      end
-      result[key] = rethinkdb.expr(val)
-      _continue_0 = true
-    until true
-    if not _continue_0 then
-      break
-    end
-  end
-  return result
 end
 local RDBOp
 do
@@ -1623,7 +1531,7 @@ do
   local _parent_0 = RDBOp
   local _base_0 = {
     tt = protoTermType.GET_ALL,
-    mt = 'getAll'
+    mt = 'get_all'
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -1882,7 +1790,7 @@ do
   local _parent_0 = RDBOp
   local _base_0 = {
     tt = protoTermType.NOT,
-    mt = 'not'
+    mt = 'not_'
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -2215,7 +2123,7 @@ do
   local _parent_0 = RDBOp
   local _base_0 = {
     tt = protoTermType.SET_INSERT,
-    mt = 'setInsert'
+    mt = 'set_insert'
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -2252,7 +2160,7 @@ do
   local _parent_0 = RDBOp
   local _base_0 = {
     tt = protoTermType.SET_UNION,
-    mt = 'setUnion'
+    mt = 'set_union'
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -2289,7 +2197,7 @@ do
   local _parent_0 = RDBOp
   local _base_0 = {
     tt = protoTermType.SET_INTERSECTION,
-    mt = 'setIntersection'
+    mt = 'set_intersection'
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -2326,7 +2234,7 @@ do
   local _parent_0 = RDBOp
   local _base_0 = {
     tt = protoTermType.SET_DIFFERENCE,
-    mt = 'setDifference'
+    mt = 'set_difference'
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -2474,7 +2382,7 @@ do
   local _parent_0 = RDBOp
   local _base_0 = {
     tt = protoTermType.GET_FIELD,
-    mt = 'getField'
+    mt = 'get_field'
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -2593,7 +2501,7 @@ do
   local _parent_0 = RDBOp
   local _base_0 = {
     tt = protoTermType.INSERT_AT,
-    mt = 'insertAt'
+    mt = 'insert_at'
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -2630,7 +2538,7 @@ do
   local _parent_0 = RDBOp
   local _base_0 = {
     tt = protoTermType.SPLICE_AT,
-    mt = 'spliceAt'
+    mt = 'splice_at'
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -2667,7 +2575,7 @@ do
   local _parent_0 = RDBOp
   local _base_0 = {
     tt = protoTermType.DELETE_AT,
-    mt = 'deleteAt'
+    mt = 'delete_at'
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -2704,7 +2612,7 @@ do
   local _parent_0 = RDBOp
   local _base_0 = {
     tt = protoTermType.CHANGE_AT,
-    mt = 'changeAt'
+    mt = 'change_at'
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -2777,7 +2685,7 @@ do
   local _parent_0 = RDBOp
   local _base_0 = {
     tt = protoTermType.HAS_FIELDS,
-    mt = 'hasFields'
+    mt = 'has_fields'
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -2814,7 +2722,7 @@ do
   local _parent_0 = RDBOp
   local _base_0 = {
     tt = protoTermType.WITH_FIELDS,
-    mt = 'withFields'
+    mt = 'with_fields'
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -2920,7 +2828,7 @@ do
   end
   Changes = _class_0
 end
-local Object_
+local Object
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -2934,7 +2842,7 @@ do
       return _parent_0.__init(self, ...)
     end,
     __base = _base_0,
-    __name = "Object_",
+    __name = "Object",
     __parent = _parent_0
   }, {
     __index = function(cls, name)
@@ -2955,7 +2863,7 @@ do
   if _parent_0.__inherited then
     _parent_0.__inherited(_parent_0, _class_0)
   end
-  Object_ = _class_0
+  Object = _class_0
 end
 local Pluck
 do
@@ -2999,7 +2907,7 @@ do
   local _parent_0 = RDBOpWrap
   local _base_0 = {
     tt = protoTermType.INDEXES_OF,
-    mt = 'indexesOf'
+    mt = 'indexes_of'
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -3258,7 +3166,7 @@ do
   local _parent_0 = RDBOpWrap
   local _base_0 = {
     tt = protoTermType.CONCATMAP,
-    mt = 'concatMap'
+    mt = 'concat_map'
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -3295,7 +3203,7 @@ do
   local _parent_0 = RDBOp
   local _base_0 = {
     tt = protoTermType.ORDERBY,
-    mt = 'orderBy'
+    mt = 'order_by'
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -3628,7 +3536,7 @@ do
   local _parent_0 = RDBOp
   local _base_0 = {
     tt = protoTermType.IS_EMPTY,
-    mt = 'isEmpty'
+    mt = 'is_empty'
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -3850,7 +3758,7 @@ do
   local _parent_0 = RDBOp
   local _base_0 = {
     tt = protoTermType.INNER_JOIN,
-    mt = 'innerJoin'
+    mt = 'inner_join'
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -3887,7 +3795,7 @@ do
   local _parent_0 = RDBOp
   local _base_0 = {
     tt = protoTermType.OUTER_JOIN,
-    mt = 'outerJoin'
+    mt = 'outer_join'
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -3924,7 +3832,7 @@ do
   local _parent_0 = RDBOp
   local _base_0 = {
     tt = protoTermType.EQ_JOIN,
-    mt = 'eqJoin'
+    mt = 'eq_join'
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -3998,7 +3906,7 @@ do
   local _parent_0 = RDBOp
   local _base_0 = {
     tt = protoTermType.COERCE_TO,
-    mt = 'coerceTo'
+    mt = 'coerce_to'
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -4072,7 +3980,7 @@ do
   local _parent_0 = RDBOp
   local _base_0 = {
     tt = protoTermType.TYPEOF,
-    mt = 'typeOf'
+    mt = 'type_of'
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -4331,7 +4239,7 @@ do
   local _parent_0 = RDBOp
   local _base_0 = {
     tt = protoTermType.DB_CREATE,
-    st = 'dbCreate'
+    st = 'db_create'
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -4368,7 +4276,7 @@ do
   local _parent_0 = RDBOp
   local _base_0 = {
     tt = protoTermType.DB_DROP,
-    st = 'dbDrop'
+    st = 'db_drop'
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -4405,7 +4313,7 @@ do
   local _parent_0 = RDBOp
   local _base_0 = {
     tt = protoTermType.DB_LIST,
-    st = 'dbList'
+    st = 'db_list'
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -4442,7 +4350,7 @@ do
   local _parent_0 = RDBOp
   local _base_0 = {
     tt = protoTermType.TABLE_CREATE,
-    mt = 'tableCreate'
+    mt = 'table_create'
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -4479,7 +4387,7 @@ do
   local _parent_0 = RDBOp
   local _base_0 = {
     tt = protoTermType.TABLE_DROP,
-    mt = 'tableDrop'
+    mt = 'table_drop'
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -4516,7 +4424,7 @@ do
   local _parent_0 = RDBOp
   local _base_0 = {
     tt = protoTermType.TABLE_LIST,
-    mt = 'tableList'
+    mt = 'table_list'
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -4553,7 +4461,7 @@ do
   local _parent_0 = RDBOp
   local _base_0 = {
     tt = protoTermType.INDEX_CREATE,
-    mt = 'indexCreate'
+    mt = 'index_create'
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -4590,7 +4498,7 @@ do
   local _parent_0 = RDBOp
   local _base_0 = {
     tt = protoTermType.INDEX_DROP,
-    mt = 'indexDrop'
+    mt = 'index_drop'
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -4627,7 +4535,7 @@ do
   local _parent_0 = RDBOp
   local _base_0 = {
     tt = protoTermType.INDEX_RENAME,
-    mt = 'indexRename'
+    mt = 'index_rename'
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -4664,7 +4572,7 @@ do
   local _parent_0 = RDBOp
   local _base_0 = {
     tt = protoTermType.INDEX_LIST,
-    mt = 'indexList'
+    mt = 'index_list'
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -4701,7 +4609,7 @@ do
   local _parent_0 = RDBOp
   local _base_0 = {
     tt = protoTermType.INDEX_STATUS,
-    mt = 'indexStatus'
+    mt = 'index_status'
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -4738,7 +4646,7 @@ do
   local _parent_0 = RDBOp
   local _base_0 = {
     tt = protoTermType.INDEX_WAIT,
-    mt = 'indexWait'
+    mt = 'index_wait'
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -4812,11 +4720,11 @@ do
   local _parent_0 = RDBOp
   local _base_0 = {
     tt = protoTermType.FUNCALL,
-    st = 'do', -- This is only used by the `nil` argument checker
+    st = 'do_', -- This is only used by the `nil` argument checker
     compose = function(args)
       if args.length > 2 then
         return {
-          'r.do(',
+          'r.do_(',
           intsp((function()
             local _accum_0 = { }
             local _len_0 = 1
@@ -4841,7 +4749,7 @@ do
         end
         return {
           args[1],
-          '.do(',
+          '.do_(',
           args[0],
           ')'
         }
@@ -4957,7 +4865,7 @@ do
   local _parent_0 = RDBOp
   local _base_0 = {
     tt = protoTermType.ANY,
-    mt = 'or'
+    mt = 'or_'
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -4994,7 +4902,7 @@ do
   local _parent_0 = RDBOp
   local _base_0 = {
     tt = protoTermType.ALL,
-    mt = 'and'
+    mt = 'and_'
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -5031,7 +4939,7 @@ do
   local _parent_0 = RDBOpWrap
   local _base_0 = {
     tt = protoTermType.FOREACH,
-    mt = 'forEach'
+    mt = 'for_each'
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -5254,7 +5162,7 @@ do
   local _parent_0 = RDBOp
   local _base_0 = {
     tt = protoTermType.ISO8601,
-    st = 'ISO8601'
+    st = 'iso8601'
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -5291,7 +5199,7 @@ do
   local _parent_0 = RDBOp
   local _base_0 = {
     tt = protoTermType.TO_ISO8601,
-    mt = 'toISO8601'
+    mt = 'to_iso8601'
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -5328,7 +5236,7 @@ do
   local _parent_0 = RDBOp
   local _base_0 = {
     tt = protoTermType.EPOCH_TIME,
-    st = 'epochTime'
+    st = 'epoch_time'
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -5365,7 +5273,7 @@ do
   local _parent_0 = RDBOp
   local _base_0 = {
     tt = protoTermType.TO_EPOCH_TIME,
-    mt = 'toEpochTime'
+    mt = 'to_epoch_time'
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -5439,7 +5347,7 @@ do
   local _parent_0 = RDBOp
   local _base_0 = {
     tt = protoTermType.IN_TIMEZONE,
-    mt = 'inTimezone'
+    mt = 'in_timezone'
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -5550,7 +5458,7 @@ do
   local _parent_0 = RDBOp
   local _base_0 = {
     tt = protoTermType.TIME_OF_DAY,
-    mt = 'timeOfDay'
+    mt = 'time_of_day'
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -5735,7 +5643,7 @@ do
   local _parent_0 = RDBOp
   local _base_0 = {
     tt = protoTermType.DAY_OF_WEEK,
-    mt = 'dayOfWeek'
+    mt = 'day_of_week'
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -5772,7 +5680,7 @@ do
   local _parent_0 = RDBOp
   local _base_0 = {
     tt = protoTermType.DAY_OF_YEAR,
-    mt = 'dayOfYear'
+    mt = 'day_of_year'
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -5952,7 +5860,7 @@ do
   end
   Time = _class_0
 end
-local Geojson
+local GeoJson
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -5966,7 +5874,7 @@ do
       return _parent_0.__init(self, ...)
     end,
     __base = _base_0,
-    __name = "Geojson",
+    __name = "GeoJson",
     __parent = _parent_0
   }, {
     __index = function(cls, name)
@@ -5987,14 +5895,14 @@ do
   if _parent_0.__inherited then
     _parent_0.__inherited(_parent_0, _class_0)
   end
-  Geojson = _class_0
+  GeoJson = _class_0
 end
-local ToGeojson
+local ToGeoJson
 do
   local _parent_0 = RDBOp
   local _base_0 = {
     tt = protoTermType.TO_GEOJSON,
-    mt = 'toGeojson'
+    mt = 'to_geojson'
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -6003,7 +5911,7 @@ do
       return _parent_0.__init(self, ...)
     end,
     __base = _base_0,
-    __name = "ToGeojson",
+    __name = "ToGeoJson",
     __parent = _parent_0
   }, {
     __index = function(cls, name)
@@ -6024,7 +5932,7 @@ do
   if _parent_0.__inherited then
     _parent_0.__inherited(_parent_0, _class_0)
   end
-  ToGeojson = _class_0
+  ToGeoJson = _class_0
 end
 local Point
 do
@@ -6290,7 +6198,7 @@ do
   local _parent_0 = RDBOp
   local _base_0 = {
     tt = protoTermType.GET_INTERSECTING,
-    mt = 'getIntersecting'
+    mt = 'get_intersecting'
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -6327,7 +6235,7 @@ do
   local _parent_0 = RDBOp
   local _base_0 = {
     tt = protoTermType.GET_NEAREST,
-    mt = 'getNearest'
+    mt = 'get_nearest'
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -6537,25 +6445,25 @@ end)
 rethinkdb.db = function(...)
   return Db({ }, unpack(arg))
 end
-rethinkdb.dbCreate = function(...)
+rethinkdb.db_create = function(...)
   return DbCreate({ }, unpack(arg))
 end
-rethinkdb.dbDrop = function(...)
+rethinkdb.db_drop = function(...)
   return DbDrop({ }, unpack(arg))
 end
-rethinkdb.dbList = function(...)
+rethinkdb.db_list = function(...)
   return DbList({ }, unpack(arg))
 end
-rethinkdb.tableCreate = aropt(function(tblName, opts)
+rethinkdb.table_create = aropt(function(tblName, opts)
   return TableCreate(opts, tblName)
 end)
-rethinkdb.tableDrop = function(...)
+rethinkdb.table_drop = function(...)
   return TableDrop({ }, unpack(arg))
 end
-rethinkdb.tableList = function(...)
+rethinkdb.table_list = function(...)
   return TableList({ }, unpack(arg))
 end
-rethinkdb["do"] = varar(1, nil, function(...)
+rethinkdb.do_ = varar(1, nil, function(...)
   return FunCall({ }, funcWrap(arg[arg.n]), unpack((function()
     local _accum_0 = { }
     local _len_0 = 1
@@ -6596,19 +6504,19 @@ end
 rethinkdb.ge = function(...)
   return Ge({ }, unpack(arg))
 end
-rethinkdb["or"] = function(...)
+rethinkdb.or_ = function(...)
   return Any({ }, unpack(arg))
 end
 rethinkdb.any = function(...)
   return Any({ }, unpack(arg))
 end
-rethinkdb["and"] = function(...)
+rethinkdb.and_ = function(...)
   return All({ }, unpack(arg))
 end
 rethinkdb.all = function(...)
   return All({ }, unpack(arg))
 end
-rethinkdb["not"] = function(...)
+rethinkdb.not_ = function(...)
   return Not({ }, unpack(arg))
 end
 rethinkdb.add = function(...)
@@ -6626,7 +6534,7 @@ end
 rethinkdb.mod = function(...)
   return Mod({ }, unpack(arg))
 end
-rethinkdb.typeOf = function(...)
+rethinkdb.type_of = function(...)
   return TypeOf({ }, unpack(arg))
 end
 rethinkdb.info = function(...)
@@ -6635,10 +6543,10 @@ end
 rethinkdb.literal = function(...)
   return Literal({ }, unpack(arg))
 end
-rethinkdb.ISO8601 = aropt(function(str, opts)
+rethinkdb.iso8601 = aropt(function(str, opts)
   return ISO8601(opts, str)
 end)
-rethinkdb.epochTime = function(...)
+rethinkdb.epoch_time = function(...)
   return EpochTime({ }, unpack(arg))
 end
 rethinkdb.now = function(...)
@@ -7351,13 +7259,13 @@ rethinkdb.october = October()
 rethinkdb.november = November()
 rethinkdb.december = December()
 rethinkdb.object = function(...)
-  return Object_({ }, unpack(arg))
+  return Object({ }, unpack(arg))
 end
 rethinkdb.args = function(...)
   return Args({ }, unpack(arg))
 end
 rethinkdb.geojson = function(...)
-  return Geojson({ }, unpack(arg))
+  return GeoJson({ }, unpack(arg))
 end
 rethinkdb.point = function(...)
   return Point({ }, unpack(arg))
