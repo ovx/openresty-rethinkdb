@@ -149,7 +149,7 @@ class Connection extends events.EventEmitter
             -- Unexpected token
             @emit 'error', err.RqlDriverError "Unexpected token #{token}."
 
-    close: (varar 0, 2, (optsOrCallback, callback) ->
+    close: varar 0, 2, (optsOrCallback, callback) ->
         if callback
             opts = optsOrCallback
             unless Object::toString.call(opts) == '[object Object]'
@@ -180,7 +180,6 @@ class Connection extends events.EventEmitter
             @noreplyWait(wrappedCb)
         else
             wrappedCb()
-    )
 
     noreplyWait: varar 0, 1, (callback) ->
         unless @open
@@ -202,7 +201,7 @@ class Connection extends events.EventEmitter
     cancel: ar () ->
         @outstandingCallbacks = {}
 
-    reconnect: (varar 0, 2, (optsOrCallback, callback) ->
+    reconnect: varar 0, 2, (optsOrCallback, callback) ->
         if callback
             opts = optsOrCallback
             cb = callback
@@ -223,7 +222,6 @@ class Connection extends events.EventEmitter
                 constructCb = => @constructor.call(@, {host:@host, port:@port}, cb)
                 setTimeout(constructCb, 0)
         @close(opts, closeCb)
-    )
 
     use: ar (db) ->
         @db = db
@@ -312,10 +310,7 @@ class TcpConnection extends Connection
         @rawSocket = net.connect @port, @host
         @rawSocket.setNoDelay()
 
-        timeout = setTimeout( (()=>
-            @rawSocket.destroy()
-            @emit 'error', err.RqlDriverError "Handshake timedout"
-        ), @timeout*1000)
+        timeout = setTimeout((()=> @rawSocket.destroy() @emit('error', err.RqlDriverError "Handshake timedout")), @timeout*1000)
 
         @rawSocket.once 'error', => clearTimeout(timeout)
 
@@ -367,7 +362,7 @@ class TcpConnection extends Connection
         -- In case the raw socket timesout, we close it and re-emit the event for the user
         @rawSocket.on 'timeout', => @open = false; @emit 'timeout'
 
-    close: (varar 0, 2, (optsOrCallback, callback) ->
+    close: varar 0, 2, (optsOrCallback, callback) ->
         if callback
             opts = optsOrCallback
             cb = callback
@@ -389,8 +384,6 @@ class TcpConnection extends Connection
         -- This would simply be super(opts, wrappedCb), if we were not in the varar
         -- anonymous function
         TcpConnection.__super__.close.call(@, opts, wrappedCb)
-
-    )
 
     cancel: () ->
         @rawSocket.destroy()
@@ -446,8 +439,8 @@ class HttpConnection extends Connection
         @_connId = nil
         super()
 
-    close: (varar 0, 2, (optsOrCallback, callback) ->
-        if callback?
+    close: varar 0, 2, (optsOrCallback, callback) ->
+        if callback
             opts = optsOrCallback
             cb = callback
         else if Object::toString.call(optsOrCallback) == '[object Object]'
@@ -467,7 +460,6 @@ class HttpConnection extends Connection
         -- This would simply be super(opts, wrappedCb), if we were not in the varar
         -- anonymous function
         HttpConnection.__super__.close.call(this, opts, wrappedCb)
-    )
 
     _writeQuery: (token, data) ->
         buf = Buffer(encodeURI(data).split(/%..|./).length - 1 + 8)

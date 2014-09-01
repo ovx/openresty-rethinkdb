@@ -119,7 +119,7 @@ class RDBVal extends TermBase
     setUnion: (...) -> SetUnion {}, @, unpack arg
     setIntersection: (...) -> SetIntersection {}, @, unpack arg
     setDifference: (...) -> SetDifference {}, @, unpack arg
-    slice: varar(1, 3, (left, right_or_opts, opts) ->
+    slice: varar 1, 3, (left, right_or_opts, opts) ->
         if opts
             Slice opts, @, left, right_or_opts
         else if right_or_opts
@@ -130,7 +130,6 @@ class RDBVal extends TermBase
                 Slice {}, @, left, right_or_opts
         else
             Slice {}, @, left
-        )
     skip: (...) -> Skip {}, @, unpack arg
     limit: (...) -> Limit {}, @, unpack arg
     getField: (...) -> GetField {}, @, unpack arg
@@ -219,9 +218,7 @@ class RDBVal extends TermBase
 
         -- Look for opts dict
         perhapsOptDict = attrsAndOpts[attrsAndOpts.length - 1]
-        if perhapsOptDict and
-                (Object::toString.call(perhapsOptDict) == '[object Object]') and
-                not (TermBase.instanceof(perhapsOptDict))
+        if perhapsOptDict and (type(perhapsOptDict) == 'tree') and not (TermBase.instanceof(perhapsOptDict))
             opts = perhapsOptDict
             attrs = attrsAndOpts[0...(attrsAndOpts.length - 1)]
 
@@ -230,7 +227,6 @@ class RDBVal extends TermBase
                 attr
             else
                 funcWrap(attr)
-        )
 
         OrderBy opts, @, unpack attrs
 
@@ -269,7 +265,7 @@ class RDBVal extends TermBase
         GetAll opts, @, unpack keys
 
     insert: aropt (doc, opts) -> Insert opts, @, rethinkdb.expr(doc)
-    indexCreate: varar(1, 3, (name, defun_or_opts, opts) ->
+    indexCreate: varar 1, 3, (name, defun_or_opts, opts) ->
         if opts
             IndexCreate opts, @, name, funcWrap(defun_or_opts)
         else if defun_or_opts
@@ -280,7 +276,6 @@ class RDBVal extends TermBase
                 IndexCreate {}, @, name, funcWrap(defun_or_opts)
         else
             IndexCreate {}, @, name
-        )
 
     indexDrop: (...) -> IndexDrop {}, @, unpack arg
     indexList: (...) -> IndexList {}, @, unpack arg
@@ -385,8 +380,7 @@ translateOptargs = (optargs) ->
 class RDBOp extends RDBVal
     new: (optargs, ...) ->
         self = super()
-        self.args =
-            for a,i in arg
+        self.args = for a,i in arg
                 if a
                     rethinkdb.expr a
                 else
@@ -421,12 +415,8 @@ class RDBOp extends RDBVal
 class RDBOpWrap extends RDBOp
     new: (optargs, unpack arg) ->
         self = super()
-        self.args =
-            for arg,i in args
-                if arg
-                    rethinkdb.expr funcWrap arg
-                else
-                    error(err.RqlDriverError "Argument #{i} to #{@st || @mt} may not be `undefined`.")
+        self.args = [rethinkdb.expr(funcWrap a) for a in arg]
+
         self.optargs = translateOptargs(optargs)
         return self
 
