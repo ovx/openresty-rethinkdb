@@ -149,7 +149,7 @@ do
     end,
     -- Implement IterableResult
     hasNext = function()
-      return error(err.RqlDriverError("The `hasNext` command has been removed since 1.13. Use `next` instead."))
+      error(err.RqlDriverError("The `hasNext` command has been removed since 1.13. Use `next` instead."))
     end,
     _next = varar(0, 1, function(cb)
       local fn
@@ -227,10 +227,10 @@ do
     _makeEmitter = function()
       self.emitter = EventEmitter
       self.each = function()
-        return error(err.RqlDriverError("You cannot use the cursor interface and the EventEmitter interface at the same time."))
+        error(err.RqlDriverError("You cannot use the cursor interface and the EventEmitter interface at the same time."))
       end
       self.next = function()
-        return error(err.RqlDriverError("You cannot use the cursor interface and the EventEmitter interface at the same time."))
+        error(err.RqlDriverError("You cannot use the cursor interface and the EventEmitter interface at the same time."))
       end
     end,
     addListener = function(...)
@@ -389,10 +389,10 @@ do
   local _parent_0 = IterableResult
   local _base_0 = {
     hasNext = function()
-      return error(err.RqlDriverError("`hasNext` is not available for feeds."))
+      error(err.RqlDriverError("`hasNext` is not available for feeds."))
     end,
     toArray = function()
-      return error(err.RqlDriverError("`toArray` is not available for feeds."))
+      error(err.RqlDriverError("`toArray` is not available for feeds."))
     end,
     toString = ar(function()
       return "[object Feed]"

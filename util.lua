@@ -90,7 +90,7 @@ convertPseudotype = function(obj, opts)
       -- Just return the raw (`{'$reql_type$'...}`) object
       return obj
     else
-      return error(err.RqlDriverError("Unknown timeFormat run option " .. tostring(opts.timeFormat) .. "."))
+      error(err.RqlDriverError("Unknown timeFormat run option " .. tostring(opts.timeFormat) .. "."))
     end
   elseif 'GROUPED_DATA' == _exp_0 then
     local _exp_1 = opts.groupFormat
@@ -107,7 +107,7 @@ convertPseudotype = function(obj, opts)
     elseif 'raw' == _exp_1 then
       return obj
     else
-      return error(err.RqlDriverError("Unknown groupFormat run option " .. tostring(opts.groupFormat) .. "."))
+      error(err.RqlDriverError("Unknown groupFormat run option " .. tostring(opts.groupFormat) .. "."))
     end
   elseif 'BINARY' == _exp_0 then
     local _exp_1 = opts.binaryFormat
@@ -119,7 +119,7 @@ convertPseudotype = function(obj, opts)
     elseif 'raw' == _exp_1 then
       return obj
     else
-      return error(err.RqlDriverError("Unknown binaryFormat run option " .. tostring(opts.binaryFormat) .. "."))
+      error(err.RqlDriverError("Unknown binaryFormat run option " .. tostring(opts.binaryFormat) .. "."))
     end
   else
     -- Regular object or unknown pseudo type

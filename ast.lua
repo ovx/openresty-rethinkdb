@@ -6357,7 +6357,7 @@ rethinkdb.expr = varar(1, 2, function(val, nestingDepth)
     error(err.RqlDriverError("Nesting depth limit exceeded"))
   end
   if type(nestingDepth) ~= "number" or isNaN(nestingDepth) then
-    return error(err.RqlDriverError("Second argument to `r.expr` must be a number or nil."))
+    error(err.RqlDriverError("Second argument to `r.expr` must be a number or nil."))
   else
     if TermBase.instanceof(val) then
       return val

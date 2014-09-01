@@ -711,7 +711,7 @@ return {
       if HttpConnection.isAvailable() then
         return HttpConnection(host, callback)
       else
-        return error(err.RqlDriverError("Neither TCP nor HTTP avaiable in this environment"))
+        error(err.RqlDriverError("Neither TCP nor HTTP avaiable in this environment"))
       end
     end
   end)
