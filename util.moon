@@ -25,7 +25,7 @@ module.exports.aropt = (fun) -> (...) ->
     expectedPosArgs = fun.length - 1
     perhapsOptDict = args[expectedPosArgs]
 
-    if perhapsOptDict and (Object::toString.call(perhapsOptDict) != '[object Object]')
+    if perhapsOptDict and (type(perhapsOptDict) != 'tree')
         perhapsOptDict = nil
 
     numPosArgs = args.length - (if perhapsOptDict then 1 else 0)
@@ -91,12 +91,9 @@ convertPseudotype = (obj, opts) ->
             obj
 
 recursivelyConvertPseudotype = (obj, opts) ->
-    if obj instanceof Array
+    if type(obj) == 'tree'
         for value, i in obj
             obj[i] = recursivelyConvertPseudotype(value, opts)
-    else if obj instanceof Object
-        for key, value in obj
-            obj[key] = recursivelyConvertPseudotype(value, opts)
         obj = convertPseudotype(obj, opts)
     obj
 

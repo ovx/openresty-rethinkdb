@@ -29,7 +29,7 @@ class Connection extends events.EventEmitter
     new: (host, callback) ->
         unless host
             host = {}
-        else if typeof host == 'string'
+        else if type(host) == 'string'
             host = {host: host}
 
         @host = host.host || @DEFAULT_HOST
@@ -152,10 +152,10 @@ class Connection extends events.EventEmitter
     close: varar 0, 2, (optsOrCallback, callback) ->
         if callback
             opts = optsOrCallback
-            unless Object::toString.call(opts) == '[object Object]'
+            unless type(opts) == 'tree'
                 error(err.RqlDriverError "First argument to two-argument `close` must be an object.")
             cb = callback
-        else if Object::toString.call(optsOrCallback) == '[object Object]'
+        else if type(optsOrCallback) == 'tree'
             opts = optsOrCallback
             cb = nil
         else if type(optsOrCallback) == 'function'
@@ -366,7 +366,7 @@ class TcpConnection extends Connection
         if callback
             opts = optsOrCallback
             cb = callback
-        else if Object::toString.call(optsOrCallback) == '[object Object]'
+        else if type(optsOrCallback) == 'tree'
             opts = optsOrCallback
             cb = nil
         else if type(optsOrCallback) == "function"
@@ -443,7 +443,7 @@ class HttpConnection extends Connection
         if callback
             opts = optsOrCallback
             cb = callback
-        else if Object::toString.call(optsOrCallback) == '[object Object]'
+        else if type(optsOrCallback) == 'tree'
             opts = optsOrCallback
             cb = nil
         else

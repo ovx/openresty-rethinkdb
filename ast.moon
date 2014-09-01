@@ -202,9 +202,7 @@ class RDBVal extends TermBase
         -- Look for opts dict
         if fieldsAndOpts.length > 0
             perhapsOptDict = fieldsAndOpts[fieldsAndOpts.length - 1]
-            if perhapsOptDict and
-                    (Object::toString.call(perhapsOptDict) == '[object Object]') and
-                    not (TermBase.instanceof(perhapsOptDict))
+            if perhapsOptDict and (type(perhapsOptDict) == 'tree') and not (TermBase.instanceof(perhapsOptDict))
                 opts = perhapsOptDict
                 fields = fieldsAndOpts[0...(fieldsAndOpts.length - 1)]
         fields = [funcWrap(field) for field in fields]
@@ -257,8 +255,7 @@ class RDBVal extends TermBase
         -- Look for opts dict
         if keysAndOpts.length > 1
             perhapsOptDict = keysAndOpts[keysAndOpts.length - 1]
-            if perhapsOptDict and
-                    ((Object::toString.call(perhapsOptDict) == '[object Object]') and not (TermBase.instanceof(perhapsOptDict)))
+            if perhapsOptDict and ((type(perhapsOptDict) == 'tree') and not (TermBase.instanceof(perhapsOptDict)))
                 opts = perhapsOptDict
                 keys = keysAndOpts[0...(keysAndOpts.length - 1)]
 
@@ -317,14 +314,14 @@ class DatumTerm extends RDBVal
         return self
 
     compose: ->
-        switch typeof @data
+        switch type @data
             when 'string'
                 '"'+@data+'"'
             else
                 ''+@data
 
     build: ->
-        if typeof(@data) == 'number'
+        if type(@data) == 'number'
             unless isFinite(@data)
                 error(TypeError("Illegal non-finite number `" + @data.toString() + "`."))
         @data
@@ -1124,9 +1121,9 @@ rethinkdb.expr = varar 1, 2, (val, nestingDepth=20) ->
     else if Array.isArray val
         val = [rethinkdb.expr(v, nestingDepth - 1) for v in val]
         MakeArray {}, unpack val
-    else if typeof(val) == 'number'
+    else if type(val) == 'number'
         DatumTerm val
-    else if Object::toString.call(val) == '[object Object]'
+    else if type(val) == 'tree'
         MakeObject val, nestingDepth
     else
         DatumTerm val
