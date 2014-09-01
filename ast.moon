@@ -536,7 +536,7 @@ class Table extends RDBOp
     st: 'table'
 
     compose: (args, optargs) ->
-        if @args[0] instanceof Db
+        if Db.instanceof @args[0]
             {args[0], '.table(', intspallargs([a for a in *args[2,]], optargs), ')'}
         else
             {'r.table(', intspallargs(args, optargs), ')'}
