@@ -357,7 +357,7 @@ class ArrayResult extends IterableResult
                 else
                     response.__proto__[name] = method
 
-        response.__proto__.__proto__ = [].__proto__
+        response.__proto__.__proto__ = {}
         response
 
 {Cursor: Cursor,
