@@ -7,6 +7,9 @@ plural = function(number)
     return "s"
   end
 end
+
+-- Function wrapper that enforces that the function is
+-- called with the correct number of arguments
 module.exports.ar = function(fun)
   return function(...)
     if arg.n ~= fun.length then
@@ -15,6 +18,9 @@ module.exports.ar = function(fun)
     return fun(unpack(arg))
   end
 end
+
+-- Like ar for variable argument functions. Takes minimum
+-- and maximum argument parameters.
 module.exports.varar = function(min, max, fun)
   return function(...)
     if (min and args.length < min) or (max and args.length > max) then
@@ -29,6 +35,8 @@ module.exports.varar = function(min, max, fun)
     return fun(unpack(arg))
   end
 end
+
+-- Like ar but for functions that take an optional options dict as the last argument
 module.exports.aropt = function(fun)
   return function(...)
     local expectedPosArgs = fun.length - 1
@@ -54,6 +62,7 @@ module.exports.aropt = function(fun)
   end
 end
 module.exports.toArrayBuffer = function(node_buffer)
+  -- Convert from node buffer to array buffer
   local arr = Uint8Array(ArrayBuffer(node_buffer.length))
   for value, i in node_buffer do
     arr[i] = value
@@ -62,6 +71,8 @@ module.exports.toArrayBuffer = function(node_buffer)
 end
 local convertPseudotype
 convertPseudotype = function(obj, opts)
+  -- An R_OBJECT may be a regular object or a "pseudo-type" so we need a
+  -- second layer of type switching here on the obfuscated field "$reql_type$"
   local _exp_0 = obj['$reql_type$']
   if 'TIME' == _exp_0 then
     local _exp_1 = opts.timeFormat
@@ -69,8 +80,14 @@ convertPseudotype = function(obj, opts)
       if not (obj['epoch_time']) then
         error(err.RqlDriverError("pseudo-type TIME " .. tostring(obj) .. " object missing expected field 'epoch_time'."))
       end
+
+      -- We ignore the timezone field of the pseudo-type TIME object. JS dates do not support timezones.
+      -- By converting to a native date object we are intentionally throwing out timezone information.
+
+      -- field "epoch_time" is in seconds but the Date constructor expects milliseconds
       return (Date(obj['epoch_time'] * 1000))
     elseif 'raw' == _exp_1 then
+      -- Just return the raw (`{'$reql_type$'...}`) object
       return obj
     else
       return error(err.RqlDriverError("Unknown timeFormat run option " .. tostring(opts.timeFormat) .. "."))
@@ -78,6 +95,9 @@ convertPseudotype = function(obj, opts)
   elseif 'GROUPED_DATA' == _exp_0 then
     local _exp_1 = opts.groupFormat
     if 'native' == _exp_1 or undefined == _exp_1 then
+      -- Don't convert the data into a map, because the keys could be objects which doesn't work in JS
+      -- Instead, we have the following format:
+      -- [ { 'group': <group>, 'reduction': <value(s)> } }, ... ]
       for i in obj['data'] do
         local _ = {
           group = i[0],
@@ -102,6 +122,7 @@ convertPseudotype = function(obj, opts)
       return error(err.RqlDriverError("Unknown binaryFormat run option " .. tostring(opts.binaryFormat) .. "."))
     end
   else
+    -- Regular object or unknown pseudo type
     return obj
   end
 end

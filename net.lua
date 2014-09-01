@@ -9,6 +9,8 @@ local protoProtocol = protodef.Protocol.JSON
 local protoQueryType = protodef.QueryType
 local protoResponseType = protodef.ResponseType
 local r = require('./ast')
+
+-- Import some names to this namespace for convienience
 local ar = util.ar
 local varar = util.varar
 local aropt = util.aropt
@@ -21,8 +23,9 @@ do
     DEFAULT_HOST = 'localhost',
     DEFAULT_PORT = 28015,
     DEFAULT_AUTH_KEY = '',
-    DEFAULT_TIMEOUT = 20,
+    DEFAULT_TIMEOUT = 20, -- In seconds
     _data = function(buf)
+      -- Buffer data, execute return results if need be
       self.buffer = Buffer.concat({
         self.buffer,
         buf
@@ -40,6 +43,7 @@ do
       end
     end,
     _delQuery = function(token)
+      -- This query is done, delete this cursor
       delete(self.outstandingCallbacks[token])
       if Object.keys(self.outstandingCallbacks).length < 1 and not self.open then
         return self:cancel()
@@ -66,6 +70,7 @@ do
             end
           else
             if cb then
+              -- Behavior varies considerably based on response type
               local _exp_0 = response.t
               if protoResponseType.COMPILE_ERROR == _exp_0 then
                 cb(mkErr(err.RqlCompileError, response, root))
@@ -132,6 +137,7 @@ do
           end
         end
       else
+        -- Unexpected token
         return self:emit('error', err.RqlDriverError("Unexpected token " .. tostring(token) .. "."))
       end
     end,
@@ -179,11 +185,17 @@ do
       if not (self.open) then
         return callback(err.RqlDriverError("Connection is closed."))
       end
+
+      -- Assign token
       local token = self.nextToken
       self.nextToken = self.nextToken + 1
+
+      -- Construct query
       local query = { }
       query.type = protoQueryType.NOREPLY_WAIT
       query.token = token
+
+      -- Save callback
       self.outstandingCallbacks[token] = {
         cb = callback,
         root = nil,
@@ -235,13 +247,18 @@ do
       if not (self.open) then
         error(err.RqlDriverError("Connection is closed."))
       end
+
+      -- Assign token
       local token = self.nextToken
       self.nextToken = self.nextToken + 1
+
+      -- Construct query
       local query = { }
       query.global_optargs = { }
       query.type = protoQueryType.START
       query.query = term.build()
       query.token = token
+      -- Set global options
       if self.db then
         query.global_optargs['db'] = r.db(self.db).build()
       end
@@ -263,6 +280,8 @@ do
       if opts.arrayLimit then
         query.global_optargs['array_limit'] = r.expr(opts.arrayLimit).build()
       end
+
+      -- Save callback
       if not opts.noreply then
         self.outstandingCallbacks[token] = {
           cb = cb,
@@ -290,6 +309,7 @@ do
       return self:_sendQuery(query)
     end,
     _sendQuery = function(query)
+      -- Serialize query to JSON
       local data = {
         query.type
       }
@@ -317,7 +337,7 @@ do
       end
       self.host = host.host or self.DEFAULT_HOST
       self.port = host.port or self.DEFAULT_PORT
-      self.db = host.db
+      self.db = host.db -- left undefined if this is not set
       self.authKey = host.authKey or self.DEFAULT_AUTH_KEY
       self.timeout = host.timeout or self.DEFAULT_TIMEOUT
       self.outstandingCallbacks = { }
@@ -395,6 +415,9 @@ do
           return cb(unpack(arg))
         end
       end
+
+      -- This would simply be super(opts, wrappedCb), if we were not in the varar
+      -- anonymous function
       return TcpConnection.__super__.close.call(self, opts, wrappedCb)
     end),
     cancel = function()
@@ -437,12 +460,15 @@ do
         return clearTimeout(timeout)
       end)
       self.rawSocket.once('connect', function(self)
+        -- Initialize connection with magic number to validate version
         local version = Buffer(4)
         version.writeUInt32LE(protoVersion, 0)
         local auth_buffer = Buffer(self.authKey, 'ascii')
         local auth_length = Buffer(4)
         auth_length.writeUInt32LE(auth_buffer.length, 0)
         local protocol = Buffer(4)
+
+        -- Send the protocol type that we will be using to communicate with the server
         protocol.writeUInt32LE(protoProtocol, 0)
         self.rawSocket.write(Buffer.concat({
           version,
@@ -450,6 +476,9 @@ do
           auth_buffer,
           protocol
         }))
+
+        -- Now we have to wait for a response from the server
+        -- acknowledging the connection
         local handshake_callback
         handshake_callback = function(self, buf)
           self.buffer = Buffer.concat({
@@ -464,14 +493,15 @@ do
               local status_str = status_buf.toString()
               clearTimeout(timeout)
               if status_str == "SUCCESS" then
+                -- We're good, finish setting up the connection
                 self.rawSocket.on('data', function(self, buf)
                   return self:_data(buf)
                 end)
                 self:emit('connect')
-                return 
+                return
               else
                 self:emit('error', err.RqlDriverError("Server dropped connection with message: \"" + status_str.trim() + "\""))
-                return 
+                return
               end
             end
           end
@@ -486,6 +516,8 @@ do
           noreplyWait = false
         })
       end)
+
+      -- In case the raw socket timesout, we close it and re-emit the event for the user
       return self.rawSocket.on('timeout', function(self)
         self.open = false, self:emit('timeout')
       end)
@@ -555,6 +587,9 @@ do
           return cb(unpack(arg))
         end
       end
+
+      -- This would simply be super(opts, wrappedCb), if we were not in the varar
+      -- anonymous function
       return HttpConnection.__super__.close.call(this, opts, wrappedCb)
     end),
     _writeQuery = function(token, data)
@@ -570,6 +605,8 @@ do
       xhr.responseType = "arraybuffer"
       xhr.onreadystatechange = function(self, e)
         if xhr.readyState == 4 and xhr.status == 200 then
+          -- Convert response from ArrayBuffer to node buffer
+
           local buf = Buffer((function()
             local _accum_0 = { }
             local _len_0 = 1
@@ -582,6 +619,8 @@ do
           return self:_data(buf)
         end
       end
+
+      -- Convert the chunk from node buffer to ArrayBuffer
       local array = ArrayBuffer(chunk.length)
       local view = Uint8Array(array)
       local i = 0
@@ -590,7 +629,7 @@ do
         i = i + 1
       end
       xhr.send(array)
-      self.xhr = xhr
+      self.xhr = xhr -- We allow only one query at a time per HTTP connection
     end
   }
   _base_0.__index = _base_0
@@ -623,7 +662,7 @@ do
         end
       end
       xhr.send()
-      self.xhr = xhr
+      self.xhr = xhr -- We allow only one query at a time per HTTP connection
     end,
     __base = _base_0,
     __name = "HttpConnection",
@@ -657,6 +696,8 @@ return {
   isConnection = function(connection)
     return Connection.instanceof(connection)
   end,
+
+  -- The main function of this module
   connect = varar(0, 2, function(hostOrCallback, callback)
     if type(hostOrCallback) == 'function' then
       local host = { }

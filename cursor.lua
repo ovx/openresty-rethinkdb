@@ -2,10 +2,14 @@ local err = require('./errors')
 local util = require('./util')
 local protoResponseType = require('./proto-def').ResponseType
 local EventEmitter = require('events').EventEmitter
+
+-- Import some names to this namespace for convenience
 local ar = util.ar
 local varar = util.varar
 local aropt = util.aropt
 local mkErr = util.mkErr
+
+-- setImmediate is not defined in some browsers (including Chrome)
 if not setImmediate then
   local setImmediate
   setImmediate = function(cb)
@@ -18,6 +22,7 @@ do
     stackSize = 100,
     _addResponse = function(response)
       if response.t == self._type or response.t == protoResponseType.SUCCESS_SEQUENCE then
+        -- We push a "ok" response only if it's not empty
         if response.r.length > 0 then
           self._responses.push(response)
         end
@@ -26,6 +31,7 @@ do
       end
       self._outstandingRequests = self._outstandingRequests - 1
       if response.t ~= self._type then
+        -- We got an error or a SUCCESS_SEQUENCE
         self._endFlag = true
         if self._closeCb then
           local _exp_0 = response.t
@@ -67,6 +73,8 @@ do
       local row = util.recursivelyConvertPseudotype(response.r[self._responseIndex], self._opts)
       local cb = self:_getCallback()
       self._responseIndex = self._responseIndex + 1
+
+      -- If we're done with this response, discard it
       if self._responseIndex == response.r.length then
         self._responses.shift()
         self._responseIndex = 0
@@ -77,8 +85,10 @@ do
       return self._responses.length == 0 or self._responses[0].r.length <= self._responseIndex
     end,
     _promptNext = function()
+      -- If there are no more waiting callbacks, just wait until the next event
       while self._cbQueue[0] do
         if self:bufferEmpty() == true then
+          -- We prefetch things here, set `is 0` to avoid prefectch
           if self._endFlag == true then
             local cb = self:_getCallback()
             cb(err.RqlDriverError("No more rows in the cursor."))
@@ -87,12 +97,17 @@ do
               self:_promptCont()
             end
           end
-          return 
+          return
         else
+
+          -- Try to get a row out of the responses
           local response = self._responses[0]
           if self._responses.length == 1 then
+            -- We're low on data, prebuffer
             self:_promptCont()
           end
+
+          -- Error responses are not discarded, and the error will be sent to all future callbacks
           local _exp_0 = response.t
           if protoResponseType.SUCCESS_PARTIAL == _exp_0 then
             self:_handleRow()
@@ -125,12 +140,14 @@ do
       end
     end,
     _promptCont = function()
+      -- Let's ask the server for more data if we haven't already
       if not ((self._contFlag or self._endFlag)) then
         self._contFlag = true
         self._outstandingRequests = self._outstandingRequests + 1
         return self._conn._continueQuery(self._token)
       end
     end,
+    -- Implement IterableResult
     hasNext = function()
       return error(err.RqlDriverError("The `hasNext` command has been removed since 1.13. Use `next` instead."))
     end,
@@ -302,10 +319,10 @@ do
       self._conn = conn
       self._token = token
       self._opts = opts
-      self._root = root
+      self._root = root -- current query
       self._responses = { }
       self._responseIndex = 0
-      self._outstandingRequests = 1
+      self._outstandingRequests = 1 -- Because we haven't add the response yet
       self._iterations = 0
       self._endFlag = false
       self._contFlag = false
@@ -412,10 +429,16 @@ do
   end
   Feed = _class_0
 end
+
+
+-- Used to wrap array results so they support the same iterable result
+-- API as cursors.
+
 local ArrayResult
 do
   local _parent_0 = IterableResult
   local _base_0 = {
+    -- We store @__index as soon as the user starts using the cursor interface
     _hasNext = ar(function()
       if not self.__index then
         self.__index = 0
@@ -445,6 +468,7 @@ do
     toArray = varar(0, 1, function(cb)
       local fn
       fn = function(self, cb)
+        -- IterableResult.toArray would create a copy
         if self.__index then
           return cb(nil, self.slice(self.__index, self.length))
         else

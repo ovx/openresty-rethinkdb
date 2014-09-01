@@ -2,16 +2,26 @@ local util = require('./util')
 local err = require('./errors')
 local net = require('./net')
 local protoTermType = require('./proto-def').TermType
+
+-- Import some names to this namespace for convienience
 local ar = util.ar
 local varar = util.varar
 local aropt = util.aropt
+
+-- rethinkdb is both the main export object for the module
+-- and a function that shortcuts `r.expr`.
 local rethinkdb
 rethinkdb = function(...)
   return rethinkdb.expr(unpack(arg))
 end
+
+-- Utilities
+
 local funcWrap
 funcWrap = function(val)
   if not (val) then
+    -- Pass through the nil value so it's caught by
+    -- the appropriate nil checker
     return val
   end
   val = rethinkdb.expr(val)
@@ -44,6 +54,8 @@ funcWrap = function(val)
 end
 local hasImplicit
 hasImplicit = function(args)
+  -- args is an array of (strings and arrays)
+  -- We recurse to look for `r.row` which is an implicit var
   if Array.isArray(args) then
     for arg in args do
       if hasImplicit(arg) == true then
@@ -57,25 +69,37 @@ hasImplicit = function(args)
   end
   return false
 end
+
+-- AST classes
+
 local TermBase
 do
   local _base_0 = {
     showRunWarning = true,
     run = function(connection, options, callback)
+      -- Valid syntaxes are
+      -- connection, callback
+      -- connection, options, callback
+      -- connection, nil, callback
+
       if net.isConnection(connection) == true then
+        -- Handle run(connection, callback)
         if type(options) == "function" then
           if not (callback) then
             callback = options
             options = { }
           else
             options(err.RqlDriverError("Second argument to `run` cannot be a function if a third argument is provided."))
-            return 
+            return
           end
         end
       end
+      -- else we suppose that we have run(connection[, options][, callback])
       if not (options) then
         options = { }
       end
+
+      -- Check if the arguments are valid types
       for key in options do
         local _exp_0 = key
         if 'useOutdated' == _exp_0 or 'noreply' == _exp_0 or 'timeFormat' == _exp_0 or 'profile' == _exp_0 or 'durability' == _exp_0 or 'groupFormat' == _exp_0 or 'binaryFormat' == _exp_0 or 'batchConf' == _exp_0 or 'arrayLimit' == _exp_0 then
@@ -91,6 +115,10 @@ do
         local status
         status, err = pcall(connection._start(self, callback, options))
         if not (status) then
+          -- It was decided that, if we can, we prefer to invoke the callback
+          -- with any errors rather than throw them as normal exceptions.
+          -- Thus we catch errors here and invoke the callback instead of
+          -- letting the error bubble up.
           if type(callback) == 'function' then
             return callback(err)
           end
@@ -238,6 +266,8 @@ do
     changes = function(...)
       return Changes({ }, self, unpack(arg))
     end,
+
+    -- pluck and without on zero fields are allowed
     pluck = function(...)
       return Pluck({ }, self, unpack(arg))
     end,
@@ -375,8 +405,11 @@ do
       return Sample({ }, self, unpack(arg))
     end,
     group = function(...)
+      -- Default if no opts dict provided
       local opts = { }
       local fields = arg
+
+      -- Look for opts dict
       if arg.n > 0 then
         local perhapsOptDict = arg[arg.n]
         if perhapsOptDict and (type(perhapsOptDict) == 'tree') and not (TermBase.instanceof(perhapsOptDict)) then
@@ -407,8 +440,11 @@ do
       return Group(opts, self, unpack(fields))
     end,
     orderBy = function(...)
+      -- Default if no opts dict provided
       local opts = { }
       local attrs = arg
+
+      -- Look for opts dict
       local perhapsOptDict = arg[arg.n]
       if perhapsOptDict and (type(perhapsOptDict) == 'tree') and not (TermBase.instanceof(perhapsOptDict)) then
         opts = perhapsOptDict
@@ -440,6 +476,8 @@ do
       end
       return OrderBy(opts, self, unpack(attrs))
     end,
+
+    -- Geo operations
     toGeojson = function(...)
       return ToGeojson({ }, self, unpack(arg))
     end,
@@ -455,6 +493,9 @@ do
     fill = function(...)
       return Fill({ }, self, unpack(arg))
     end,
+
+    -- Database operations
+
     tableCreate = aropt(function(tblName, opts)
       return TableCreate(opts, self, tblName)
     end),
@@ -467,12 +508,18 @@ do
     table = aropt(function(tblName, opts)
       return Table(opts, self, tblName)
     end),
+
+    -- Table operations
+
     get = function(...)
       return Get({ }, self, unpack(arg))
     end,
     getAll = function(...)
+      -- Default if no opts dict provided
       local opts = { }
       local keys = arg
+
+      -- Look for opts dict
       if arg.n > 1 then
         local perhapsOptDict = arg[arg.n - 1]
         if perhapsOptDict and ((type(perhapsOptDict) == 'tree') and not (TermBase.instanceof(perhapsOptDict))) then
@@ -501,6 +548,7 @@ do
         return IndexCreate(opts, self, name, funcWrap(defun_or_opts))
       else
         if defun_or_opts then
+          -- FIXME?
           if (type(defun_or_opts) == 'tree') and not Function.instanceof(defun_or_opts) and not TermBase.instanceof(defun_or_opts) then
             return IndexCreate(defun_or_opts, self, name)
           else
@@ -713,6 +761,7 @@ local translateOptargs
 translateOptargs = function(optargs)
   local result = { }
   for key, val in optargs do
+    -- We translate known two word opt-args to camel case for your convience
     local _continue_0 = false
     repeat
       local _exp_0 = key
@@ -967,7 +1016,7 @@ do
   local _parent_0 = RDBOp
   local _base_0 = {
     tt = protoTermType.MAKE_ARRAY,
-    st = '[...]',
+    st = '[...]', -- This is only used by the `undefined` argument checker
     compose = function(args)
       return {
         '[',
@@ -1011,7 +1060,7 @@ do
   local _parent_0 = RDBOp
   local _base_0 = {
     tt = protoTermType.MAKE_OBJECT,
-    st = '{...}',
+    st = '{...}', -- This is only used by the `undefined` argument checker
     compose = function(args, optargs)
       return kved(optargs)
     end,
@@ -2462,7 +2511,7 @@ do
   local _parent_0 = RDBOp
   local _base_0 = {
     tt = protoTermType.BRACKET,
-    st = '(...)',
+    st = '(...)', -- This is only used by the `undefined` argument checker
     compose = function(args)
       return {
         args[0],
@@ -4763,7 +4812,7 @@ do
   local _parent_0 = RDBOp
   local _base_0 = {
     tt = protoTermType.FUNCALL,
-    st = 'do',
+    st = 'do', -- This is only used by the `undefined` argument checker
     compose = function(args)
       if args.length > 2 then
         return {
@@ -5026,7 +5075,7 @@ do
         }
       else
         local varStr = ""
-        for arg, i in args[0][1] do
+        for arg, i in args[0][1] do -- ['0', ', ', '1']
           if i % 2 == 0 then
             varStr = varStr + Var.compose(arg)
           else
@@ -6384,6 +6433,11 @@ do
   end
   UUID = _class_0
 end
+
+
+-- All top level exported functions
+
+-- Wrap a native JS value in an ReQL datum
 rethinkdb.expr = varar(1, 2, function(val, nestingDepth)
   if nestingDepth == nil then
     nestingDepth = 20
@@ -6450,8 +6504,11 @@ rethinkdb.error = function(...)
   return UserError({ }, unpack(arg))
 end
 rethinkdb.random = function(...)
+  -- Default if no opts dict provided
   local opts = { }
   local limits = arg
+
+  -- Look for opts dict
   local perhapsOptDict = arg[arg.n - 1]
   if perhapsOptDict and ((type(perhapsOptDict)(is('tree'))) and not (TermBase.instanceof(perhapsOptDict))) then
     opts = perhapsOptDict
@@ -7323,4 +7380,6 @@ end)
 rethinkdb.uuid = function(...)
   return UUID({ }, unpack(arg))
 end
+
+-- Export all names defined on rethinkdb
 return rethinkdb
