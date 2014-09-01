@@ -477,7 +477,7 @@ class HttpConnection extends Connection
             if xhr.readyState == 4 and xhr.status == 200
                 -- Convert response from ArrayBuffer to node buffer
 
-                buf = Buffer(b for b in (Uint8Array(xhr.response)))
+                buf = Buffer([b for b in (Uint8Array(xhr.response))])
                 @_data(buf)
 
         -- Convert the chunk from node buffer to ArrayBuffer
