@@ -63,7 +63,7 @@ class Connection extends events.EventEmitter
 
     _data: (buf) ->
         -- Buffer data, execute return results if need be
-        @buffer = Buffer.concat([@buffer, buf])
+        @buffer = Buffer.concat({@buffer, buf})
 
         while @buffer.length >= 12
             token = @buffer.readUInt32LE(0) + 0x100000000 * @buffer.readUInt32LE(4)
@@ -286,7 +286,7 @@ class Connection extends events.EventEmitter
 
     _sendQuery: (query) ->
         -- Serialize query to JSON
-        data = [query.type]
+        data = {query.type}
         if query.query
             data.push(query.query)
             if query.global_optargs and Object.keys(query.global_optargs).length > 0
@@ -327,12 +327,12 @@ class TcpConnection extends Connection
             protocol = Buffer(4)
             protocol.writeUInt32LE(protoProtocol, 0)
 
-            @rawSocket.write Buffer.concat([version, auth_length, auth_buffer, protocol])
+            @rawSocket.write Buffer.concat({version, auth_length, auth_buffer, protocol})
 
             -- Now we have to wait for a response from the server
             -- acknowledging the connection
             handshake_callback = (buf) =>
-                @buffer = Buffer.concat([@buffer, buf])
+                @buffer = Buffer.concat({@buffer, buf})
                 for b,i in @buffer
                     if b == 0
                         @rawSocket.removeListener('data', handshake_callback)

@@ -404,11 +404,11 @@ class RDBOp extends RDBVal
 
     compose: (args, optargs) ->
         if @st
-            return ['r.', @st, '(', intspallargs(args, optargs), ')']
+            return {'r.', @st, '(', intspallargs(args, optargs), ')'}
         else
             if shouldWrap(@args[0])
-                args[0] = ['r(', args[0], ')']
-            return [args[0], '.', @mt, '(', intspallargs(args[1..], optargs), ')']
+                args[0] = {'r(', args[0], ')'}
+            return {args[0], '.', @mt, '(', intspallargs([a for a in *args[2,]], optargs), ')'}
 
 class RDBOpWrap extends RDBOp
     new: (optargs, ...) ->
@@ -420,13 +420,13 @@ class RDBOpWrap extends RDBOp
 
 intsp = (seq) ->
     unless seq[0] then return {}
-    res = [seq[0]]
-    for e in seq[1..]
+    res = {seq[1]}
+    for e in *seq[2,]
         res.push(', ', e)
     return res
 
 kved = (optargs) ->
-    ['{', intsp([k, ': ', v] for k,v in optargs), '}']
+    {'{', intsp([{k, ': ', v} for k,v in optargs]), '}'}
 
 intspallargs = (args, optargs) ->
     argrepr = {}
@@ -445,7 +445,7 @@ class MakeArray extends RDBOp
     tt: protoTermType.MAKE_ARRAY
     st: '[...]' -- This is only used by the `undefined` argument checker
 
-    compose: (args) -> ['[', intsp(args), ']']
+    compose: (args) -> {'[', intsp(args), ']'}
 
 class MakeObject extends RDBOp
     tt: protoTermType.MAKE_OBJECT
@@ -470,7 +470,7 @@ class MakeObject extends RDBOp
 
 class Var extends RDBOp
     tt: protoTermType.VAR
-    compose: (args) -> ['var_'+args]
+    compose: (args) -> {'var_' .. args}
 
 class JavaScript extends RDBOp
     tt: protoTermType.JAVASCRIPT
@@ -525,7 +525,7 @@ class Random extends RDBOp
 
 class ImplicitVar extends RDBOp
     tt: protoTermType.IMPLICIT_VAR
-    compose: -> ['r.row']
+    compose: -> {'r.row'}
 
 class Db extends RDBOp
     tt: protoTermType.DB
@@ -537,9 +537,9 @@ class Table extends RDBOp
 
     compose: (args, optargs) ->
         if @args[0] instanceof Db
-            [args[0], '.table(', intspallargs(args[1..], optargs), ')']
+            {args[0], '.table(', intspallargs([a for a in *args[2,]], optargs), ')'}
         else
-            ['r.table(', intspallargs(args, optargs), ')']
+            {'r.table(', intspallargs(args, optargs), ')'}
 
 class Get extends RDBOp
     tt: protoTermType.GET
@@ -645,7 +645,7 @@ class Bracket extends RDBOp
     tt: protoTermType.BRACKET
     st: '(...)' -- This is only used by the `undefined` argument checker
 
-    compose: (args) -> [args[0], '(', args[1], ')']
+    compose: (args) -> {args[0], '(', args[1], ')'}
 
 class Contains extends RDBOp
     tt: protoTermType.CONTAINS
@@ -898,11 +898,11 @@ class FunCall extends RDBOp
 
     compose: (args) ->
         if args.length > 2
-            ['r.do(', intsp(args[1..]), ', ', args[0], ')']
+            {'r.do(', intsp([a for a in *args[2,]]), ', ', args[0], ')'}
         else
             if shouldWrap(@args[1])
-                args[1] = ['r(', args[1], ')']
-            [args[1], '.do(', args[0], ')']
+                args[1] = {'r(', args[1], ')'}
+            {args[1], '.do(', args[0], ')'}
 
 class Default extends RDBOp
     tt: protoTermType.DEFAULT
@@ -947,7 +947,7 @@ class Func extends RDBOp
 
     compose: (args) ->
         if hasImplicit(args[1]) == true
-            [args[1]]
+            {args[1]}
         else
             varStr = ""
             for arg, i in args[0][1] -- ['0', ', ', '1']
@@ -955,7 +955,7 @@ class Func extends RDBOp
                     varStr += Var::compose(arg)
                 else
                     varStr += arg
-            ['function(', varStr, ') { return ', args[1], '; }']
+            {'function(', varStr, ') { return ', args[1], '; }'}
 
 class Asc extends RDBOpWrap
     tt: protoTermType.ASC
