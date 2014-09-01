@@ -382,7 +382,7 @@ class RDBOp extends RDBVal
                 if a
                     rethinkdb.expr a
                 else
-                    error(err.RqlDriverError "Argument #{i} to #{@st || @mt} may not be `undefined`.")
+                    error(err.RqlDriverError "Argument #{i} to #{@st or @mt} may not be `undefined`.")
         self.optargs = translateOptargs(optargs)
         return self
 

@@ -32,11 +32,11 @@ class Connection extends events.EventEmitter
         else if type(host) == 'string'
             host = {host: host}
 
-        @host = host.host || @DEFAULT_HOST
-        @port = host.port || @DEFAULT_PORT
+        @host = host.host or @DEFAULT_HOST
+        @port = host.port or @DEFAULT_PORT
         @db = host.db -- left undefined if this is not set
-        @authKey = host.authKey || @DEFAULT_AUTH_KEY
-        @timeout = host.timeout || @DEFAULT_TIMEOUT
+        @authKey = host.authKey or @DEFAULT_AUTH_KEY
+        @timeout = host.timeout or @DEFAULT_TIMEOUT
 
         @outstandingCallbacks = {}
         @nextToken = 1
@@ -44,7 +44,7 @@ class Connection extends events.EventEmitter
 
         @buffer = Buffer(0)
 
-        @_events = @_events || {}
+        @_events = @_events or {}
 
         errCallback = (e) =>
             @removeListener 'connect', conCallback
