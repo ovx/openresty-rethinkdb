@@ -23,8 +23,8 @@ funcWrap = (val) ->
     val = rethinkdb.expr(val)
 
     ivarScan = (node) ->
-        unless node instanceof TermBase then return false
-        if node instanceof ImplicitVar then return true
+        return false unless TermBase.instanceof node
+        return true if ImplicitVar.instanceof node
         if (node.args.map ivarScan).some((a)->a) then return true
         for k, v in node.optargs
             return true if ivarScan v
@@ -124,7 +124,7 @@ class RDBVal extends TermBase
             Slice opts, @, left, right_or_opts
         else if right_or_opts
             -- FIXME
-            if (Object::toString.call(right_or_opts) == '[object Object]') and not (right_or_opts.instanceof(TermBase)
+            if (type(right_or_opts) == 'tree') and (not TermBase.instanceof(right_or_opts))
                 Slice right_or_opts, @, left
             else
                 Slice {}, @, left, right_or_opts
@@ -225,8 +225,8 @@ class RDBVal extends TermBase
             opts = perhapsOptDict
             attrs = attrsAndOpts[0...(attrsAndOpts.length - 1)]
 
-        attrs = (for attr in attrs
-            if attr instanceof Asc or attr instanceof Desc
+        attrs = for attr in attrs
+            if Asc.instanceof(attr) or Desc.instanceof(attr)
                 attr
             else
                 funcWrap(attr)
@@ -274,7 +274,7 @@ class RDBVal extends TermBase
             IndexCreate opts, @, name, funcWrap(defun_or_opts)
         else if defun_or_opts
             -- FIXME?
-            if (Object::toString.call(defun_or_opts) is '[object Object]') and not (defun_or_opts instanceof Function) and not (defun_or_opts instanceof TermBase)
+            if (type(defun_or_opts) == 'tree') and not Function.instanceof(defun_or_opts) and not TermBase.instanceof(defun_or_opts)
                 IndexCreate defun_or_opts, @, name
             else
                 IndexCreate {}, @, name, funcWrap(defun_or_opts)
@@ -451,7 +451,7 @@ intspallargs = (args, optargs) ->
     return argrepr
 
 shouldWrap = (arg) ->
-    arg instanceof DatumTerm or arg instanceof MakeArray or arg instanceof MakeObject
+    DatumTerm.instanceof(arg) or MakeArray.instanceof(arg) or MakeObject.instanceof(arg)
 
 class MakeArray extends RDBOp
     tt: protoTermType.MAKE_ARRAY
@@ -501,9 +501,9 @@ class Binary extends RDBOp
     st: 'binary'
 
     new: (data) ->
-        if data instanceof TermBase
+        if TermBase.instanceof data
             self = super({}, data)
-        else if data instanceof Buffer
+        else if Buffer.instanceof data
             self = super()
             self.base64_data = data.toString("base64")
         else
@@ -1123,13 +1123,13 @@ rethinkdb.expr = varar 1, 2, (val, nestingDepth=20) ->
     if type(nestingDepth) != "number" or isNaN(nestingDepth)
         error(err.RqlDriverError "Second argument to `r.expr` must be a number or undefined.")
 
-    else if val instanceof TermBase
+    else if TermBase.instanceof val
         val
-    else if val instanceof Function
+    else if Function.instanceof val
         Func {}, val
-    else if val instanceof Date
+    else if Date.instanceof val
         ISO8601 {}, val.toISOString()
-    else if val instanceof Buffer
+    else if Buffer.instanceof val
         Binary val
     else if Array.isArray val
         val = [rethinkdb.expr(v, nestingDepth - 1) for v in val]
@@ -1156,8 +1156,7 @@ rethinkdb.random = (...) ->
 
         -- Look for opts dict
         perhapsOptDict = limitsAndOpts[limitsAndOpts.length - 1]
-        if perhapsOptDict and
-                ((Object::toString.call(perhapsOptDict) is '[object Object]') and not (perhapsOptDict instanceof TermBase))
+        if perhapsOptDict and ((type(perhapsOptDict) is 'tree') and not (TermBase.instanceof perhapsOptDict))
             opts = perhapsOptDict
             limits = limitsAndOpts[0...(limitsAndOpts.length - 1)]
 

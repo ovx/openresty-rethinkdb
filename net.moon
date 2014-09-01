@@ -48,7 +48,7 @@ class Connection extends events.EventEmitter
 
         errCallback = (e) =>
             @removeListener 'connect', conCallback
-            if e instanceof err.RqlDriverError
+            if err.RqlDriverError.instanceof e
                 callback e
             else
                 callback err.RqlDriverError "Could not connect to #{@host}:#{@port}.\n#{e.message}"
