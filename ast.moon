@@ -507,7 +507,8 @@ class Binary extends RDBOp
 
     build: ->
         if @args.length == 0
-            { '$reql_type$': 'BINARY', 'data': @base64_data }
+            data = @base64_data
+            '$reql_type$': 'BINARY', :data
         else
             super
 
