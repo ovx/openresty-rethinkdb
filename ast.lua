@@ -881,7 +881,7 @@ do
           if a then
             _accum_0[_len_0] = rethinkdb.expr(a)
           else
-            _accum_0[_len_0] = error(err.RqlDriverError("Argument " .. tostring(i) .. " to " .. tostring(self.st or self.mt) .. " may not be `undefined`."))
+            _accum_0[_len_0] = error(err.RqlDriverError("Argument " .. tostring(i) .. " to " .. tostring(self.st or self.mt) .. " may not be `nil`."))
           end
           _len_0 = _len_0 + 1
         end
@@ -1016,7 +1016,7 @@ do
   local _parent_0 = RDBOp
   local _base_0 = {
     tt = protoTermType.MAKE_ARRAY,
-    st = '[...]', -- This is only used by the `undefined` argument checker
+    st = '[...]', -- This is only used by the `nil` argument checker
     compose = function(args)
       return {
         '[',
@@ -1060,7 +1060,7 @@ do
   local _parent_0 = RDBOp
   local _base_0 = {
     tt = protoTermType.MAKE_OBJECT,
-    st = '{...}', -- This is only used by the `undefined` argument checker
+    st = '{...}', -- This is only used by the `nil` argument checker
     compose = function(args, optargs)
       return kved(optargs)
     end,
@@ -2511,7 +2511,7 @@ do
   local _parent_0 = RDBOp
   local _base_0 = {
     tt = protoTermType.BRACKET,
-    st = '(...)', -- This is only used by the `undefined` argument checker
+    st = '(...)', -- This is only used by the `nil` argument checker
     compose = function(args)
       return {
         args[0],
@@ -4812,7 +4812,7 @@ do
   local _parent_0 = RDBOp
   local _base_0 = {
     tt = protoTermType.FUNCALL,
-    st = 'do', -- This is only used by the `undefined` argument checker
+    st = 'do', -- This is only used by the `nil` argument checker
     compose = function(args)
       if args.length > 2 then
         return {
@@ -5106,8 +5106,8 @@ do
         i = i + 1
       end
       local body = func(unpack(args))
-      if body(is(undefined)) then
-        error(err.RqlDriverError("Anonymous function returned `undefined`. Did you forget a `return`?"))
+      if not body then
+        error(err.RqlDriverError("Anonymous function returned `nil`. Did you forget a `return`?"))
       end
       local argsArr = MakeArray({ }, unpack(argNums))
       return _parent_0.__init(self, optargs, argsArr, body)
@@ -6449,7 +6449,7 @@ rethinkdb.expr = varar(1, 2, function(val, nestingDepth)
     error(err.RqlDriverError("Nesting depth limit exceeded"))
   end
   if type(nestingDepth) ~= "number" or isNaN(nestingDepth) then
-    return error(err.RqlDriverError("Second argument to `r.expr` must be a number or undefined."))
+    return error(err.RqlDriverError("Second argument to `r.expr` must be a number or nil."))
   else
     if TermBase.instanceof(val) then
       return val

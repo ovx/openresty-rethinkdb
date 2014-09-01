@@ -76,7 +76,7 @@ convertPseudotype = function(obj, opts)
   local _exp_0 = obj['$reql_type$']
   if 'TIME' == _exp_0 then
     local _exp_1 = opts.timeFormat
-    if 'native' == _exp_1 or undefined == _exp_1 then
+    if 'native' == _exp_1 or not _exp_1 then
       if not (obj['epoch_time']) then
         error(err.RqlDriverError("pseudo-type TIME " .. tostring(obj) .. " object missing expected field 'epoch_time'."))
       end
@@ -94,7 +94,7 @@ convertPseudotype = function(obj, opts)
     end
   elseif 'GROUPED_DATA' == _exp_0 then
     local _exp_1 = opts.groupFormat
-    if 'native' == _exp_1 or undefined == _exp_1 then
+    if 'native' == _exp_1 or not _exp_1 then
       -- Don't convert the data into a map, because the keys could be objects which doesn't work in JS
       -- Instead, we have the following format:
       -- [ { 'group': <group>, 'reduction': <value(s)> } }, ... ]
@@ -111,7 +111,7 @@ convertPseudotype = function(obj, opts)
     end
   elseif 'BINARY' == _exp_0 then
     local _exp_1 = opts.binaryFormat
-    if 'native' == _exp_1 or undefined == _exp_1 then
+    if 'native' == _exp_1 or not _exp_1 then
       if not (obj['data']) then
         error(err.RqlDriverError("pseudo-type BINARY object missing expected field 'data'."))
       end

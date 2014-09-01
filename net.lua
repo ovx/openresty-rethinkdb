@@ -337,7 +337,7 @@ do
       end
       self.host = host.host or self.DEFAULT_HOST
       self.port = host.port or self.DEFAULT_PORT
-      self.db = host.db -- left undefined if this is not set
+      self.db = host.db -- left nil if this is not set
       self.authKey = host.authKey or self.DEFAULT_AUTH_KEY
       self.timeout = host.timeout or self.DEFAULT_TIMEOUT
       self.outstandingCallbacks = { }
