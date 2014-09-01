@@ -15,7 +15,7 @@
 * RCS ID: $Id: io.h,v 1.11 2005/10/07 04:40:59 diego Exp $
 \*=========================================================================*/
 #include <stdio.h>
-#include "lua.h"
+#include <lua.h>
 
 #include "timeout.h"
 
@@ -64,4 +64,3 @@ void io_init(p_io io, p_send send, p_recv recv, p_error error, void *ctx);
 const char *io_strerror(int err);
 
 #endif /* IO_H */
-
