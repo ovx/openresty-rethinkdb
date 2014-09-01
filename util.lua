@@ -10,7 +10,7 @@ end
 
 -- Function wrapper that enforces that the function is
 -- called with the correct number of arguments
-module.exports.ar = function(fun)
+ar = function(fun)
   return function(...)
     if arg.n ~= fun.length then
       error(err.RqlDriverError("Expected " .. tostring(fun.length) .. " argument" .. tostring(plural(fun.length)) .. " but found " .. tostring(arg.n) .. "."))
@@ -21,7 +21,7 @@ end
 
 -- Like ar for variable argument functions. Takes minimum
 -- and maximum argument parameters.
-module.exports.varar = function(min, max, fun)
+varar = function(min, max, fun)
   return function(...)
     if (min and args.length < min) or (max and args.length > max) then
       if min and not max then
@@ -37,7 +37,7 @@ module.exports.varar = function(min, max, fun)
 end
 
 -- Like ar but for functions that take an optional options dict as the last argument
-module.exports.aropt = function(fun)
+aropt = function(fun)
   return function(...)
     local expectedPosArgs = fun.length - 1
     local perhapsOptDict = arg[expectedPosArgs]
@@ -61,7 +61,7 @@ module.exports.aropt = function(fun)
     return fun(unpack(arg))
   end
 end
-module.exports.toArrayBuffer = function(node_buffer)
+toArrayBuffer = function(node_buffer)
   -- Convert from node buffer to array buffer
   local arr = Uint8Array(ArrayBuffer(node_buffer.length))
   for value, i in node_buffer do
@@ -155,6 +155,10 @@ mkErr = function(ErrClass, response, root)
   return ErrClass(mkAtom(response), root, response.b)
 end
 return {
+  ar = ar,
+  varar = varar,
+  aropt = aropt,
+  toArrayBuffer = toArrayBuffer,
   recursivelyConvertPseudotype = recursivelyConvertPseudotype,
   mkAtom = mkAtom,
   mkSeq = mkSeq,
