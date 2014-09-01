@@ -5,8 +5,8 @@ plural = (number) -> if number == 1 then "" else "s"
 -- Function wrapper that enforces that the function is
 -- called with the correct number of arguments
 module.exports.ar = (fun) -> (...) ->
-    if args.length != fun.length
-        error(err.RqlDriverError "Expected #{fun.length} argument#{plural(fun.length)} but found #{args.length}.")
+    if arg.n != fun.length
+        error(err.RqlDriverError "Expected #{fun.length} argument#{plural(fun.length)} but found #{arg.n}.")
     fun(unpack arg)
 
 -- Like ar for variable argument functions. Takes minimum
@@ -14,21 +14,21 @@ module.exports.ar = (fun) -> (...) ->
 module.exports.varar = (min, max, fun) -> (...) ->
     if (min and args.length < min) or (max and args.length > max)
         if min and not max
-            error(err.RqlDriverError "Expected #{min} or more arguments but found #{args.length}.")
+            error(err.RqlDriverError "Expected #{min} or more arguments but found #{arg.n}.")
         if max and not min
-            error(err.RqlDriverError "Expected #{max} or fewer arguments but found #{args.length}.")
-        error(err.RqlDriverError "Expected between #{min} and #{max} arguments but found #{args.length}.")
+            error(err.RqlDriverError "Expected #{max} or fewer arguments but found #{arg.n}.")
+        error(err.RqlDriverError "Expected between #{min} and #{max} arguments but found #{arg.n}.")
     fun(unpack arg)
 
 -- Like ar but for functions that take an optional options dict as the last argument
 module.exports.aropt = (fun) -> (...) ->
     expectedPosArgs = fun.length - 1
-    perhapsOptDict = args[expectedPosArgs]
+    perhapsOptDict = arg[expectedPosArgs]
 
     if perhapsOptDict and (type(perhapsOptDict) != 'tree')
         perhapsOptDict = nil
 
-    numPosArgs = args.length - (if perhapsOptDict then 1 else 0)
+    numPosArgs = arg.n - (if perhapsOptDict then 1 else 0)
 
     if expectedPosArgs != numPosArgs
         if expectedPosArgs != 1

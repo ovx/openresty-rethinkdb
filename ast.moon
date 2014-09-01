@@ -175,7 +175,8 @@ class RDBVal extends TermBase
     delete: aropt (opts) -> Delete opts, @
     replace: aropt (func, opts) -> Replace opts, @, funcWrap(func)
     do: (...) ->
-        FunCall {}, funcWrap(arg[arg.n]), @, unpack args[,arg.n-1]
+        args = [a for a in *arg[,(arg.n - 1)]]
+        FunCall {}, funcWrap(arg[arg.n]), @, unpack args
 
     default: (...) -> Default {}, @, unpack arg
 
@@ -200,11 +201,11 @@ class RDBVal extends TermBase
         fields = arg
 
         -- Look for opts dict
-        if fieldsAndOpts.length > 0
-            perhapsOptDict = fieldsAndOpts[fieldsAndOpts.length - 1]
+        if arg.n > 0
+            perhapsOptDict = arg[arg.n]
             if perhapsOptDict and (type(perhapsOptDict) == 'tree') and not (TermBase.instanceof(perhapsOptDict))
                 opts = perhapsOptDict
-                fields = fieldsAndOpts[0...(fieldsAndOpts.length - 1)]
+                fields = [a for a in *arg[,(arg.n - 1)]]
         fields = [funcWrap(field) for field in fields]
 
         Group opts, @, unpack fields
@@ -215,10 +216,10 @@ class RDBVal extends TermBase
         attrs = arg
 
         -- Look for opts dict
-        perhapsOptDict = attrsAndOpts[attrsAndOpts.length - 1]
+        perhapsOptDict = arg[arg.n]
         if perhapsOptDict and (type(perhapsOptDict) == 'tree') and not (TermBase.instanceof(perhapsOptDict))
             opts = perhapsOptDict
-            attrs = attrsAndOpts[0...(attrsAndOpts.length - 1)]
+            attrs = [a for a in *arg[,(arg.n - 1)]]
 
         attrs = for attr in attrs
             if Asc.instanceof(attr) or Desc.instanceof(attr)
@@ -253,11 +254,11 @@ class RDBVal extends TermBase
         keys = arg
 
         -- Look for opts dict
-        if keysAndOpts.length > 1
-            perhapsOptDict = keysAndOpts[keysAndOpts.length - 1]
+        if arg.n > 1
+            perhapsOptDict = arg[arg.n - 1]
             if perhapsOptDict and ((type(perhapsOptDict) == 'tree') and not (TermBase.instanceof(perhapsOptDict)))
                 opts = perhapsOptDict
-                keys = keysAndOpts[0...(keysAndOpts.length - 1)]
+                keys = [a for a in *arg[,(arg.n - 1)]]
 
         GetAll opts, @, unpack keys
 
@@ -410,7 +411,7 @@ class RDBOp extends RDBVal
             return [args[0], '.', @mt, '(', intspallargs(args[1..], optargs), ')']
 
 class RDBOpWrap extends RDBOp
-    new: (optargs, unpack arg) ->
+    new: (optargs, ...) ->
         self = super()
         self.args = [rethinkdb.expr(funcWrap a) for a in arg]
 
@@ -1142,10 +1143,10 @@ rethinkdb.random = (...) ->
         limits = arg
 
         -- Look for opts dict
-        perhapsOptDict = limitsAndOpts[limitsAndOpts.length - 1]
+        perhapsOptDict = arg[arg.n - 1]
         if perhapsOptDict and ((type(perhapsOptDict) is 'tree') and not (TermBase.instanceof perhapsOptDict))
             opts = perhapsOptDict
-            limits = limitsAndOpts[0...(limitsAndOpts.length - 1)]
+            limits = [a for a in *arg[,(arg.n - 1)]]
 
         Random opts, unpack limits
 
@@ -1166,7 +1167,7 @@ rethinkdb.tableDrop = (...) -> TableDrop {}, unpack arg
 rethinkdb.tableList = (...) -> TableList {}, unpack arg
 
 rethinkdb.do = varar 1, nil, (...) ->
-    FunCall {}, funcWrap(arg[arg.n]), unpack *arg[,arg.n - 1]
+    FunCall {}, funcWrap(arg[arg.n]), unpack [a for a in *arg[,(arg.n - 1)]]
 
 rethinkdb.branch = (...) -> Branch {}, unpack arg
 
