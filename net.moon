@@ -166,7 +166,7 @@ class Connection extends events.EventEmitter
             cb = nil
 
         for key in opts
-            unless key in ['noreplyWait']
+            unless key == 'noreplyWait'
                 error(err.RqlDriverError "First argument to two-argument `close` must be { noreplyWait: <bool> }.")
 
         noreplyWait = ((not opts.noreplyWait) or opts.noreplyWait) and @open
