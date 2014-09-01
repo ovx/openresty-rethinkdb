@@ -495,7 +495,7 @@ class Binary extends RDBOp
             self = super()
             self.base64_data = data.toString("base64")
         else
-            error(TypeError("Parameter to `r.binary` must be a Buffer object or RQL query.")
+            error TypeError("Parameter to `r.binary` must be a Buffer object or RQL query.")
 
         return self
 
