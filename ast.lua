@@ -30,10 +30,10 @@ local funcWrap = function(val)
     if ImplicitVar.instanceof(node) then
       return true
     end
-    if (node.args.map(ivarScan)).some(function(a)
-      return a
-    end) then
-      return true
+    for _, v in ipairs(node.args) do
+      if ivarScan(v) then
+        return true
+      end
     end
     for k, v in node.optargs do
       if ivarScan(v) then
