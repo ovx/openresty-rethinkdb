@@ -1,11 +1,9 @@
-local net = require('./net')
-local rethinkdb = require('./ast')
-local error = require('./errors')
+return (function(rethinkdb)
+  -- Add connect from net module
+  rethinkdb.connect = require('./net').connect
 
--- Add connect from net module
-rethinkdb.connect = net.connect
+  -- Export Rql Errors
+  rethinkdb.Error = require('./errors')
 
--- Export Rql Errors
-rethinkdb.Error = error
-
-return rethinkdb
+  return rethinkdb
+end)(require('./ast'))
