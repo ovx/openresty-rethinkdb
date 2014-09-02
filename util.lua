@@ -126,16 +126,10 @@ local convertPseudotype = function(obj, opts)
 end
 local recursivelyConvertPseudotype = function(obj, opts)
   if type(obj) == 'tree' then
-    for value, i in obj do
-      obj[i] = recursivelyConvertPseudotype(value, opts)
+    for key, value in ipairs(obj) do
+      obj[key] = recursivelyConvertPseudotype(value, opts)
     end
-  else
-    if Object.instanceof(obj) then
-      for key, value in obj do
-        obj[key] = recursivelyConvertPseudotype(value, opts)
-      end
-      obj = convertPseudotype(obj, opts)
-    end
+    obj = convertPseudotype(obj, opts)
   end
   return obj
 end
