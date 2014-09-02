@@ -63,7 +63,7 @@ end
 toArrayBuffer = function(node_buffer)
   -- Convert from node buffer to array buffer
   local arr = Uint8Array(ArrayBuffer(node_buffer.length))
-  for value, i in node_buffer do
+  for value, i in ipairs(node_buffer) do
     arr[i] = value
   end
   return arr.buffer
@@ -96,12 +96,16 @@ local convertPseudotype = function(obj, opts)
       -- Don't convert the data into a map, because the keys could be objects which doesn't work in JS
       -- Instead, we have the following format:
       -- [ { 'group': <group>, 'reduction': <value(s)> } }, ... ]
-      for i in obj['data'] do
-        local _ = {
-          group = i[0],
-          reduction = i[1]
+      res = {}
+      j = 1
+      for i, v in ipairs(obj['data']) do
+        res[j] = {
+          group = i,
+          reduction = v
         }
+        j = j + 1
       end
+      obj = res
     elseif 'raw' == _exp_1 then
       return obj
     else

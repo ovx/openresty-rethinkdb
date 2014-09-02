@@ -474,7 +474,7 @@ do
     end,
     makeIterable = function(response)
       response.__proto__ = { }
-      for name, method in ArrayResult.prototype do
+      for name, method in ipairs(ArrayResult.prototype) do
         if name ~= 'constructor' then
           if name == '_each' then
             response.__proto__['each'] = method

@@ -162,7 +162,7 @@ do
           end
         end
       end
-      for key in opts do
+      for key, _ in ipairs(opts) do
         if not (key == 'noreplyWait') then
           error(err.RqlDriverError("First argument to two-argument `close` must be { noreplyWait: <bool> }."))
         end
@@ -478,7 +478,7 @@ do
             self.buffer,
             buf
           })
-          for b, i in self.buffer do
+          for b, i in ipairs(self.buffer) do
             if b == 0 then
               self.rawSocket.removeListener('data', handshake_callback)
               local status_buf = self.buffer.slice(0, i)
@@ -602,7 +602,7 @@ do
           local buf = Buffer((function()
             local _accum_0 = { }
             local _len_0 = 1
-            for b in (Uint8Array(xhr.response)) do
+            for i, b in ipairs(Uint8Array(xhr.response)) do
               _accum_0[_len_0] = b
               _len_0 = _len_0 + 1
             end

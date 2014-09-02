@@ -194,14 +194,14 @@ do
     do
       local _accum_0 = { }
       local _len_0 = 1
-      for arg in term.args do
+      for i, arg in ipairs(term.args) do
         _accum_0[_len_0] = composeTerm(arg)
         _len_0 = _len_0 + 1
       end
       args = _accum_0
     end
     local optargs = { }
-    for key, arg in term.optargs do
+    for key, arg in ipairs(term.optargs) do
       optargs[key] = composeTerm(arg)
     end
     return term.compose(args, optargs)
@@ -212,7 +212,7 @@ do
     do
       local _accum_0 = { }
       local _len_0 = 1
-      for arg, i in term.args do
+      for arg, i in ipairs(term.args) do
         if frame == i then
           _accum_0[_len_0] = composeCarrots(arg, frames)
         else
@@ -223,7 +223,7 @@ do
       args = _accum_0
     end
     local optargs = { }
-    for key, arg in term.optargs do
+    for key, arg in ipairs(term.optargs) do
       if frame == key then
         optargs[key] = composeCarrots(arg, frames)
       else
@@ -245,7 +245,7 @@ do
   end
   joinTree = function(tree)
     local str = ''
-    for term in tree do
+    for _, term in ipairs(tree) do
       if Array.isArray(term) then
         if term.length == 2 and term[0] == carrotMarker then
           str = str + joinTree(term[1]).gsub('.', '^')

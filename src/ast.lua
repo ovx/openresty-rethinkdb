@@ -35,7 +35,7 @@ local funcWrap = function(val)
         return true
       end
     end
-    for k, v in node.optargs do
+    for k, v in ipairs(node.optargs) do
       if ivarScan(v) then
         return true
       end
@@ -53,7 +53,7 @@ local hasImplicit = function(args)
   -- args is an array of (strings and arrays)
   -- We recurse to look for `r.row` which is an implicit var
   if Array.isArray(args) then
-    for arg in args do
+    for _, arg in ipairs(args) do
       if hasImplicit(arg) == true then
         return true
       end
@@ -96,7 +96,7 @@ do
       end
 
       -- Check if the arguments are valid types
-      for key in options do
+      for key, _ in ipairs(options) do
         local _exp_0 = key
         if 'useOutdated' == _exp_0 or 'noreply' == _exp_0 or 'timeFormat' == _exp_0 or 'profile' == _exp_0 or 'durability' == _exp_0 or 'groupFormat' == _exp_0 or 'binaryFormat' == _exp_0 or 'batchConf' == _exp_0 or 'arrayLimit' == _exp_0 then
           local _ = nil
@@ -427,7 +427,7 @@ do
       do
         local _accum_0 = { }
         local _len_0 = 1
-        for field in fields do
+        for i, field in ipairs(fields) do
           _accum_0[_len_0] = funcWrap(field)
           _len_0 = _len_0 + 1
         end
@@ -460,7 +460,7 @@ do
       do
         local _accum_0 = { }
         local _len_0 = 1
-        for attr in attrs do
+        for i, attr in ipairs(attrs) do
           if Asc.instanceof(attr) or Desc.instanceof(attr) then
             _accum_0[_len_0] = attr
           else
@@ -722,12 +722,12 @@ do
         self.tt,
         { }
       }
-      for arg in self.args do
+      for i, arg in ipairs(self.args) do
         res[1].push(arg.build())
       end
       local opts = { }
       local add_opts = false
-      for key, val in self.optargs do
+      for key, val in ipairs(self.optargs) do
         add_opts = true
         opts[key] = val.build()
       end
@@ -781,7 +781,7 @@ do
       do
         local _accum_0 = { }
         local _len_0 = 1
-        for a, i in arg do
+        for a, i in ipairs(arg) do
           if a then
             _accum_0[_len_0] = rethinkdb.expr(a)
           else
@@ -830,7 +830,7 @@ do
       do
         local _accum_0 = { }
         local _len_0 = 1
-        for a in arg do
+        for i, a in ipairs(arg) do
           _accum_0[_len_0] = rethinkdb.expr(funcWrap(a))
           _len_0 = _len_0 + 1
         end
@@ -882,7 +882,7 @@ local kved = function(optargs)
     intsp((function()
       local _accum_0 = { }
       local _len_0 = 1
-      for k, v in optargs do
+      for k, v in ipairs(optargs) do
         _accum_0[_len_0] = {
           k,
           ': ',
@@ -966,7 +966,7 @@ do
     end,
     build = function()
       local res = { }
-      for key, val in self.optargs do
+      for key, val in ipairs(self.optargs) do
         res[key] = val.build()
       end
       return res
@@ -981,7 +981,7 @@ do
       end
       local self = _parent_0.__init(self, { })
       self.optargs = { }
-      for key, val in obj do
+      for key, val in ipairs(obj) do
         if not (val) then
           error(err.RqlDriverError("Object field '" .. tostring(key) .. "' may not be nil"))
         end
@@ -4975,7 +4975,7 @@ do
         }
       else
         local varStr = ""
-        for arg, i in args[0][1] do -- ['0', ', ', '1']
+        for arg, i in ipairs(args[0][1]) do -- ['0', ', ', '1']
           if i % 2 == 0 then
             varStr = varStr + Var.compose(arg)
           else
@@ -6367,7 +6367,7 @@ rethinkdb.expr = varar(1, 2, function(val, nestingDepth)
               do
                 local _accum_0 = { }
                 local _len_0 = 1
-                for v in val do
+                for i, v in ipairs(val) do
                   _accum_0[_len_0] = rethinkdb.expr(v, nestingDepth - 1)
                   _len_0 = _len_0 + 1
                 end
