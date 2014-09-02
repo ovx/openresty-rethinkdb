@@ -11,8 +11,7 @@ local mkErr = util.mkErr
 
 -- setImmediate is not defined in some browsers (including Chrome)
 if not setImmediate then
-  local setImmediate
-  setImmediate = function(cb)
+  local setImmediate = function(cb)
     return setTimeout(cb, 0)
   end
 end
@@ -152,8 +151,7 @@ do
       error(err.RqlDriverError("The `hasNext` command has been removed since 1.13. Use `next` instead."))
     end,
     _next = varar(0, 1, function(cb)
-      local fn
-      fn = function(self, cb)
+      local fn = function(self, cb)
         self._cbQueue.push(cb)
         return self:_promptNext()
       end
@@ -181,8 +179,7 @@ do
       end
       local stopFlag = false
       local self = self
-      local nextCb
-      nextCb = function(self, err, data)
+      local nextCb = function(self, err, data)
         if stopFlag ~= true then
           if err then
             if err.message == 'No more rows in the cursor.' then
@@ -205,19 +202,16 @@ do
       return self:_next(nextCb)
     end),
     toArray = varar(0, 1, function(cb)
-      local fn
-      fn = function(self, cb)
+      local fn = function(self, cb)
         local arr = { }
-        local eachCb
-        eachCb = function(self, err, row)
+        local eachCb = function(self, err, row)
           if err then
             return cb(err)
           else
             return arr.push(row)
           end
         end
-        local onFinish
-        onFinish = function(self, err, ar)
+        local onFinish = function(self, err, ar)
           return cb(nil, arr)
         end
         return self:each(eachCb, onFinish)
@@ -446,8 +440,7 @@ do
       return self.__index < self.length
     end),
     _next = varar(0, 1, function(cb)
-      local fn
-      fn = function(self, cb)
+      local fn = function(self, cb)
         if self:_hasNext() == true then
           self = self
           if self.__index % self.stackSize == self.stackSize - 1 then
@@ -466,8 +459,7 @@ do
       return fn(cb)
     end),
     toArray = varar(0, 1, function(cb)
-      local fn
-      fn = function(self, cb)
+      local fn = function(self, cb)
         -- IterableResult.toArray would create a copy
         if self.__index then
           return cb(nil, self.slice(self.__index, self.length))

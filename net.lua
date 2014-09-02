@@ -168,8 +168,7 @@ do
         end
       end
       local noreplyWait = ((not opts.noreplyWait) or opts.noreplyWait) and self.open
-      local wrappedCb
-      wrappedCb = function(self, ...)
+      local wrappedCb = function(self, ...)
         self.open = false
         if cb then
           return cb(unpack(arg))
@@ -223,13 +222,11 @@ do
           local cb = callback
         end
       end
-      local closeCb
-      closeCb = function(self, err)
+      local closeCb = function(self, err)
         if err then
           return cb(err)
         else
-          local constructCb
-          constructCb = function(self)
+          local constructCb = function(self)
             return self.constructor.call(self, {
               host = self.host,
               port = self.port
@@ -345,8 +342,7 @@ do
       self.open = false
       self.buffer = Buffer(0)
       self._events = self._events or { }
-      local errCallback
-      errCallback = function(self, e)
+      local errCallback = function(self, e)
         self:removeListener('connect', conCallback)
         if err.RqlDriverError.instanceof(e) then
           return callback(e)
@@ -355,8 +351,7 @@ do
         end
       end
       self:once('error', errCallback)
-      local conCallback
-      conCallback = function(self)
+      local conCallback = function(self)
         self:removeListener('error', errCallback)
         self.open = true
         return callback(nil, self)
@@ -408,8 +403,7 @@ do
           end
         end
       end
-      local wrappedCb
-      wrappedCb = function(self, ...)
+      local wrappedCb = function(self, ...)
         self.rawSocket["end"]()
         if cb then
           return cb(unpack(arg))
@@ -479,8 +473,7 @@ do
 
         -- Now we have to wait for a response from the server
         -- acknowledging the connection
-        local handshake_callback
-        handshake_callback = function(self, buf)
+        local handshake_callback = function(self, buf)
           self.buffer = Buffer.concat({
             self.buffer,
             buf
@@ -580,8 +573,7 @@ do
       if not (not cb or type(cb) == 'function') then
         error(err.RqlDriverError("Final argument to `close` must be a callback function or object."))
       end
-      local wrappedCb
-      wrappedCb = function(self, ...)
+      local wrappedCb = function(self, ...)
         self:cancel()
         if cb then
           return cb(unpack(arg))

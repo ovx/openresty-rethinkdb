@@ -10,24 +10,21 @@ local aropt = util.aropt
 
 -- rethinkdb is both the main export object for the module
 -- and a function that shortcuts `r.expr`.
-local rethinkdb
-rethinkdb = function(...)
+local rethinkdb = function(...)
   return rethinkdb.expr(unpack(arg))
 end
 
 -- Utilities
 
-local funcWrap
-funcWrap = function(val)
-  if not (val) then
+local funcWrap = function(val)
+  if not val then
     -- Pass through the nil value so it's caught by
     -- the appropriate nil checker
     return val
   end
   val = rethinkdb.expr(val)
-  local ivarScan
-  ivarScan = function(node)
-    if not (TermBase.instanceof(node)) then
+  local ivarScan = function(node)
+    if not TermBase.instanceof(node) then
       return false
     end
     if ImplicitVar.instanceof(node) then
@@ -52,8 +49,7 @@ funcWrap = function(val)
   end
   return val
 end
-local hasImplicit
-hasImplicit = function(args)
+local hasImplicit = function(args)
   -- args is an array of (strings and arrays)
   -- We recurse to look for `r.row` which is an implicit var
   if Array.isArray(args) then
@@ -867,8 +863,7 @@ do
   end
   RDBOpWrap = _class_0
 end
-local intsp
-intsp = function(seq)
+local intsp = function(seq)
   if not (seq[0]) then
     return { }
   end
@@ -881,8 +876,7 @@ intsp = function(seq)
   end
   return res
 end
-local kved
-kved = function(optargs)
+local kved = function(optargs)
   return {
     '{',
     intsp((function()
@@ -901,8 +895,7 @@ kved = function(optargs)
     '}'
   }
 end
-local intspallargs
-intspallargs = function(args, optargs)
+local intspallargs = function(args, optargs)
   local argrepr = { }
   if args.length > 0 then
     argrepr.push(intsp(args))
@@ -915,8 +908,7 @@ intspallargs = function(args, optargs)
   end
   return argrepr
 end
-local shouldWrap
-shouldWrap = function(arg)
+local shouldWrap = function(arg)
   return DatumTerm.instanceof(arg) or MakeArray.instanceof(arg) or MakeObject.instanceof(arg)
 end
 local MakeArray

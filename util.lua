@@ -1,6 +1,5 @@
 local err = require('./errors')
-local plural
-plural = function(number)
+local plural = function(number)
   if number == 1 then
     return ""
   else
@@ -69,8 +68,7 @@ toArrayBuffer = function(node_buffer)
   end
   return arr.buffer
 end
-local convertPseudotype
-convertPseudotype = function(obj, opts)
+local convertPseudotype = function(obj, opts)
   -- An R_OBJECT may be a regular object or a "pseudo-type" so we need a
   -- second layer of type switching here on the obfuscated field "$reql_type$"
   local _exp_0 = obj['$reql_type$']
@@ -126,9 +124,8 @@ convertPseudotype = function(obj, opts)
     return obj
   end
 end
-local recursivelyConvertPseudotype
-recursivelyConvertPseudotype = function(obj, opts)
-  if Array.instanceof(obj) then
+local recursivelyConvertPseudotype = function(obj, opts)
+  if type(obj) == 'tree' then
     for value, i in obj do
       obj[i] = recursivelyConvertPseudotype(value, opts)
     end
@@ -142,16 +139,13 @@ recursivelyConvertPseudotype = function(obj, opts)
   end
   return obj
 end
-local mkAtom
-mkAtom = function(response, opts)
+local mkAtom = function(response, opts)
   return recursivelyConvertPseudotype(response.r[0], opts)
 end
-local mkSeq
-mkSeq = function(response, opts)
+local mkSeq = function(response, opts)
   return recursivelyConvertPseudotype(response.r, opts)
 end
-local mkErr
-mkErr = function(ErrClass, response, root)
+local mkErr = function(ErrClass, response, root)
   return ErrClass(mkAtom(response), root, response.b)
 end
 return {
