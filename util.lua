@@ -22,7 +22,7 @@ end
 -- and maximum argument parameters.
 varar = function(min, max, fun)
   return function(...)
-    if (min and args.length < min) or (max and args.length > max) then
+    if (min and arg.n < min) or (max and arg.n > max) then
       if min and not max then
         error(err.RqlDriverError("Expected " .. tostring(min) .. " or more arguments but found " .. tostring(arg.n) .. "."))
       end
