@@ -35,7 +35,7 @@ def main():
         'lint': lint,
         'clean': clean,
         'build': build
-    }[args['action']](args)
+    }[args.action](args)
 
 if __name__ == '__main__':
     main()
