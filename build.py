@@ -22,7 +22,7 @@ def build(args):
 def main():
     parser = argparse.ArgumentParser(description='Process some integers.')
 
-    parser.add_argument('action', default='build')
+    parser.add_argument('action', nargs='?', default='build')
     parser.add_argument('-p', '--plat', default='macosx')
     parser.add_argument('-i', '--incl', default='/usr/local/include')
     parser.add_argument('-b', '--build', default='./../build')
