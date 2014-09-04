@@ -3,7 +3,7 @@ python:
   - 'pypy3'
 # command to install dependencies
 install:
-  - 'python3 build.py'
+  - 'python build.py'
 # command to run tests
 script:
-  - 'python3 build.py test'
+  - 'python build.py test'

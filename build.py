@@ -1,1 +1,41 @@
-# Copyright 2014 Adam Grandquist, all rights reserved.import argparsedef test(args):    passdef clean(args):    passdef lint(args):    passdef build(args):    passdef main():    parser = argparse.ArgumentParser(description='Process some integers.')    parser.add_argument('action')    parser.add_argument('-p', '--plat', default='macosx')    parser.add_argument('-i', '--incl', default='/usr/local/include')    parser.add_argument('-b', '--build', default='./../build')    parser.add_argument('-j')    args = parser.parse_args()    {        'test': test,        'lint': lint,        'clean': clean        'build': build    }.get(args['action'], build)(args)if __name__ == '__main__':    main()
+# Copyright 2014 Adam Grandquist, all rights reserved.
+
+import argparse
+
+
+def test(args):
+    pass
+
+
+def clean(args):
+    pass
+
+
+def lint(args):
+    pass
+
+
+def build(args):
+    pass
+
+
+def main():
+    parser = argparse.ArgumentParser(description='Process some integers.')
+
+    parser.add_argument('action', default='build')
+    parser.add_argument('-p', '--plat', default='macosx')
+    parser.add_argument('-i', '--incl', default='/usr/local/include')
+    parser.add_argument('-b', '--build', default='./../build')
+    parser.add_argument('-j')
+
+    args = parser.parse_args()
+
+    {
+        'test': test,
+        'lint': lint,
+        'clean': clean,
+        'build': build
+    }[args['action']](args)
+
+if __name__ == '__main__':
+    main()
