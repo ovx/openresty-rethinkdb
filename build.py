@@ -26,7 +26,7 @@ def main():
     parser.add_argument('-p', '--plat', default='macosx')
     parser.add_argument('-i', '--incl', default='/usr/local/include')
     parser.add_argument('-b', '--build', default='./../build')
-    parser.add_argument('-j')
+    parser.add_argument('-j', type=int)
 
     args = parser.parse_args()
 
