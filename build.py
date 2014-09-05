@@ -4,6 +4,7 @@ import argparse
 import os
 import shutil
 import subprocess
+import sys
 
 
 def test(args):
@@ -48,8 +49,10 @@ def build(args):
 def main():
     parser = argparse.ArgumentParser(description='Process some integers.')
 
+    platform = 'macosx' if sys.platform.startswith('darwin') else 'linux'
+
     parser.add_argument('action', nargs='?', default='build')
-    parser.add_argument('-p', '--plat', default='macosx')
+    parser.add_argument('-p', '--plat', default=platform)
     parser.add_argument('-i', '--incl', default='/usr/local/include')
     parser.add_argument('-b', '--build', default='../../build')
     parser.add_argument('-j', type=int)
