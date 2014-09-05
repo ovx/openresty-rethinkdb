@@ -43,7 +43,9 @@ def build(args):
     ] + (['DEBUG={}'.format(debug)] if debug is not None else [])
 
     with subprocess.Popen(cmd, cwd='luasocket') as io:
-        pass
+        if io.wait():
+            print(repr(cmd), "returned:", io.returncode)
+            exit(io.returncode)
 
 
 def main():
