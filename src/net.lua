@@ -1,3 +1,4 @@
+local socket = require('socket')
 local util = require('./util')
 local err = require('./errors')
 local cursors = require('./cursor')
@@ -354,6 +355,9 @@ do
         self.open = true
         return callback(nil, self)
       end
+      self.socket = socket.tcp()
+      if not self.socket:settimeout(self.timeout)
+      local status, err = self.socket:connect(self.host, self.port)
       return self:once('connect', conCallback)
     end,
     __base = _base_0,
