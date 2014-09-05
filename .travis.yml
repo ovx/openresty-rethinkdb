@@ -6,7 +6,7 @@ before_install:
   - 'sudo apt-get install liblua5.1-dev'
 # command to install dependencies
 install:
-  - 'python build.py'
+  - 'LUAINC_linux=/usr/include/lua5.1 python build.py'
 # command to run tests
 script:
   - 'python build.py test'
