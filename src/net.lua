@@ -1,5 +1,3 @@
-local net = require('net')
-local events = require('events')
 local util = require('./util')
 local err = require('./errors')
 local cursors = require('./cursor')
