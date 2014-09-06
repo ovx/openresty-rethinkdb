@@ -11,6 +11,12 @@ def test(args):
     import unittest
     res = unittest.TestResult()
     unittest.defaultTestLoader.discover('./tests', 'test_*').run(res)
+    for error in res.errors:
+        print(error[0])
+        print(error[1])
+    for fail in res.failures:
+        print(fail[0])
+        print(fail[1])
     print('''
 tests run: {}
 errors: {}
