@@ -43,12 +43,14 @@ def build(args):
     cmd = [
         'make',
         'install-both',
-        'PLAT={}'.format(plat),
+        'PLAT={}'.format(plat)
+    ] + ([
         'LUAINC_macosx_base={}'.format(incl_macosx),
-        'LUAPREFIX_macosx={}'.format(build_macosx),
+        'LUAPREFIX_macosx={}'.format(build_macosx)
+    ] if args.plat == 'macosx' else [
         'LUAINC_linux_base={}'.format(incl_linux),
         'LUAPREFIX_linux={}'.format(build_linux)
-    ] + (['DEBUG={}'.format(debug)] if debug is not None else [])
+    ]) + (['DEBUG={}'.format(debug)] if debug is not None else [])
 
     with subprocess.Popen(cmd, cwd='luasocket') as io:
         if io.wait():
