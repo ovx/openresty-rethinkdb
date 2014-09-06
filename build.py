@@ -26,6 +26,14 @@ def build(args):
     incl = os.getenv('LUAINC', args.incl)
     build = os.getenv('LUAPREFIX', args.build)
 
+    if not os.path.isabs(build):
+        build = os.path.join('luasocket', 'src', build)
+
+    try:
+        os.mkdir(build)
+    except OSError:
+        print('luasocket build directory already created.')
+
     incl_macosx = os.getenv('LUAINC_macosx_base', incl)
     build_macosx = os.getenv('LUAPREFIX_macosx', build)
 
