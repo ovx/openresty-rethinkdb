@@ -10,7 +10,7 @@ import sys
 def test(args):
     import unittest
     res = unittest.TestResult()
-    unittest.defaultTestLoader.discover('./', 'test_*').run(res)
+    unittest.defaultTestLoader.discover('./tests', 'test_*').run(res)
     print('''
 tests run: {}
 errors: {}
