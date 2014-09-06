@@ -10,9 +10,7 @@ local aropt = util.aropt
 
 -- rethinkdb is both the main export object for the module
 -- and a function that shortcuts `r.expr`.
-local rethinkdb = function(...)
-  return rethinkdb.expr(unpack(arg))
-end
+local rethinkdb = { }
 
 -- Utilities
 
@@ -52,7 +50,7 @@ end
 local hasImplicit = function(args)
   -- args is an array of (strings and arrays)
   -- We recurse to look for `r.row` which is an implicit var
-  if Array.isArray(args) then
+  if type(args) == "tree" then
     for _, arg in ipairs(args) do
       if hasImplicit(arg) == true then
         return true
@@ -131,7 +129,6 @@ do
       local self = (ar(function(field)
         return self.bracket(field)
       end))
-      self.__proto__ = self.__proto__
       return self
     end,
     __base = _base_0,
@@ -685,7 +682,7 @@ do
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
     __init = function(val)
-      local self = _parent_0.__init(self)
+      local self = { }
       self.data = val
       return self
     end,
@@ -777,21 +774,15 @@ do
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
     __init = function(optargs, ...)
-      local self = _parent_0.__init(self)
+      local self = { }
       do
         local _accum_0 = { }
-        local _len_0 = 1
-        for a, i in ipairs(arg) do
-          if a then
-            _accum_0[_len_0] = rethinkdb.expr(a)
-          else
-            _accum_0[_len_0] = error(err.RqlDriverError("Argument " .. tostring(i) .. " to " .. tostring(self.st or self.mt) .. " may not be `nil`."))
-          end
-          _len_0 = _len_0 + 1
+        for i, a in ipairs(arg) do
+          _accum_0[i] = rethinkdb.expr(a)
         end
         self.args = _accum_0
       end
-      self.optargs = translateOptargs(optargs)
+      self.optargs = optargs
       return self
     end,
     __base = _base_0,
@@ -836,7 +827,7 @@ do
         end
         self.args = _accum_0
       end
-      self.optargs = translateOptargs(optargs)
+      self.optargs = optargs
       return self
     end,
     __base = _base_0,
@@ -904,7 +895,7 @@ local intspallargs = function(args, optargs)
     if argrepr.length > 0 then
       argrepr.push(', ')
     end
-    argrepr.push(kved(translateBackOptargs(optargs)))
+    argrepr.push(kved(optargs))
   end
   return argrepr
 end
@@ -6348,48 +6339,51 @@ rethinkdb.expr = varar(1, 2, function(val, nestingDepth)
   if nestingDepth <= 0 then
     error(err.RqlDriverError("Nesting depth limit exceeded"))
   end
-  if type(nestingDepth) ~= "number" or isNaN(nestingDepth) then
+  if type(nestingDepth) ~= "number" or nestingDepth == (1/0) * 0 or nestingDepth == 1/0 or nestingDepth == -1/0 then
     error(err.RqlDriverError("Second argument to `r.expr` must be a number or nil."))
-  else
-    if TermBase.instanceof(val) then
-      return val
-    else
-      if Function.instanceof(val) then
-        return Func({ }, val)
-      else
-        if Date.instanceof(val) then
-          return ISO8601({ }, val.toISOString())
+  end
+  if TermBase.__class == val then
+    return val
+  end
+  if type(val) == "function" then
+    return Func({ }, val)
+  end
+  if nil then
+    return ISO8601({ }, val.toISOString())
+  end
+  if nil then
+    return Binary(val)
+  end
+  if type(val) == "tree" then
+    local t = nil
+    for i, v in ipairs(val) do
+      if t == "dict" and type(i) == "number" then
+        error("")
+      end
+      if t == "array" and type(i) == "string" then
+        error("")
+      end
+      if not t then
+        if type(i) == "number" then
+          t = "array"
         else
-          if Buffer.instanceof(val) then
-            return Binary(val)
+          if type(i) == "string" then
+            t = "dict"
           else
-            if Array.isArray(val) then
-              do
-                local _accum_0 = { }
-                local _len_0 = 1
-                for i, v in ipairs(val) do
-                  _accum_0[_len_0] = rethinkdb.expr(v, nestingDepth - 1)
-                  _len_0 = _len_0 + 1
-                end
-                val = _accum_0
-              end
-              return MakeArray({ }, unpack(val))
-            else
-              if type(val) == 'number' then
-                return DatumTerm(val)
-              else
-                if type(val) == 'tree' then
-                  return MakeObject(val, nestingDepth)
-                else
-                  return DatumTerm(val)
-                end
-              end
-            end
+            error("")
           end
         end
       end
     end
+    if t == "dict" then
+      return MakeObject(val, nestingDepth)
+    end
+    for i, v in ipairs(val) do
+      val[i] = rethinkdb.expr(v, nestingDepth - 1)
+    end
+    return MakeArray({ }, unpack(val))
   end
+  return DatumTerm(val)
 end)
 rethinkdb.js = aropt(function(jssrc, opts)
   return JavaScript(opts, jssrc)

@@ -1,7 +1,6 @@
 local err = require('./errors')
 local util = require('./util')
 local protoResponseType = require('./proto-def').ResponseType
-local EventEmitter = require('events').EventEmitter
 
 -- Import some names to this namespace for convenience
 local ar = util.ar

@@ -7,7 +7,7 @@ local protoVersion = protodef.Version.V0_3
 local protoProtocol = protodef.Protocol.JSON
 local protoQueryType = protodef.QueryType
 local protoResponseType = protodef.ResponseType
-local r = require('./ast')
+-- local r = require('./ast')
 
 -- Import some names to this namespace for convienience
 local ar = util.ar
@@ -17,7 +17,7 @@ local mkAtom = util.mkAtom
 local mkErr = util.mkErr
 local Connection
 do
-  local _parent_0 = events.EventEmitter
+  local _parent_0 = {}
   local _base_0 = {
     DEFAULT_HOST = 'localhost',
     DEFAULT_PORT = 28015,
@@ -356,7 +356,8 @@ do
         return callback(nil, self)
       end
       self.socket = socket.tcp()
-      if not self.socket:settimeout(self.timeout)
+      if not self.socket:settimeout(self.timeout) then
+      end
       local status, err = self.socket:connect(self.host, self.port)
       return self:once('connect', conCallback)
     end,
