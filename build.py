@@ -8,7 +8,7 @@ import sys
 
 
 def test(args):
-    pass
+    subprocess.call(['python3', '-m', 'unittest', '-s', 'test_*'])
 
 
 def clean(args):
