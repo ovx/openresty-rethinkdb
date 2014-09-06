@@ -26,19 +26,19 @@ def build(args):
     incl = os.getenv('LUAINC', args.incl)
     build = os.getenv('LUAPREFIX', args.build)
 
-    try:
-        if os.path.isabs(build):
-            os.mkdir(build)
-        else:
-            os.mkdir(os.path.join('luasocket', 'src', build))
-    except OSError:
-        print('luasocket build directory already created.')
-
     incl_macosx = os.getenv('LUAINC_macosx_base', incl)
-    build_macosx = os.getenv('LUAPREFIX_macosx', build)
+    build_macosx = os.path.join('..', '..', os.getenv('LUAPREFIX_macosx', build))
 
     incl_linux = os.getenv('LUAINC_linux_base', incl)
-    build_linux = os.getenv('LUAPREFIX_linux', build)
+    build_linux = os.path.join('..', '..', os.getenv('LUAPREFIX_linux', build))
+
+    try:
+        os.mkdir(os.path.join(
+            'luasocket', 'src',
+            build_macosx if args.plat == 'macosx' else build_linux
+        ))
+    except OSError:
+        print('luasocket build directory already created.')
 
     cmd = [
         'make',
@@ -66,7 +66,7 @@ def main():
     parser.add_argument('action', nargs='?', default='build')
     parser.add_argument('-p', '--plat', default=platform)
     parser.add_argument('-i', '--incl', default='/usr/local/include')
-    parser.add_argument('-b', '--build', default='../../build')
+    parser.add_argument('-b', '--build', default='build')
     parser.add_argument('-j', type=int)
 
     args = parser.parse_args()
