@@ -8,7 +8,15 @@ import sys
 
 
 def test(args):
-    exit(subprocess.call(['python3', '-m', 'unittest', '-p', 'test_*']))
+    import unittest
+    res = unittest.TestResult()
+    unittest.defaultTestLoader.discover('./', 'test_*').run(res)
+    print('''
+tests run: {}
+errors: {}
+failures: {}
+skipped: {}'''.format(
+        res.testsRun, len(res.errors), len(res.failures), len(res.skipped)))
 
 
 def clean(args):
