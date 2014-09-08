@@ -1,3 +1,4 @@
+'''
 desc: Tests array limit variations
 table_variable_name: tbl
 tests:
@@ -61,4 +62,4 @@ tests:
     runopts:
       array_limit: '4'
     ot: ({'array':[1,2,3,4,5,6,7,8,9,10],'id':1})
-
+'''

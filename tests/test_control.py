@@ -1,3 +1,4 @@
+'''
 desc: Tests RQL control flow structures
 table_variable_name: tbl
 tests:
@@ -285,3 +286,4 @@ tests:
 
     - cd: r.db('test').table_drop('nested_table')
       ot: ({'dropped':1})
+'''
