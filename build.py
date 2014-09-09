@@ -5,12 +5,15 @@ import os
 import shutil
 import subprocess
 import sys
+import time
 
 
 def test(args):
     import unittest
     res = unittest.TestResult()
-    unittest.defaultTestLoader.discover('./tests', 'test_*').run(res)
+    io = subprocess.Popen(['rethinkdb'], cwd='build')
+    time.sleep(4)
+    unittest.defaultTestLoader.discover('./tests').run(res)
     for error in res.errors:
         print(error[0])
         print(error[1])
@@ -23,6 +26,8 @@ errors: {}
 failures: {}
 skipped: {}'''.format(
         res.testsRun, len(res.errors), len(res.failures), len(res.skipped)))
+    io.terminate()
+    io.wait()
 
 
 def clean(args):
