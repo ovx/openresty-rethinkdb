@@ -63,16 +63,14 @@ def build(args):
     env = dict(
         os.environ,
         PLAT=plat,
-        **dict(
-            {
-                'LUAINC_macosx_base': incl_macosx,
-                'LUAPREFIX_macosx': build_macosx
-            } if args.plat == 'macosx' else {
-                'LUAINC_linux_base': incl_linux,
-                'LUAPREFIX_linux': build_linux
-            },
-            **({'DEBUG': debug} if debug is not None else {})
-        )
+        DEBUG=debug or '',
+        **({
+            'LUAINC_macosx_base': incl_macosx,
+            'LUAPREFIX_macosx': build_macosx
+        } if args.plat == 'macosx' else {
+            'LUAINC_linux_base': incl_linux,
+            'LUAPREFIX_linux': build_linux
+        })
     )
 
     with subprocess.Popen(cmd, cwd='luasocket', env=env) as io:
