@@ -33,6 +33,7 @@ skipped: {}'''.format(
 def clean(args):
     shutil.rmtree('build', ignore_errors=True)
     shutil.rmtree('tests/__pycache__', ignore_errors=True)
+    subprocess.call(['git', 'submodule', 'update'])
 
 
 def lint(args):
