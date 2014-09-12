@@ -68,8 +68,8 @@ def build(args):
                 'LUAINC_macosx_base': incl_macosx,
                 'LUAPREFIX_macosx': build_macosx
             } if args.plat == 'macosx' else {
-                'LUAINC_linux_base={}'.format(incl_linux),
-                'LUAPREFIX_linux={}'.format(build_linux)
+                'LUAINC_linux_base': incl_linux,
+                'LUAPREFIX_linux': build_linux
             },
             **({'DEBUG': debug} if debug is not None else {})
         )
