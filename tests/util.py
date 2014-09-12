@@ -28,7 +28,12 @@ class LuaTestCase(unittest.TestCase):
         return self.run_cmd(['lua', file + '.lua'], **kwargs)
 
     def run_cmd(self, cmd, **kwargs):
-        return subprocess.check_output(cmd, timeout=10, **kwargs)
+        try:
+            return subprocess.check_output(
+                cmd, stderr=subprocess.STDOUT, timeout=10, cwd='tests', **kwargs
+            )
+        except subprocess.CalledProcessError as e:
+            return e.output
 
     def tearDown(self):
         with r.connect() as c:
