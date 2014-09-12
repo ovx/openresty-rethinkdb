@@ -31,7 +31,8 @@ skipped: {}'''.format(
 
 
 def clean(args):
-    shutil.rmtree('build', onerror=print)
+    shutil.rmtree('build', ignore_errors=True)
+    shutil.rmtree('tests/__pycache__', ignore_errors=True)
 
 
 def lint(args):
