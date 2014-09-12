@@ -43,6 +43,7 @@ return {
     MAKE_OBJ = 3,
     VAR = 10,
     JAVASCRIPT = 11,
+    UUID = 169,
     HTTP = 153,
     ERROR = 12,
     IMPLICIT_VAR = 13,
@@ -93,6 +94,7 @@ return {
     IS_EMPTY = 86,
     UNION = 44,
     NTH = 45,
+    BRACKET = 170,
     INNER_JOIN = 48,
     OUTER_JOIN = 49,
     EQ_JOIN = 50,
@@ -184,6 +186,19 @@ return {
     RANDOM = 151,
     CHANGES = 152,
     ARGS = 154,
-    BINARY = 155
+    BINARY = 155,
+    GEOJSON = 157,
+    TO_GEOJSON = 158,
+    POINT = 159,
+    LINE = 160,
+    POLYGON = 161,
+    DISTANCE = 162,
+    INTERSECTS = 163,
+    INCLUDES = 164,
+    CIRCLE = 165,
+    GET_INTERSECTING = 166,
+    FILL = 167,
+    GET_NEAREST = 168,
+    POLYGON_SUB = 171
   }
 }
