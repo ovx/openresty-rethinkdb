@@ -1,3 +1,4 @@
+import os
 import rethinkdb as r
 import subprocess
 import unittest
@@ -25,7 +26,13 @@ class LuaTestCase(unittest.TestCase):
         return table
 
     def run_lua(self, file, **kwargs):
-        return self.run_cmd(['lua', file + '.lua'], **kwargs)
+        return self.run_cmd(
+            ['lua', file + '.lua'],
+            env=dict(
+                os.environ,
+                LUA_PATH='../src/?.lua;../build/share/lua/5.1/?.lua'
+            ), **kwargs
+        )
 
     def run_cmd(self, cmd, **kwargs):
         try:
