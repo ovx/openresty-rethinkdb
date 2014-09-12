@@ -59,19 +59,23 @@ def build(args):
     except OSError:
         print('luasocket build directory already created.')
 
-    cmd = [
-        'make',
-        'install-both',
-        'PLAT={}'.format(plat)
-    ] + ([
-        'LUAINC_macosx_base={}'.format(incl_macosx),
-        'LUAPREFIX_macosx={}'.format(build_macosx)
-    ] if args.plat == 'macosx' else [
-        'LUAINC_linux_base={}'.format(incl_linux),
-        'LUAPREFIX_linux={}'.format(build_linux)
-    ]) + (['DEBUG={}'.format(debug)] if debug is not None else [])
+    cmd = ['make', 'install-both']
+    env = dict(
+        os.environ,
+        PLAT=plat,
+        **dict(
+            {
+                'LUAINC_macosx_base': incl_macosx,
+                'LUAPREFIX_macosx': build_macosx
+            } if args.plat == 'macosx' else {
+                'LUAINC_linux_base={}'.format(incl_linux),
+                'LUAPREFIX_linux={}'.format(build_linux)
+            },
+            **({'DEBUG': debug} if debug is not None else {})
+        )
+    )
 
-    with subprocess.Popen(cmd, cwd='luasocket') as io:
+    with subprocess.Popen(cmd, cwd='luasocket', env=env) as io:
         if io.wait():
             print(repr(cmd), "returned:", io.returncode)
             exit(io.returncode)
