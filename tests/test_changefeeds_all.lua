@@ -1,6 +1,6 @@
 r = require('rethinkdb')
 
-r.connect(function(c)
+r.connect(function(err, c)
   r.db('changefeeds'):table('watched'):changes():limit(4):run(
     c, function(err, cur)
       r.db('changefeeds'):table('watched'):insert(

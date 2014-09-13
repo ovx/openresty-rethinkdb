@@ -1,6 +1,6 @@
 r = require('rethinkdb')
 
-r.connect(function(c)
+r.connect(function(err, c)
   r.db('changefeeds'):table('watched'):changes():filter(
     (r.row['new_val']['id'] % 2).eq(0)
   ):limit(2):run(
