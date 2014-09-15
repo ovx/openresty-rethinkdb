@@ -53,13 +53,15 @@ def build(args):
     incl_linux = os.getenv('LUAINC_linux_base', incl)
     build_linux = os.path.join('..', '..', os.getenv('LUAPREFIX_linux', build))
 
+    build_dir = os.path.join(
+        'luasocket', 'src',
+        build_macosx if args.plat == 'macosx' else build_linux
+    )
+
     try:
-        os.mkdir(os.path.join(
-            'luasocket', 'src',
-            build_macosx if args.plat == 'macosx' else build_linux
-        ))
+        os.mkdir(build_dir)
     except OSError:
-        print('luasocket build directory already created.')
+        print('luasocket build directory {} already created.'.format(build_dir))
 
     cmd = ['make', 'install-both']
     env = dict(
