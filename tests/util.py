@@ -1,7 +1,8 @@
 import os
-import rethinkdb as r
 import subprocess
 import unittest
+
+import rethinkdb as r
 
 
 class LuaTestCase(unittest.TestCase):

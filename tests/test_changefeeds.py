@@ -1,5 +1,6 @@
 import util
 
+
 class TestChangeFeeds(util.LuaTestCase):
     def setUp(self):
         self.create_table('changefeeds.watched', [
