@@ -10,11 +10,10 @@ local protoResponseType = protodef.ResponseType
 -- local r = require('./ast')
 
 -- Import some names to this namespace for convienience
-local ar = util.ar
-local varar = util.varar
-local aropt = util.aropt
 local mkAtom = util.mkAtom
 local mkErr = util.mkErr
+local isinstance = util.isinstance
+
 local Connection
 do
   local _parent_0 = {}
@@ -140,7 +139,7 @@ do
         return self:emit('error', err.RqlDriverError("Unexpected token " .. tostring(token) .. "."))
       end
     end,
-    close = varar(0, 2, function(optsOrCallback, callback)
+    close = function(self, optsOrCallback, callback)
       if callback then
         local opts = optsOrCallback
         if not (type(opts) == 'tree') then
@@ -178,8 +177,8 @@ do
       else
         return wrappedCb()
       end
-    end),
-    noreplyWait = varar(0, 1, function(callback)
+    end,
+    noreplyWait = function(callback)
       if not (self.open) then
         return callback(err.RqlDriverError("Connection is closed."))
       end
@@ -200,11 +199,11 @@ do
         opts = nil
       }
       return self:_sendQuery(query)
-    end),
-    cancel = ar(function()
+    end,
+    cancel = function()
       self.outstandingCallbacks = { }
-    end),
-    reconnect = varar(0, 2, function(optsOrCallback, callback)
+    end,
+    reconnect = function(optsOrCallback, callback)
       if callback then
         local opts = optsOrCallback
         local cb = callback
@@ -235,11 +234,11 @@ do
         end
       end
       return self:close(opts, closeCb)
-    end),
-    use = ar(function(db)
+    end,
+    use = function(self, db)
       self.db = db
-    end),
-    _start = function(term, cb, opts)
+    end,
+    _start = function(self, term, cb, opts)
       if not (self.open) then
         error(err.RqlDriverError("Connection is closed."))
       end
@@ -343,7 +342,7 @@ do
       self._events = self._events or { }
       local errCallback = function(self, e)
         self:removeListener('connect', conCallback)
-        if err.RqlDriverError.instanceof(e) then
+        if isinstance(err.RqlDriverError, e) then
           return callback(e)
         else
           return callback(err.RqlDriverError("Could not connect to " .. tostring(self.host) .. ":" .. tostring(self.port) .. ".\n" .. tostring(e.message)))
@@ -546,168 +545,20 @@ do
   end
   TcpConnection = _class_0
 end
-local HttpConnection
-do
-  local _parent_0 = Connection
-  local _base_0 = {
-    DEFAULT_PROTOCOL = 'http',
-    cancel = function()
-      self.xhr.abort()
-      local xhr = XMLHttpRequest
-      xhr.open("POST", tostring(self._url) .. "close-connection?conn_id=" .. tostring(self._connId), true)
-      xhr.send()
-      self._url = nil
-      self._connId = nil
-      return _parent_0.cancel(self)
-    end,
-    close = varar(0, 2, function(optsOrCallback, callback)
-      if callback then
-        local opts = optsOrCallback
-        local cb = callback
-      else
-        if type(optsOrCallback) == 'tree' then
-          local opts = optsOrCallback
-          local cb = nil
-        else
-          local opts = { }
-          local cb = optsOrCallback
-        end
-      end
-      if not (not cb or type(cb) == 'function') then
-        error(err.RqlDriverError("Final argument to `close` must be a callback function or object."))
-      end
-      local wrappedCb = function(self, ...)
-        self:cancel()
-        if cb then
-          return cb(unpack(arg))
-        end
-      end
 
-      -- This would simply be super(opts, wrappedCb), if we were not in the varar
-      -- anonymous function
-      return HttpConnection.__super__.close.call(this, opts, wrappedCb)
-    end),
-    _writeQuery = function(token, data)
-      local buf = Buffer(encodeURI(data).length - 1 + 8)
-      buf.writeUInt32LE(token % 0xFFFFFFFF, 0)
-      buf.writeUInt32LE(Math.floor(token / 0xFFFFFFFF), 4)
-      buf.write(data, 8)
-      return self:write(buf)
-    end,
-    write = function(chunk)
-      local xhr = XMLHttpRequest
-      xhr.open("POST", tostring(self._url) .. "?conn_id=" .. tostring(self._connId), true)
-      xhr.responseType = "arraybuffer"
-      xhr.onreadystatechange = function(self, e)
-        if xhr.readyState == 4 and xhr.status == 200 then
-          -- Convert response from ArrayBuffer to node buffer
-
-          local buf = Buffer((function()
-            local _accum_0 = { }
-            local _len_0 = 1
-            for i, b in ipairs(Uint8Array(xhr.response)) do
-              _accum_0[_len_0] = b
-              _len_0 = _len_0 + 1
-            end
-            return _accum_0
-          end)())
-          return self:_data(buf)
-        end
-      end
-
-      -- Convert the chunk from node buffer to ArrayBuffer
-      local array = ArrayBuffer(chunk.length)
-      local view = Uint8Array(array)
-      local i = 0
-      while i < chunk.length do
-        view[i] = chunk[i]
-        i = i + 1
-      end
-      xhr.send(array)
-      self.xhr = xhr -- We allow only one query at a time per HTTP connection
-    end
-  }
-  _base_0.__index = _base_0
-  setmetatable(_base_0, _parent_0.__base)
-  local _class_0 = setmetatable({
-    __init = function(host, callback)
-      if not (HttpConnection.isAvailable()) then
-        error(err.RqlDriverError("XMLHttpRequest is not available in this environment"))
-      end
-      _parent_0.__init(self, host, callback)
-      local protocol
-      if host.protocol == 'https' then
-        protocol = 'https'
-      else
-        protocol = self.DEFAULT_PROTOCOL
-      end
-      local url = tostring(protocol) .. "://" .. tostring(self.host) .. ":" .. tostring(self.port) .. tostring(host.pathname) .. "ajax/reql/"
-      local xhr = XMLHttpRequest
-      xhr.open("GET", url + "open-new-connection", true)
-      xhr.responseType = "arraybuffer"
-      xhr.onreadystatechange = function(self, e)
-        if xhr.readyState == 4 then
-          if xhr.status == 200 then
-            self._url = url
-            self._connId = (DataView(xhr.response)).getInt32(0, true)
-            return self:emit('connect')
-          else
-            return self:emit('error', err.RqlDriverError("XHR error, http status " .. tostring(xhr.status) .. "."))
-          end
-        end
-      end
-      xhr.send()
-      self.xhr = xhr -- We allow only one query at a time per HTTP connection
-    end,
-    __base = _base_0,
-    __name = "HttpConnection",
-    __parent = _parent_0
-  }, {
-    __index = function(cls, name)
-      local val = rawget(_base_0, name)
-      if val == nil then
-        return _parent_0[name]
-      else
-        return val
-      end
-    end,
-    __call = function(cls, ...)
-      local _self_0 = setmetatable({}, _base_0)
-      cls.__init(_self_0, ...)
-      return _self_0
-    end
-  })
-  _base_0.__class = _class_0
-  local self = _class_0
-  self.isAvailable = function()
-    return not not XMLHttpRequest
-  end
-  if _parent_0.__inherited then
-    _parent_0.__inherited(_parent_0, _class_0)
-  end
-  HttpConnection = _class_0
-end
 return {
   isConnection = function(connection)
-    return Connection.instanceof(connection)
+    return isinstance(Connection, connection)
   end,
 
   -- The main function of this module
-  connect = varar(0, 2, function(hostOrCallback, callback)
+  connect = function(hostOrCallback, callback)
+    local host = {}
     if type(hostOrCallback) == 'function' then
-      local host = { }
       callback = hostOrCallback
     else
-      local host = hostOrCallback
+      host = hostOrCallback
     end
-    if TcpConnection.isAvailable() then
-      return TcpConnection(host, callback)
-    else
-      if HttpConnection.isAvailable() then
-        return HttpConnection(host, callback)
-      else
-        error(err.RqlDriverError("Neither TCP nor HTTP avaiable in this environment"))
-      end
-    end
-  end)
+    return Connection(host, callback)
+  end
 }

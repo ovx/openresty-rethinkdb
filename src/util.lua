@@ -1,5 +1,9 @@
 local err = require('./errors')
-local plural = function(number)
+
+local plural, toArrayBuffer, convertPseudotype, recursivelyConvertPseudotype
+local mkAtom, mkSeq, mkErr
+
+function plural(number)
   if number == 1 then
     return ""
   else
@@ -7,60 +11,7 @@ local plural = function(number)
   end
 end
 
--- Function wrapper that enforces that the function is
--- called with the correct number of arguments
-ar = function(fun)
-  return function(...)
-    if arg.n ~= fun.length then
-      error(err.RqlDriverError("Expected " .. tostring(fun.length) .. " argument" .. tostring(plural(fun.length)) .. " but found " .. tostring(arg.n) .. "."))
-    end
-    return fun(unpack(arg))
-  end
-end
-
--- Like ar for variable argument functions. Takes minimum
--- and maximum argument parameters.
-varar = function(min, max, fun)
-  return function(...)
-    if (min and arg.n < min) or (max and arg.n > max) then
-      if min and not max then
-        error(err.RqlDriverError("Expected " .. tostring(min) .. " or more arguments but found " .. tostring(arg.n) .. "."))
-      end
-      if max and not min then
-        error(err.RqlDriverError("Expected " .. tostring(max) .. " or fewer arguments but found " .. tostring(arg.n) .. "."))
-      end
-      error(err.RqlDriverError("Expected between " .. tostring(min) .. " and " .. tostring(max) .. " arguments but found " .. tostring(arg.n) .. "."))
-    end
-    return fun(unpack(arg))
-  end
-end
-
--- Like ar but for functions that take an optional options dict as the last argument
-aropt = function(fun)
-  return function(...)
-    local expectedPosArgs = fun.length - 1
-    local perhapsOptDict = arg[expectedPosArgs]
-    if perhapsOptDict and (type(perhapsOptDict) ~= 'tree') then
-      perhapsOptDict = nil
-    end
-    local numPosArgs = arg.n - ((function()
-      if perhapsOptDict then
-        return 1
-      else
-        return 0
-      end
-    end)())
-    if expectedPosArgs ~= numPosArgs then
-      if expectedPosArgs ~= 1 then
-        error(err.RqlDriverError("Expected " .. tostring(expectedPosArgs) .. " arguments (not including options) but found " .. tostring(numPosArgs) .. "."))
-      else
-        error(err.RqlDriverError("Expected " .. tostring(expectedPosArgs) .. " argument (not including options) but found " .. tostring(numPosArgs) .. "."))
-      end
-    end
-    return fun(unpack(arg))
-  end
-end
-toArrayBuffer = function(node_buffer)
+function toArrayBuffer(node_buffer)
   -- Convert from node buffer to array buffer
   local arr = Uint8Array(ArrayBuffer(node_buffer.length))
   for value, i in ipairs(node_buffer) do
@@ -68,7 +19,7 @@ toArrayBuffer = function(node_buffer)
   end
   return arr.buffer
 end
-local convertPseudotype = function(obj, opts)
+function convertPseudotype(obj, opts)
   -- An R_OBJECT may be a regular object or a "pseudo-type" so we need a
   -- second layer of type switching here on the obfuscated field "$reql_type$"
   local _exp_0 = obj['$reql_type$']
@@ -128,7 +79,7 @@ local convertPseudotype = function(obj, opts)
     return obj
   end
 end
-local recursivelyConvertPseudotype = function(obj, opts)
+function recursivelyConvertPseudotype(obj, opts)
   if type(obj) == 'tree' then
     for key, value in ipairs(obj) do
       obj[key] = recursivelyConvertPseudotype(value, opts)
@@ -137,19 +88,30 @@ local recursivelyConvertPseudotype = function(obj, opts)
   end
   return obj
 end
-local mkAtom = function(response, opts)
+function mkAtom(response, opts)
   return recursivelyConvertPseudotype(response.r[0], opts)
 end
-local mkSeq = function(response, opts)
+function mkSeq(response, opts)
   return recursivelyConvertPseudotype(response.r, opts)
 end
-local mkErr = function(ErrClass, response, root)
+function mkErr(ErrClass, response, root)
   return ErrClass(mkAtom(response), root, response.b)
 end
+
+function isinstance(class, obj)
+  if not obj then return false end
+  local obj_cls = obj.__class
+  while obj_cls do
+    if obj_cls == class then
+      return true
+    end
+    obj_cls = obj_cls.__parent
+  end
+  return false
+end
+
 return {
-  ar = ar,
-  varar = varar,
-  aropt = aropt,
+  isinstance = isinstance,
   toArrayBuffer = toArrayBuffer,
   recursivelyConvertPseudotype = recursivelyConvertPseudotype,
   mkAtom = mkAtom,

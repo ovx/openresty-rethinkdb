@@ -102,7 +102,7 @@ do
           callback(err.RqlDriverError("Found " + key + " which is not a valid option. valid options are {useOutdated: <bool>, noreply: <bool>, timeFormat: <string>, groupFormat: <string>, binaryFormat: <string>, profile: <bool>, durability: <string>, arrayLimit: <number>}."))
         end
       end
-      if net.isConnection(connection)(is(false)) then
+      if not net.isConnection(connection) then
         callback(err.RqlDriverError("First argument to `run` must be an open connection."))
       end
       if options.noreply == true or type(callback) == 'function' then
@@ -125,10 +125,10 @@ do
   }
   _base_0.__index = _base_0
   local _class_0 = setmetatable({
-    __init = function()
-      local self = (ar(function(field)
+    __init = function(self)
+      self = function(field)
         return self.bracket(field)
-      end))
+      end
       return self
     end,
     __base = _base_0,
@@ -205,12 +205,12 @@ do
     set_difference = function(...)
       return SetDifference({ }, self, unpack(arg))
     end,
-    slice = varar(1, 3, function(left, right_or_opts, opts)
+    slice = function(left, right_or_opts, opts)
       if opts then
         return Slice(opts, self, left, right_or_opts)
       else
         if right_or_opts then
-          if (type(right_or_opts) == 'tree') and (not TermBase.instanceof(right_or_opts)) then
+          if (type(right_or_opts) == 'tree') and (not isinstance(TermBase, right_or_opts)) then
             return Slice(right_or_opts, self, left)
           else
             return Slice({ }, self, left, right_or_opts)
@@ -219,7 +219,7 @@ do
           return Slice({ }, self, left)
         end
       end
-    end),
+    end,
     skip = function(...)
       return Skip({ }, self, unpack(arg))
     end,
@@ -270,24 +270,24 @@ do
     merge = function(...)
       return Merge({ }, self, unpack(arg))
     end,
-    between = aropt(function(left, right, opts)
+    between = function(left, right, opts)
       return Between(opts, self, left, right)
-    end),
+    end,
     reduce = function(...)
       return Reduce({ }, self, unpack(arg))
     end,
     map = function(...)
       return Map({ }, self, unpack(arg))
     end,
-    filter = aropt(function(predicate, opts)
+    filter = function(predicate, opts)
       return Filter(opts, self, funcWrap(predicate))
-    end),
+    end,
     concat_map = function(...)
       return ConcatMap({ }, self, unpack(arg))
     end,
-    distinct = aropt(function(opts)
+    distinct = function(opts)
       return Distinct(opts, self)
-    end),
+    end,
     count = function(...)
       return Count({ }, self, unpack(arg))
     end,
@@ -321,9 +321,9 @@ do
     outer_join = function(...)
       return OuterJoin({ }, self, unpack(arg))
     end,
-    eq_join = aropt(function(left_attr, right, opts)
+    eq_join = function(left_attr, right, opts)
       return EqJoin(opts, self, funcWrap(left_attr), right)
-    end),
+    end,
     zip = function(...)
       return Zip({ }, self, unpack(arg))
     end,
@@ -336,15 +336,15 @@ do
     type_of = function(...)
       return TypeOf({ }, self, unpack(arg))
     end,
-    update = aropt(function(func, opts)
+    update = function(func, opts)
       return Update(opts, self, funcWrap(func))
-    end),
-    delete = aropt(function(opts)
+    end,
+    delete = function(opts)
       return Delete(opts, self)
-    end),
-    replace = aropt(function(func, opts)
+    end,
+    replace = function(func, opts)
       return Replace(opts, self, funcWrap(func))
-    end),
+    end,
     do_ = function(...)
       local args
       do
@@ -405,7 +405,7 @@ do
       -- Look for opts dict
       if arg.n > 0 then
         local perhapsOptDict = arg[arg.n]
-        if perhapsOptDict and (type(perhapsOptDict) == 'tree') and not (TermBase.instanceof(perhapsOptDict)) then
+        if perhapsOptDict and (type(perhapsOptDict) == 'tree') and not (isinstance(TermBase, perhapsOptDict)) then
           opts = perhapsOptDict
           do
             local _accum_0 = { }
@@ -439,7 +439,7 @@ do
 
       -- Look for opts dict
       local perhapsOptDict = arg[arg.n]
-      if perhapsOptDict and (type(perhapsOptDict) == 'tree') and not (TermBase.instanceof(perhapsOptDict)) then
+      if perhapsOptDict and (type(perhapsOptDict) == 'tree') and not isinstance(TermBase, perhapsOptDict) then
         opts = perhapsOptDict
         do
           local _accum_0 = { }
@@ -458,7 +458,7 @@ do
         local _accum_0 = { }
         local _len_0 = 1
         for i, attr in ipairs(attrs) do
-          if Asc.instanceof(attr) or Desc.instanceof(attr) then
+          if isinstance(Asc, attr) or isinstance(Desc, attr) then
             _accum_0[_len_0] = attr
           else
             _accum_0[_len_0] = funcWrap(attr)
@@ -474,9 +474,9 @@ do
     to_geojson = function(...)
       return ToGeoJson({ }, self, unpack(arg))
     end,
-    distance = aropt(function(g, opts)
+    distance = function(g, opts)
       return Distance(opts, self, g)
-    end),
+    end,
     intersects = function(...)
       return Intersects({ }, self, unpack(arg))
     end,
@@ -489,18 +489,18 @@ do
 
     -- Database operations
 
-    table_create = aropt(function(tblName, opts)
+    table_create = function(tblName, opts)
       return TableCreate(opts, self, tblName)
-    end),
+    end,
     table_drop = function(...)
       return TableDrop({ }, self, unpack(arg))
     end,
     table_list = function(...)
       return TableList({ }, self, unpack(arg))
     end,
-    table = aropt(function(tblName, opts)
+    table = function(tblName, opts)
       return Table(opts, self, tblName)
-    end),
+    end,
 
     -- Table operations
 
@@ -515,7 +515,7 @@ do
       -- Look for opts dict
       if arg.n > 1 then
         local perhapsOptDict = arg[arg.n - 1]
-        if perhapsOptDict and ((type(perhapsOptDict) == 'tree') and not (TermBase.instanceof(perhapsOptDict))) then
+        if perhapsOptDict and ((type(perhapsOptDict) == 'tree') and not (isinstance(TermBase, perhapsOptDict))) then
           opts = perhapsOptDict
           do
             local _accum_0 = { }
@@ -533,16 +533,16 @@ do
       end
       return GetAll(opts, self, unpack(keys))
     end,
-    insert = aropt(function(doc, opts)
+    insert = function(doc, opts)
       return Insert(opts, self, rethinkdb.expr(doc))
-    end),
-    index_create = varar(1, 3, function(name, defun_or_opts, opts)
+    end,
+    index_create = function(name, defun_or_opts, opts)
       if opts then
         return IndexCreate(opts, self, name, funcWrap(defun_or_opts))
       else
         if defun_or_opts then
           -- FIXME?
-          if (type(defun_or_opts) == 'tree') and not Function.instanceof(defun_or_opts) and not TermBase.instanceof(defun_or_opts) then
+          if (type(defun_or_opts) == 'tree') and not isinstance(Function, defun_or_opts) and not isinstance(TermBase, defun_or_opts) then
             return IndexCreate(defun_or_opts, self, name)
           else
             return IndexCreate({ }, self, name, funcWrap(defun_or_opts))
@@ -551,7 +551,7 @@ do
           return IndexCreate({ }, self, name)
         end
       end
-    end),
+    end,
     index_drop = function(...)
       return IndexDrop({ }, self, unpack(arg))
     end,
@@ -564,9 +564,9 @@ do
     index_wait = function(...)
       return IndexWait({ }, self, unpack(arg))
     end,
-    index_rename = aropt(function(old_name, new_name, opts)
+    index_rename = function(old_name, new_name, opts)
       return IndexRename(opts, self, old_name, new_name)
-    end),
+    end,
     sync = function(...)
       return Sync({ }, self, unpack(arg))
     end,
@@ -579,9 +579,9 @@ do
     in_timezone = function(...)
       return InTimezone({ }, self, unpack(arg))
     end,
-    during = aropt(function(t2, t3, opts)
+    during = function(t2, t3, opts)
       return During(opts, self, t2, t3)
-    end),
+    end,
     date = function(...)
       return RQLDate({ }, self, unpack(arg))
     end,
@@ -618,12 +618,12 @@ do
     uuid = function(...)
       return UUID({ }, self, unpack(arg))
     end,
-    get_intersecting = aropt(function(g, opts)
+    get_intersecting = function(g, opts)
       return GetIntersecting(opts, self, g)
-    end),
-    get_nearest = aropt(function(g, opts)
+    end,
+    get_nearest = function(g, opts)
       return GetNearest(opts, self, g)
-    end)
+    end
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -900,7 +900,7 @@ local intspallargs = function(args, optargs)
   return argrepr
 end
 local shouldWrap = function(arg)
-  return DatumTerm.instanceof(arg) or MakeArray.instanceof(arg) or MakeObject.instanceof(arg)
+  return isinstance(DatumTerm, arg) or isinstance(MakeArray, arg) or isinstance(MakeObject, arg)
 end
 local MakeArray
 do
@@ -1185,10 +1185,10 @@ do
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
     __init = function(data)
-      if TermBase.instanceof(data) then
+      if isinstance(TermBase, data) then
         local self = _parent_0.__init(self, { }, data)
       else
-        if Buffer.instanceof(data) then
+        if isinstance(Buffer, data) then
           local self = _parent_0.__init(self)
           self.base64_data = data.toString("base64")
         else
@@ -1417,7 +1417,7 @@ do
     tt = protoTermType.TABLE,
     st = 'table',
     compose = function(args, optargs)
-      if Db.instanceof(self.args[0]) then
+      if isinstance(Db, self.args[0]) then
         return {
           args[0],
           '.table(',
@@ -6328,8 +6328,8 @@ end
 
 -- All top level exported functions
 
--- Wrap a native JS value in an ReQL datum
-rethinkdb.expr = varar(1, 2, function(val, nestingDepth)
+-- Wrap a native Lua value in an ReQL datum
+function rethinkdb.expr(val, nestingDepth)
   if nestingDepth == nil then
     nestingDepth = 20
   end
@@ -6384,14 +6384,14 @@ rethinkdb.expr = varar(1, 2, function(val, nestingDepth)
     return MakeArray({ }, unpack(val))
   end
   return DatumTerm(val)
-end)
-rethinkdb.js = aropt(function(jssrc, opts)
+end
+function rethinkdb.js(jssrc, opts)
   return JavaScript(opts, jssrc)
-end)
-rethinkdb.http = aropt(function(url, opts)
+end
+function rethinkdb.http(url, opts)
   return Http(opts, url)
-end)
-rethinkdb.json = function(...)
+end
+function rethinkdb.json(...)
   return Json({ }, unpack(arg))
 end
 rethinkdb.error = function(...)
@@ -6404,7 +6404,7 @@ rethinkdb.random = function(...)
 
   -- Look for opts dict
   local perhapsOptDict = arg[arg.n - 1]
-  if perhapsOptDict and ((type(perhapsOptDict)(is('tree'))) and not (TermBase.instanceof(perhapsOptDict))) then
+  if perhapsOptDict and ((type(perhapsOptDict) == 'tree') and not (isinstance(TermBase, perhapsOptDict))) then
     opts = perhapsOptDict
     do
       local _accum_0 = { }
@@ -6421,14 +6421,14 @@ rethinkdb.random = function(...)
   end
   return Random(opts, unpack(limits))
 end
-rethinkdb.binary = ar(function(data)
+function rethinkdb.binary(data)
   return Binary(data)
-end)
+end
 rethinkdb.row = ImplicitVar({ })
-rethinkdb.table = aropt(function(tblName, opts)
+function rethinkdb.table(tblName, opts)
   return Table(opts, tblName)
-end)
-rethinkdb.db = function(...)
+end
+function rethinkdb.db(...)
   return Db({ }, unpack(arg))
 end
 rethinkdb.db_create = function(...)
@@ -6440,16 +6440,16 @@ end
 rethinkdb.db_list = function(...)
   return DbList({ }, unpack(arg))
 end
-rethinkdb.table_create = aropt(function(tblName, opts)
+function rethinkdb.table_create(tblName, opts)
   return TableCreate(opts, tblName)
-end)
-rethinkdb.table_drop = function(...)
+end
+function rethinkdb.table_drop(...)
   return TableDrop({ }, unpack(arg))
 end
 rethinkdb.table_list = function(...)
   return TableList({ }, unpack(arg))
 end
-rethinkdb.do_ = varar(1, nil, function(...)
+function rethinkdb.do_(...)
   return FunCall({ }, funcWrap(arg[arg.n]), unpack((function()
     local _accum_0 = { }
     local _len_0 = 1
@@ -6462,8 +6462,8 @@ rethinkdb.do_ = varar(1, nil, function(...)
     end
     return _accum_0
   end)()))
-end)
-rethinkdb.branch = function(...)
+end
+function rethinkdb.branch(...)
   return Branch({ }, unpack(arg))
 end
 rethinkdb.asc = function(...)
@@ -6529,10 +6529,10 @@ end
 rethinkdb.literal = function(...)
   return Literal({ }, unpack(arg))
 end
-rethinkdb.iso8601 = aropt(function(str, opts)
+function rethinkdb.iso8601(str, opts)
   return ISO8601(opts, str)
-end)
-rethinkdb.epoch_time = function(...)
+end
+function rethinkdb.epoch_time(...)
   return EpochTime({ }, unpack(arg))
 end
 rethinkdb.now = function(...)
@@ -7265,13 +7265,13 @@ end
 rethinkdb.intersects = function(...)
   return Intersects({ }, unpack(arg))
 end
-rethinkdb.distance = aropt(function(g1, g2, opts)
+function rethinkdb.distance(g1, g2, opts)
   return Distance(opts, g1, g2)
-end)
-rethinkdb.circle = aropt(function(cen, rad, opts)
+end
+function rethinkdb.circle(cen, rad, opts)
   return Circle(opts, cen, rad)
-end)
-rethinkdb.uuid = function(...)
+end
+function rethinkdb.uuid(...)
   return UUID({ }, unpack(arg))
 end
 

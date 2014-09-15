@@ -3,9 +3,6 @@ local util = require('./util')
 local protoResponseType = require('./proto-def').ResponseType
 
 -- Import some names to this namespace for convenience
-local ar = util.ar
-local varar = util.varar
-local aropt = util.aropt
 local mkErr = util.mkErr
 
 -- setImmediate is not defined in some browsers (including Chrome)
@@ -149,14 +146,14 @@ do
     hasNext = function()
       error(err.RqlDriverError("The `hasNext` command has been removed since 1.13. Use `next` instead."))
     end,
-    _next = varar(0, 1, function(cb)
+    _next = function(cb)
       local fn = function(self, cb)
         self._cbQueue.push(cb)
         return self:_promptNext()
       end
       return fn(cb)
-    end),
-    close = varar(0, 1, function(cb)
+    end,
+    close = function(cb)
       if self._endFlag == true then
         return cb()
       else
@@ -168,8 +165,8 @@ do
           return self._conn._endQuery(self._token)
         end
       end
-    end),
-    _each = varar(1, 2, function(cb, onFinished)
+    end,
+    _each = function(cb, onFinished)
       if not (type(cb) == 'function') then
         error(err.RqlDriverError("First argument to each must be a function."))
       end
@@ -199,8 +196,8 @@ do
         end
       end
       return self:_next(nextCb)
-    end),
-    toArray = varar(0, 1, function(cb)
+    end,
+    toArray = function(cb)
       local fn = function(self, cb)
         local arr = { }
         local eachCb = function(self, err, row)
@@ -216,7 +213,7 @@ do
         return self:each(eachCb, onFinish)
       end
       return fn(cb)
-    end),
+    end,
     _makeEmitter = function()
       self.emitter = EventEmitter
       self.each = function()
@@ -342,9 +339,9 @@ local Cursor
 do
   local _parent_0 = IterableResult
   local _base_0 = {
-    toString = ar(function()
+    toString = function()
       return "[object Cursor]"
-    end)
+    end
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -387,9 +384,9 @@ do
     toArray = function()
       error(err.RqlDriverError("`toArray` is not available for feeds."))
     end,
-    toString = ar(function()
+    toString = function()
       return "[object Feed]"
-    end)
+    end
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -432,13 +429,13 @@ do
   local _parent_0 = IterableResult
   local _base_0 = {
     -- We store @__index as soon as the user starts using the cursor interface
-    _hasNext = ar(function()
+    _hasNext = function()
       if not self.__index then
         self.__index = 0
       end
       return self.__index < self.length
-    end),
-    _next = varar(0, 1, function(cb)
+    end,
+    _next = function(cb)
       local fn = function(self, cb)
         if self:_hasNext() == true then
           self = self
@@ -456,8 +453,8 @@ do
         end
       end
       return fn(cb)
-    end),
-    toArray = varar(0, 1, function(cb)
+    end,
+    toArray = function(cb)
       local fn = function(self, cb)
         -- IterableResult.toArray would create a copy
         if self.__index then
@@ -467,7 +464,7 @@ do
         end
       end
       return fn(cb)
-    end),
+    end,
     close = function()
       return self
     end,
