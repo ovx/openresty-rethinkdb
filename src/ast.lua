@@ -3,18 +3,36 @@ local err = require('./errors')
 local net = require('./net')
 local protoTermType = require('./proto-def').TermType
 
--- Import some names to this namespace for convienience
-local ar = util.ar
-local varar = util.varar
-local aropt = util.aropt
-
 -- rethinkdb is both the main export object for the module
 -- and a function that shortcuts `r.expr`.
 local rethinkdb = { }
 
+local funcWrap, hasImplicit, intsp, kved, intspallargs, shouldWrap
+
+local TermBase, RDBVal, DatumTerm, RDBOp, RDBOpWrap, MakeArray, MakeObject, Var
+local JavaScript, Http, Json, Binary, Args, UserError, Random, ImplicitVar, Db
+local Table, Get, GetAll, Eq, Ne, Lt, Le, Gt, Ge, Not, Add, Sub, Mul, Div, Mod
+local Append, Prepend, Difference, SetInsert, SetUnion, SetIntersection
+local SetDifference, Slice, Skip, Limit, GetField, Bracket, Contains, InsertAt
+local SpliceAt, DeleteAt, ChangeAt, HasFields, WithFields, Keys, Changes
+local Object, Pluck, IndexesOf, Without, Merge, Between, Reduce, Map, Filter
+local ConcatMap, OrderBy, Distinct, Count, Union, Nth, Match, Split, Upcase
+local Downcase, IsEmpty, Group, Sum, Avg, Min, Max, InnerJoin, OuterJoin
+local EqJoin, Zip, CoerceTo, Ungroup, TypeOf, Info, Sample, Update, Delete
+local Replace, Insert, DbCreate, DbDrop, DbList, TableCreate, TableDrop
+local TableList, IndexCreate, IndexDrop, IndexRename, IndexList, IndexStatus
+local IndexWait, Sync, FunCall, Default, Branch, Any, All, ForEach, Func, Asc
+local Desc, Literal, ISO8601, ToISO8601, EpochTime, ToEpochTime, Now
+local InTimezone, During, RQLDate, TimeOfDay, Timezone, Year, Month, Day
+local DayOfWeek, DayOfYear, Hours, Minutes, Seconds, Time, GeoJson, ToGeoJson
+local Point, Line, Polygon, Distance, Intersects, Includes, Circle
+local GetIntersecting, GetNearest, Fill, UUID, Monday, Tuesday, Wednesday
+local Thursday, Friday, Saturday, Sunday, January, February, March, April, May
+local June, July, August, September, October, November, December
+
 -- Utilities
 
-local funcWrap = function(val)
+function funcWrap(val)
   if not val then
     -- Pass through the nil value so it's caught by
     -- the appropriate nil checker
@@ -47,7 +65,7 @@ local funcWrap = function(val)
   end
   return val
 end
-local hasImplicit = function(args)
+function hasImplicit(args)
   -- args is an array of (strings and arrays)
   -- We recurse to look for `r.row` which is an implicit var
   if type(args) == "tree" then
@@ -66,7 +84,6 @@ end
 
 -- AST classes
 
-local TermBase
 do
   local _base_0 = {
     showRunWarning = true,
@@ -97,7 +114,6 @@ do
       for key, _ in ipairs(options) do
         local _exp_0 = key
         if 'useOutdated' == _exp_0 or 'noreply' == _exp_0 or 'timeFormat' == _exp_0 or 'profile' == _exp_0 or 'durability' == _exp_0 or 'groupFormat' == _exp_0 or 'binaryFormat' == _exp_0 or 'batchConf' == _exp_0 or 'arrayLimit' == _exp_0 then
-          local _ = nil
         else
           callback(err.RqlDriverError("Found " + key + " which is not a valid option. valid options are {useOutdated: <bool>, noreply: <bool>, timeFormat: <string>, groupFormat: <string>, binaryFormat: <string>, profile: <bool>, durability: <string>, arrayLimit: <number>}."))
         end
@@ -144,7 +160,6 @@ do
   _base_0.__class = _class_0
   TermBase = _class_0
 end
-local RDBVal
 do
   local _parent_0 = TermBase
   local _base_0 = {
@@ -655,7 +670,6 @@ do
   end
   RDBVal = _class_0
 end
-local DatumTerm
 do
   local _parent_0 = RDBVal
   local _base_0 = {
@@ -710,7 +724,6 @@ do
   end
   DatumTerm = _class_0
 end
-local RDBOp
 do
   local _parent_0 = RDBVal
   local _base_0 = {
@@ -809,7 +822,6 @@ do
   end
   RDBOp = _class_0
 end
-local RDBOpWrap
 do
   local _parent_0 = RDBOp
   local _base_0 = { }
@@ -854,7 +866,7 @@ do
   end
   RDBOpWrap = _class_0
 end
-local intsp = function(seq)
+function intsp(seq)
   if not (seq[0]) then
     return { }
   end
@@ -867,7 +879,7 @@ local intsp = function(seq)
   end
   return res
 end
-local kved = function(optargs)
+function kved(optargs)
   return {
     '{',
     intsp((function()
@@ -886,7 +898,7 @@ local kved = function(optargs)
     '}'
   }
 end
-local intspallargs = function(args, optargs)
+function intspallargs(args, optargs)
   local argrepr = { }
   if args.length > 0 then
     argrepr.push(intsp(args))
@@ -899,10 +911,9 @@ local intspallargs = function(args, optargs)
   end
   return argrepr
 end
-local shouldWrap = function(arg)
+function shouldWrap(arg)
   return isinstance(DatumTerm, arg) or isinstance(MakeArray, arg) or isinstance(MakeObject, arg)
 end
-local MakeArray
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -946,7 +957,6 @@ do
   end
   MakeArray = _class_0
 end
-local MakeObject
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -1004,7 +1014,6 @@ do
   end
   MakeObject = _class_0
 end
-local Var
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -1045,7 +1054,6 @@ do
   end
   Var = _class_0
 end
-local JavaScript
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -1082,7 +1090,6 @@ do
   end
   JavaScript = _class_0
 end
-local Http
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -1119,7 +1126,6 @@ do
   end
   Http = _class_0
 end
-local Json
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -1156,7 +1162,6 @@ do
   end
   Json = _class_0
 end
-local Binary
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -1221,7 +1226,6 @@ do
   end
   Binary = _class_0
 end
-local Args
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -1258,7 +1262,6 @@ do
   end
   Args = _class_0
 end
-local UserError
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -1295,7 +1298,6 @@ do
   end
   UserError = _class_0
 end
-local Random
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -1332,7 +1334,6 @@ do
   end
   Random = _class_0
 end
-local ImplicitVar
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -1373,7 +1374,6 @@ do
   end
   ImplicitVar = _class_0
 end
-local Db
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -1410,7 +1410,6 @@ do
   end
   Db = _class_0
 end
-local Table
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -1472,7 +1471,6 @@ do
   end
   Table = _class_0
 end
-local Get
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -1509,7 +1507,6 @@ do
   end
   Get = _class_0
 end
-local GetAll
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -1546,7 +1543,6 @@ do
   end
   GetAll = _class_0
 end
-local Eq
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -1583,7 +1579,6 @@ do
   end
   Eq = _class_0
 end
-local Ne
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -1620,7 +1615,6 @@ do
   end
   Ne = _class_0
 end
-local Lt
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -1657,7 +1651,6 @@ do
   end
   Lt = _class_0
 end
-local Le
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -1694,7 +1687,6 @@ do
   end
   Le = _class_0
 end
-local Gt
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -1731,7 +1723,6 @@ do
   end
   Gt = _class_0
 end
-local Ge
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -1768,7 +1759,6 @@ do
   end
   Ge = _class_0
 end
-local Not
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -1805,7 +1795,6 @@ do
   end
   Not = _class_0
 end
-local Add
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -1842,7 +1831,6 @@ do
   end
   Add = _class_0
 end
-local Sub
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -1879,7 +1867,6 @@ do
   end
   Sub = _class_0
 end
-local Mul
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -1916,7 +1903,6 @@ do
   end
   Mul = _class_0
 end
-local Div
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -1953,7 +1939,6 @@ do
   end
   Div = _class_0
 end
-local Mod
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -1990,7 +1975,6 @@ do
   end
   Mod = _class_0
 end
-local Append
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -2027,7 +2011,6 @@ do
   end
   Append = _class_0
 end
-local Prepend
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -2064,7 +2047,6 @@ do
   end
   Prepend = _class_0
 end
-local Difference
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -2101,7 +2083,6 @@ do
   end
   Difference = _class_0
 end
-local SetInsert
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -2138,7 +2119,6 @@ do
   end
   SetInsert = _class_0
 end
-local SetUnion
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -2175,7 +2155,6 @@ do
   end
   SetUnion = _class_0
 end
-local SetIntersection
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -2212,7 +2191,6 @@ do
   end
   SetIntersection = _class_0
 end
-local SetDifference
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -2249,7 +2227,6 @@ do
   end
   SetDifference = _class_0
 end
-local Slice
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -2286,7 +2263,6 @@ do
   end
   Slice = _class_0
 end
-local Skip
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -2323,7 +2299,6 @@ do
   end
   Skip = _class_0
 end
-local Limit
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -2360,7 +2335,6 @@ do
   end
   Limit = _class_0
 end
-local GetField
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -2397,7 +2371,6 @@ do
   end
   GetField = _class_0
 end
-local Bracket
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -2442,7 +2415,6 @@ do
   end
   Bracket = _class_0
 end
-local Contains
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -2479,7 +2451,6 @@ do
   end
   Contains = _class_0
 end
-local InsertAt
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -2516,7 +2487,6 @@ do
   end
   InsertAt = _class_0
 end
-local SpliceAt
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -2553,7 +2523,6 @@ do
   end
   SpliceAt = _class_0
 end
-local DeleteAt
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -2590,7 +2559,6 @@ do
   end
   DeleteAt = _class_0
 end
-local ChangeAt
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -2663,7 +2631,6 @@ do
   end
   Contains = _class_0
 end
-local HasFields
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -2700,7 +2667,6 @@ do
   end
   HasFields = _class_0
 end
-local WithFields
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -2737,7 +2703,6 @@ do
   end
   WithFields = _class_0
 end
-local Keys
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -2774,7 +2739,6 @@ do
   end
   Keys = _class_0
 end
-local Changes
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -2811,7 +2775,6 @@ do
   end
   Changes = _class_0
 end
-local Object
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -2848,7 +2811,6 @@ do
   end
   Object = _class_0
 end
-local Pluck
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -2885,7 +2847,6 @@ do
   end
   Pluck = _class_0
 end
-local IndexesOf
 do
   local _parent_0 = RDBOpWrap
   local _base_0 = {
@@ -2922,7 +2883,6 @@ do
   end
   IndexesOf = _class_0
 end
-local Without
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -2959,7 +2919,6 @@ do
   end
   Without = _class_0
 end
-local Merge
 do
   local _parent_0 = RDBOpWrap
   local _base_0 = {
@@ -2996,7 +2955,6 @@ do
   end
   Merge = _class_0
 end
-local Between
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -3033,7 +2991,6 @@ do
   end
   Between = _class_0
 end
-local Reduce
 do
   local _parent_0 = RDBOpWrap
   local _base_0 = {
@@ -3070,7 +3027,6 @@ do
   end
   Reduce = _class_0
 end
-local Map
 do
   local _parent_0 = RDBOpWrap
   local _base_0 = {
@@ -3107,7 +3063,6 @@ do
   end
   Map = _class_0
 end
-local Filter
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -3144,7 +3099,6 @@ do
   end
   Filter = _class_0
 end
-local ConcatMap
 do
   local _parent_0 = RDBOpWrap
   local _base_0 = {
@@ -3181,7 +3135,6 @@ do
   end
   ConcatMap = _class_0
 end
-local OrderBy
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -3218,7 +3171,6 @@ do
   end
   OrderBy = _class_0
 end
-local Distinct
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -3255,7 +3207,6 @@ do
   end
   Distinct = _class_0
 end
-local Count
 do
   local _parent_0 = RDBOpWrap
   local _base_0 = {
@@ -3292,7 +3243,6 @@ do
   end
   Count = _class_0
 end
-local Union
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -3329,7 +3279,6 @@ do
   end
   Union = _class_0
 end
-local Nth
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -3366,7 +3315,6 @@ do
   end
   Nth = _class_0
 end
-local Match
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -3403,7 +3351,6 @@ do
   end
   Match = _class_0
 end
-local Split
 do
   local _parent_0 = RDBOpWrap
   local _base_0 = {
@@ -3440,7 +3387,6 @@ do
   end
   Split = _class_0
 end
-local Upcase
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -3477,7 +3423,6 @@ do
   end
   Upcase = _class_0
 end
-local Downcase
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -3514,7 +3459,6 @@ do
   end
   Downcase = _class_0
 end
-local IsEmpty
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -3551,7 +3495,6 @@ do
   end
   IsEmpty = _class_0
 end
-local Group
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -3588,7 +3531,6 @@ do
   end
   Group = _class_0
 end
-local Sum
 do
   local _parent_0 = RDBOpWrap
   local _base_0 = {
@@ -3625,7 +3567,6 @@ do
   end
   Sum = _class_0
 end
-local Avg
 do
   local _parent_0 = RDBOpWrap
   local _base_0 = {
@@ -3662,7 +3603,6 @@ do
   end
   Avg = _class_0
 end
-local Min
 do
   local _parent_0 = RDBOpWrap
   local _base_0 = {
@@ -3699,7 +3639,6 @@ do
   end
   Min = _class_0
 end
-local Max
 do
   local _parent_0 = RDBOpWrap
   local _base_0 = {
@@ -3736,7 +3675,6 @@ do
   end
   Max = _class_0
 end
-local InnerJoin
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -3773,7 +3711,6 @@ do
   end
   InnerJoin = _class_0
 end
-local OuterJoin
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -3810,7 +3747,6 @@ do
   end
   OuterJoin = _class_0
 end
-local EqJoin
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -3847,7 +3783,6 @@ do
   end
   EqJoin = _class_0
 end
-local Zip
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -3884,7 +3819,6 @@ do
   end
   Zip = _class_0
 end
-local CoerceTo
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -3921,7 +3855,6 @@ do
   end
   CoerceTo = _class_0
 end
-local Ungroup
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -3958,7 +3891,6 @@ do
   end
   Ungroup = _class_0
 end
-local TypeOf
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -3995,7 +3927,6 @@ do
   end
   TypeOf = _class_0
 end
-local Info
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -4032,7 +3963,6 @@ do
   end
   Info = _class_0
 end
-local Sample
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -4069,7 +3999,6 @@ do
   end
   Sample = _class_0
 end
-local Update
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -4106,7 +4035,6 @@ do
   end
   Update = _class_0
 end
-local Delete
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -4143,7 +4071,6 @@ do
   end
   Delete = _class_0
 end
-local Replace
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -4180,7 +4107,6 @@ do
   end
   Replace = _class_0
 end
-local Insert
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -4217,7 +4143,6 @@ do
   end
   Insert = _class_0
 end
-local DbCreate
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -4254,7 +4179,6 @@ do
   end
   DbCreate = _class_0
 end
-local DbDrop
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -4291,7 +4215,6 @@ do
   end
   DbDrop = _class_0
 end
-local DbList
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -4328,7 +4251,6 @@ do
   end
   DbList = _class_0
 end
-local TableCreate
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -4365,7 +4287,6 @@ do
   end
   TableCreate = _class_0
 end
-local TableDrop
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -4402,7 +4323,6 @@ do
   end
   TableDrop = _class_0
 end
-local TableList
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -4439,7 +4359,6 @@ do
   end
   TableList = _class_0
 end
-local IndexCreate
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -4476,7 +4395,6 @@ do
   end
   IndexCreate = _class_0
 end
-local IndexDrop
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -4513,7 +4431,6 @@ do
   end
   IndexDrop = _class_0
 end
-local IndexRename
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -4550,7 +4467,6 @@ do
   end
   IndexRename = _class_0
 end
-local IndexList
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -4587,7 +4503,6 @@ do
   end
   IndexList = _class_0
 end
-local IndexStatus
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -4624,7 +4539,6 @@ do
   end
   IndexStatus = _class_0
 end
-local IndexWait
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -4661,7 +4575,6 @@ do
   end
   IndexWait = _class_0
 end
-local Sync
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -4698,7 +4611,6 @@ do
   end
   Sync = _class_0
 end
-local FunCall
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -4769,7 +4681,6 @@ do
   end
   FunCall = _class_0
 end
-local Default
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -4806,7 +4717,6 @@ do
   end
   Default = _class_0
 end
-local Branch
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -4843,7 +4753,6 @@ do
   end
   Branch = _class_0
 end
-local Any
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -4880,7 +4789,6 @@ do
   end
   Any = _class_0
 end
-local All
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -4917,7 +4825,6 @@ do
   end
   All = _class_0
 end
-local ForEach
 do
   local _parent_0 = RDBOpWrap
   local _base_0 = {
@@ -4954,7 +4861,6 @@ do
   end
   ForEach = _class_0
 end
-local Func
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -5029,7 +4935,6 @@ do
   end
   Func = _class_0
 end
-local Asc
 do
   local _parent_0 = RDBOpWrap
   local _base_0 = {
@@ -5066,7 +4971,6 @@ do
   end
   Asc = _class_0
 end
-local Desc
 do
   local _parent_0 = RDBOpWrap
   local _base_0 = {
@@ -5103,7 +5007,6 @@ do
   end
   Desc = _class_0
 end
-local Literal
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -5140,7 +5043,6 @@ do
   end
   Literal = _class_0
 end
-local ISO8601
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -5177,7 +5079,6 @@ do
   end
   ISO8601 = _class_0
 end
-local ToISO8601
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -5214,7 +5115,6 @@ do
   end
   ToISO8601 = _class_0
 end
-local EpochTime
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -5251,7 +5151,6 @@ do
   end
   EpochTime = _class_0
 end
-local ToEpochTime
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -5288,7 +5187,6 @@ do
   end
   ToEpochTime = _class_0
 end
-local Now
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -5325,7 +5223,6 @@ do
   end
   Now = _class_0
 end
-local InTimezone
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -5362,7 +5259,6 @@ do
   end
   InTimezone = _class_0
 end
-local During
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -5399,7 +5295,6 @@ do
   end
   During = _class_0
 end
-local RQLDate
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -5436,7 +5331,6 @@ do
   end
   RQLDate = _class_0
 end
-local TimeOfDay
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -5473,7 +5367,6 @@ do
   end
   TimeOfDay = _class_0
 end
-local Timezone
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -5510,7 +5403,6 @@ do
   end
   Timezone = _class_0
 end
-local Year
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -5547,7 +5439,6 @@ do
   end
   Year = _class_0
 end
-local Month
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -5584,7 +5475,6 @@ do
   end
   Month = _class_0
 end
-local Day
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -5621,7 +5511,6 @@ do
   end
   Day = _class_0
 end
-local DayOfWeek
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -5658,7 +5547,6 @@ do
   end
   DayOfWeek = _class_0
 end
-local DayOfYear
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -5695,7 +5583,6 @@ do
   end
   DayOfYear = _class_0
 end
-local Hours
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -5732,7 +5619,6 @@ do
   end
   Hours = _class_0
 end
-local Minutes
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -5769,7 +5655,6 @@ do
   end
   Minutes = _class_0
 end
-local Seconds
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -5806,7 +5691,6 @@ do
   end
   Seconds = _class_0
 end
-local Time
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -5843,7 +5727,6 @@ do
   end
   Time = _class_0
 end
-local GeoJson
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -5880,7 +5763,6 @@ do
   end
   GeoJson = _class_0
 end
-local ToGeoJson
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -5917,7 +5799,6 @@ do
   end
   ToGeoJson = _class_0
 end
-local Point
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -5954,7 +5835,6 @@ do
   end
   Point = _class_0
 end
-local Line
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -5991,7 +5871,6 @@ do
   end
   Line = _class_0
 end
-local Polygon
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -6028,7 +5907,6 @@ do
   end
   Polygon = _class_0
 end
-local Distance
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -6065,7 +5943,6 @@ do
   end
   Distance = _class_0
 end
-local Intersects
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -6102,7 +5979,6 @@ do
   end
   Intersects = _class_0
 end
-local Includes
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -6139,7 +6015,6 @@ do
   end
   Includes = _class_0
 end
-local Circle
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -6176,7 +6051,6 @@ do
   end
   Circle = _class_0
 end
-local GetIntersecting
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -6213,7 +6087,6 @@ do
   end
   GetIntersecting = _class_0
 end
-local GetNearest
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -6250,7 +6123,6 @@ do
   end
   GetNearest = _class_0
 end
-local Fill
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -6287,7 +6159,6 @@ do
   end
   Fill = _class_0
 end
-local UUID
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -6394,10 +6265,10 @@ end
 function rethinkdb.json(...)
   return Json({ }, unpack(arg))
 end
-rethinkdb.error = function(...)
+function rethinkdb.error(...)
   return UserError({ }, unpack(arg))
 end
-rethinkdb.random = function(...)
+function rethinkdb.random(...)
   -- Default if no opts dict provided
   local opts = { }
   local limits = arg
@@ -6431,13 +6302,13 @@ end
 function rethinkdb.db(...)
   return Db({ }, unpack(arg))
 end
-rethinkdb.db_create = function(...)
+function rethinkdb.db_create(...)
   return DbCreate({ }, unpack(arg))
 end
-rethinkdb.db_drop = function(...)
+function rethinkdb.db_drop(...)
   return DbDrop({ }, unpack(arg))
 end
-rethinkdb.db_list = function(...)
+function rethinkdb.db_list(...)
   return DbList({ }, unpack(arg))
 end
 function rethinkdb.table_create(tblName, opts)
@@ -6446,7 +6317,7 @@ end
 function rethinkdb.table_drop(...)
   return TableDrop({ }, unpack(arg))
 end
-rethinkdb.table_list = function(...)
+function rethinkdb.table_list(...)
   return TableList({ }, unpack(arg))
 end
 function rethinkdb.do_(...)
@@ -6466,67 +6337,67 @@ end
 function rethinkdb.branch(...)
   return Branch({ }, unpack(arg))
 end
-rethinkdb.asc = function(...)
+function rethinkdb.asc(...)
   return Asc({ }, unpack(arg))
 end
-rethinkdb.desc = function(...)
+function rethinkdb.desc(...)
   return Desc({ }, unpack(arg))
 end
-rethinkdb.eq = function(...)
+function rethinkdb.eq(...)
   return Eq({ }, unpack(arg))
 end
-rethinkdb.ne = function(...)
+function rethinkdb.ne(...)
   return Ne({ }, unpack(arg))
 end
-rethinkdb.lt = function(...)
+function rethinkdb.lt(...)
   return Lt({ }, unpack(arg))
 end
-rethinkdb.le = function(...)
+function rethinkdb.le(...)
   return Le({ }, unpack(arg))
 end
-rethinkdb.gt = function(...)
+function rethinkdb.gt(...)
   return Gt({ }, unpack(arg))
 end
-rethinkdb.ge = function(...)
+function rethinkdb.ge(...)
   return Ge({ }, unpack(arg))
 end
-rethinkdb.or_ = function(...)
+function rethinkdb.or_(...)
   return Any({ }, unpack(arg))
 end
-rethinkdb.any = function(...)
+function rethinkdb.any(...)
   return Any({ }, unpack(arg))
 end
-rethinkdb.and_ = function(...)
+function rethinkdb.and_(...)
   return All({ }, unpack(arg))
 end
-rethinkdb.all = function(...)
+function rethinkdb.all(...)
   return All({ }, unpack(arg))
 end
-rethinkdb.not_ = function(...)
+function rethinkdb.not_(...)
   return Not({ }, unpack(arg))
 end
-rethinkdb.add = function(...)
+function rethinkdb.add(...)
   return Add({ }, unpack(arg))
 end
-rethinkdb.sub = function(...)
+function rethinkdb.sub(...)
   return Sub({ }, unpack(arg))
 end
-rethinkdb.div = function(...)
+function rethinkdb.div(...)
   return Div({ }, unpack(arg))
 end
-rethinkdb.mul = function(...)
+function rethinkdb.mul(...)
   return Mul({ }, unpack(arg))
 end
-rethinkdb.mod = function(...)
+function rethinkdb.mod(...)
   return Mod({ }, unpack(arg))
 end
-rethinkdb.type_of = function(...)
+function rethinkdb.type_of(...)
   return TypeOf({ }, unpack(arg))
 end
-rethinkdb.info = function(...)
+function rethinkdb.info(...)
   return Info({ }, unpack(arg))
 end
-rethinkdb.literal = function(...)
+function rethinkdb.literal(...)
   return Literal({ }, unpack(arg))
 end
 function rethinkdb.iso8601(str, opts)
@@ -6535,13 +6406,12 @@ end
 function rethinkdb.epoch_time(...)
   return EpochTime({ }, unpack(arg))
 end
-rethinkdb.now = function(...)
+function rethinkdb.now(...)
   return Now({ }, unpack(arg))
 end
-rethinkdb.time = function(...)
+function rethinkdb.time(...)
   return Time({ }, unpack(arg))
 end
-local Monday
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -6577,7 +6447,6 @@ do
   end
   Monday = _class_0
 end
-local Tuesday
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -6613,7 +6482,6 @@ do
   end
   Tuesday = _class_0
 end
-local Wednesday
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -6649,7 +6517,6 @@ do
   end
   Wednesday = _class_0
 end
-local Thursday
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -6685,7 +6552,6 @@ do
   end
   Thursday = _class_0
 end
-local Friday
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -6721,7 +6587,6 @@ do
   end
   Friday = _class_0
 end
-local Saturday
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -6757,7 +6622,6 @@ do
   end
   Saturday = _class_0
 end
-local Sunday
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -6800,7 +6664,6 @@ rethinkdb.thursday = Thursday()
 rethinkdb.friday = Friday()
 rethinkdb.saturday = Saturday()
 rethinkdb.sunday = Sunday()
-local January
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -6836,7 +6699,6 @@ do
   end
   January = _class_0
 end
-local February
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -6872,7 +6734,6 @@ do
   end
   February = _class_0
 end
-local March
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -6908,7 +6769,6 @@ do
   end
   March = _class_0
 end
-local April
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -6944,7 +6804,6 @@ do
   end
   April = _class_0
 end
-local May
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -6980,7 +6839,6 @@ do
   end
   May = _class_0
 end
-local June
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -7016,7 +6874,6 @@ do
   end
   June = _class_0
 end
-local July
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -7052,7 +6909,6 @@ do
   end
   July = _class_0
 end
-local August
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -7088,7 +6944,6 @@ do
   end
   August = _class_0
 end
-local September
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -7124,7 +6979,6 @@ do
   end
   September = _class_0
 end
-local October
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -7160,7 +7014,6 @@ do
   end
   October = _class_0
 end
-local November
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -7196,7 +7049,6 @@ do
   end
   November = _class_0
 end
-local December
 do
   local _parent_0 = RDBOp
   local _base_0 = {
@@ -7244,25 +7096,25 @@ rethinkdb.september = September()
 rethinkdb.october = October()
 rethinkdb.november = November()
 rethinkdb.december = December()
-rethinkdb.object = function(...)
+function rethinkdb.object(...)
   return Object({ }, unpack(arg))
 end
-rethinkdb.args = function(...)
+function rethinkdb.args(...)
   return Args({ }, unpack(arg))
 end
-rethinkdb.geojson = function(...)
+function rethinkdb.geojson(...)
   return GeoJson({ }, unpack(arg))
 end
-rethinkdb.point = function(...)
+function rethinkdb.point(...)
   return Point({ }, unpack(arg))
 end
-rethinkdb.line = function(...)
+function rethinkdb.line(...)
   return Line({ }, unpack(arg))
 end
-rethinkdb.polygon = function(...)
+function rethinkdb.polygon(...)
   return Polygon({ }, unpack(arg))
 end
-rethinkdb.intersects = function(...)
+function rethinkdb.intersects(...)
   return Intersects({ }, unpack(arg))
 end
 function rethinkdb.distance(g1, g2, opts)

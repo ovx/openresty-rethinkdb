@@ -5,13 +5,14 @@ local protoResponseType = require('./proto-def').ResponseType
 -- Import some names to this namespace for convenience
 local mkErr = util.mkErr
 
+local IterableResult, Cursor, Feed, ArrayResult
+
 -- setImmediate is not defined in some browsers (including Chrome)
 if not setImmediate then
   local setImmediate = function(cb)
     return setTimeout(cb, 0)
   end
 end
-local IterableResult
 do
   local _base_0 = {
     stackSize = 100,
@@ -335,7 +336,6 @@ do
   _base_0.__class = _class_0
   IterableResult = _class_0
 end
-local Cursor
 do
   local _parent_0 = IterableResult
   local _base_0 = {
@@ -374,7 +374,6 @@ do
   end
   Cursor = _class_0
 end
-local Feed
 do
   local _parent_0 = IterableResult
   local _base_0 = {
@@ -424,7 +423,6 @@ end
 -- Used to wrap array results so they support the same iterable result
 -- API as cursors.
 
-local ArrayResult
 do
   local _parent_0 = IterableResult
   local _base_0 = {

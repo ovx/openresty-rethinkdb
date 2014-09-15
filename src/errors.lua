@@ -1,4 +1,5 @@
-local RqlDriverError
+local RqlDriverError, RqlServerError, RqlRuntimeError, RqlCompileError
+local RqlClientError, RqlQueryPrinter
 do
   local _base_0 = { }
   _base_0.__index = _base_0
@@ -21,7 +22,6 @@ do
   _base_0.__class = _class_0
   RqlDriverError = _class_0
 end
-local RqlServerError
 do
   local _base_0 = { }
   _base_0.__index = _base_0
@@ -53,7 +53,6 @@ do
   _base_0.__class = _class_0
   RqlServerError = _class_0
 end
-local RqlRuntimeError
 do
   local _parent_0 = RqlServerError
   local _base_0 = { }
@@ -87,7 +86,6 @@ do
   end
   RqlRuntimeError = _class_0
 end
-local RqlCompileError
 do
   local _parent_0 = RqlServerError
   local _base_0 = { }
@@ -121,7 +119,6 @@ do
   end
   RqlCompileError = _class_0
 end
-local RqlClientError
 do
   local _parent_0 = RqlServerError
   local _base_0 = { }
@@ -155,7 +152,6 @@ do
   end
   RqlClientError = _class_0
 end
-local RqlQueryPrinter
 do
   local composeTerm, composeCarrots, carrotMarker, carrotify, joinTree
   local _base_0 = {
