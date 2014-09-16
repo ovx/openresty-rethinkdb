@@ -32,9 +32,9 @@ do
       self.frames = frames
       if term then
         if msg[msg.length - 1] == '.' then
-          self.message = tostring(msg.slice(0, msg.length - 1)) .. " in:\n#{RqlQueryPrinter::printQuery(term)}\n#{RqlQueryPrinter::printCarrots(term, frames)}"
+          self.message = tostring(msg.slice(0, msg.length - 1)) .. " in:\n" .. RqlQueryPrinter:printQuery(term) .. "\n" .. RqlQueryPrinter:printCarrots(term, frames)
         else
-          self.message = tostring(msg) .. " in:\n#{RqlQueryPrinter::printQuery(term)}\n#{RqlQueryPrinter::printCarrots(term, frames)}"
+          self.message = tostring(msg) .. " in:\n" .. RqlQueryPrinter:printQuery(term) .. "\n" .. RqlQueryPrinter:printCarrots(term, frames)
         end
       else
         self.message = tostring(msg)
