@@ -306,7 +306,7 @@ do
   }
   _base_0.__index = _base_0
   local _class_0 = setmetatable({
-    __init = function(conn, token, opts, root)
+    __init = function(self, conn, token, opts, root)
       self._conn = conn
       self._token = token
       self._opts = opts
@@ -346,7 +346,7 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function()
+    __init = function(self)
       self._type = protoResponseType.SUCCESS_PARTIAL
       return _parent_0
     end,
@@ -390,7 +390,7 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function()
+    __init = function(self)
       self._type = protoResponseType.SUCCESS_FEED
       return _parent_0
     end,

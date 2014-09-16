@@ -87,7 +87,7 @@ end
 do
   local _base_0 = {
     showRunWarning = true,
-    run = function(connection, options, callback)
+    run = function(self, connection, options, callback)
       -- Valid syntaxes are
       -- connection, callback
       -- connection, options, callback
@@ -123,7 +123,7 @@ do
       end
       if options.noreply == true or type(callback) == 'function' then
         local status
-        status, err = pcall(connection._start(self, callback, options))
+        status, err = pcall(connection:_start(self, callback, options))
         if not (status) then
           -- It was decided that, if we can, we prefer to invoke the callback
           -- with any errors rather than throw them as normal exceptions.
@@ -695,8 +695,7 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(val)
-      local self = { }
+    __init = function(self, val)
       self.data = val
       return self
     end,

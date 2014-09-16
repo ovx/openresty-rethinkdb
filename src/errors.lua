@@ -4,8 +4,8 @@ do
   local _base_0 = { }
   _base_0.__index = _base_0
   local _class_0 = setmetatable({
-    __init = function(msg)
-      self.name = self.constructor.name
+    __init = function(self, msg)
+      self.name = self.__name
       self.msg = msg
       self.message = msg
     end,
@@ -26,7 +26,7 @@ do
   local _base_0 = { }
   _base_0.__index = _base_0
   local _class_0 = setmetatable({
-    __init = function(msg, term, frames)
+    __init = function(self, msg, term, frames)
       self.name = self.constructor.name
       self.msg = msg
       self.frames = frames
@@ -172,7 +172,7 @@ do
   }
   _base_0.__index = _base_0
   local _class_0 = setmetatable({
-    __init = function() end,
+    __init = function(self) end,
     __base = _base_0,
     __name = "RqlQueryPrinter"
   }, {
