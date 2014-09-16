@@ -40,10 +40,10 @@ function funcWrap(val)
   end
   val = rethinkdb.expr(val)
   local ivarScan = function(node)
-    if not TermBase.instanceof(node) then
+    if not isinstance(TermBase, node) then
       return false
     end
-    if ImplicitVar.instanceof(node) then
+    if isinstance(ImplicitVar, node) then
       return true
     end
     for _, v in ipairs(node.args) do
