@@ -41,6 +41,7 @@ class LuaTestCase(unittest.TestCase):
                 cmd, stderr=subprocess.STDOUT, timeout=10, cwd='tests', **kwargs
             )
         except subprocess.CalledProcessError as e:
+            print(e.output.decode())
             return e.output
 
     def tearDown(self):
