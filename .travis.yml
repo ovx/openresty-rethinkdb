@@ -10,6 +10,9 @@ before_install:
 # command to install dependencies
 install:
   - 'LUAINC_linux=/usr/include/lua5.1 python build.py'
+# add the python rethinkdb driver so that it can be used in test setup
+before_script:
+  - 'pip install rethinkdb'
 # command to run tests
 script:
   - 'python build.py test'
