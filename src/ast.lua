@@ -790,15 +790,11 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(optargs, ...)
-      local self = { }
-      do
-        local _accum_0 = { }
-        for i, a in ipairs(arg) do
-          _accum_0[i] = rethinkdb.expr(a)
-        end
-        self.args = _accum_0
+    __init = function(self, optargs, ...)
+      for i, a in ipairs(arg) do
+        arg[i] = rethinkdb.expr(a)
       end
+      self.args = arg
       self.optargs = optargs
       return self
     end,
@@ -832,16 +828,11 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(optargs, ...)
-      local self = _parent_0.__init(self)
-      do
-        local _accum_0 = { }
-        local _len_0 = 1
-        for i, a in ipairs(arg) do
-          _accum_0[_len_0] = rethinkdb.expr(funcWrap(a))
-          _len_0 = _len_0 + 1
-        end
-        self.args = _accum_0
+    __init = function(self, optargs, ...)
+      self = _parent_0.__init(self)
+      self.args = {}
+      for i, a in ipairs(arg) do
+        self.args[i] = rethinkdb.expr(funcWrap(a))
       end
       self.optargs = optargs
       return self
@@ -980,11 +971,11 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(obj, nestingDepth)
+    __init = function(self, obj, nestingDepth)
       if nestingDepth == nil then
         nestingDepth = 20
       end
-      local self = _parent_0.__init(self, { })
+      self = _parent_0.__init(self, { })
       self.optargs = { }
       for key, val in ipairs(obj) do
         if not (val) then
@@ -1193,7 +1184,7 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(data)
+    __init = function(self, data)
       if isinstance(TermBase, data) then
         local self = _parent_0.__init(self, { }, data)
       else
@@ -4896,7 +4887,7 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(optargs, func)
+    __init = function(self, optargs, func)
       local args = { }
       local argNums = { }
       local i = 0
