@@ -162,6 +162,32 @@ do
       end
     end,
     close = function(self, optsOrCallback, callback)
+      local opts, cb
+      if callback then
+        opts = optsOrCallback
+        cb = callback
+      else
+        if type(optsOrCallback) == 'tree' then
+          opts = optsOrCallback
+          cb = nil
+        else
+          if type(optsOrCallback) == "function" then
+            opts = { }
+            cb = optsOrCallback
+          else
+            opts = { }
+          end
+        end
+      end
+      local wrappedCb = function(self, ...)
+        self.rawSocket["end"]()
+        if cb then
+          return cb(unpack(arg))
+        end
+      end
+
+      callback = wrappedCb
+
       if callback then
         local opts = optsOrCallback
         if not (type(opts) == 'tree') then
@@ -222,7 +248,21 @@ do
       }
       return self:_sendQuery(query)
     end,
+    _writeQuery = function(token, data)
+      local tokenBuf = Buffer(8)
+      tokenBuf.writeUInt32LE(token % 0xFFFFFFFF, 0)
+      tokenBuf.writeUInt32LE(Math.floor(token / 0xFFFFFFFF), 4)
+      self.rawSocket.write(tokenBuf)
+      return self:write(Buffer(data))
+    end,
+    write = function(chunk)
+      local lengthBuffer = Buffer(4)
+      lengthBuffer.writeUInt32LE(chunk.length, 0)
+      self.rawSocket.write(lengthBuffer)
+      return self.rawSocket.write(chunk)
+    end,
     cancel = function()
+      self.rawSocket.destroy()
       self.outstandingCallbacks = { }
     end,
     reconnect = function(optsOrCallback, callback)
@@ -369,100 +409,6 @@ do
           return callback(err.RqlDriverError("Could not connect to " .. tostring(self.host) .. ":" .. tostring(self.port) .. ".\n" .. tostring(e.message)))
         end
       end
-      self:once('error', errCallback)
-      local conCallback = function(self)
-        self:removeListener('error', errCallback)
-        self.open = true
-        return callback(nil, self)
-      end
-      self.socket = socket.tcp()
-      if not self.socket:settimeout(self.timeout) then
-      end
-      local status, err = self.socket:connect(self.host, self.port)
-      return self:once('connect', conCallback)
-    end,
-    __base = _base_0,
-    __name = "Connection",
-    __parent = _parent_0
-  }, {
-    __index = function(cls, name)
-      local val = rawget(_base_0, name)
-      if val == nil then
-        return _parent_0[name]
-      else
-        return val
-      end
-    end,
-    __call = function(cls, ...)
-      local _self_0 = setmetatable({}, _base_0)
-      cls.__init(_self_0, ...)
-      return _self_0
-    end
-  })
-  _base_0.__class = _class_0
-  if _parent_0.__inherited then
-    _parent_0.__inherited(_parent_0, _class_0)
-  end
-  Connection = _class_0
-end
-local TcpConnection
-do
-  local _parent_0 = Connection
-  local _base_0 = {
-    close = varar(0, 2, function(optsOrCallback, callback)
-      if callback then
-        local opts = optsOrCallback
-        local cb = callback
-      else
-        if type(optsOrCallback) == 'tree' then
-          local opts = optsOrCallback
-          local cb = nil
-        else
-          if type(optsOrCallback) == "function" then
-            local opts = { }
-            local cb = optsOrCallback
-          else
-            local opts = { }
-          end
-        end
-      end
-      local wrappedCb = function(self, ...)
-        self.rawSocket["end"]()
-        if cb then
-          return cb(unpack(arg))
-        end
-      end
-
-      -- This would simply be super(opts, wrappedCb), if we were not in the varar
-      -- anonymous function
-      return TcpConnection.__super__.close.call(self, opts, wrappedCb)
-    end),
-    cancel = function()
-      self.rawSocket.destroy()
-      return _parent_0.cancel(self)
-    end,
-    _writeQuery = function(token, data)
-      local tokenBuf = Buffer(8)
-      tokenBuf.writeUInt32LE(token % 0xFFFFFFFF, 0)
-      tokenBuf.writeUInt32LE(Math.floor(token / 0xFFFFFFFF), 4)
-      self.rawSocket.write(tokenBuf)
-      return self:write(Buffer(data))
-    end,
-    write = function(chunk)
-      local lengthBuffer = Buffer(4)
-      lengthBuffer.writeUInt32LE(chunk.length, 0)
-      self.rawSocket.write(lengthBuffer)
-      return self.rawSocket.write(chunk)
-    end
-  }
-  _base_0.__index = _base_0
-  setmetatable(_base_0, _parent_0.__base)
-  local _class_0 = setmetatable({
-    __init = function(host, callback)
-      if not (TcpConnection.isAvailable()) then
-        error(err.RqlDriverError("TCP sockets are not available in this environment"))
-      end
-      _parent_0.__init(self, host, callback)
       if self.rawSocket then
         self:close({
           noreplyWait = false
