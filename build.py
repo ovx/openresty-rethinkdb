@@ -28,6 +28,8 @@ skipped: {}'''.format(
         res.testsRun, len(res.errors), len(res.failures), len(res.skipped)))
     io.terminate()
     io.wait()
+    if not res.wasSuccessful():
+        exit(1)
 
 
 def clean(args):
