@@ -1,5 +1,3 @@
-# Copyright 2014 Adam Grandquist, all rights reserved.
-
 import argparse
 import os
 import shutil
