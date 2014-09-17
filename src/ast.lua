@@ -93,21 +93,26 @@ do
       -- connection, options, callback
       -- connection, nil, callback
 
-      if net.isConnection(connection) == true then
-        -- Handle run(connection, callback)
-        if type(options) == "function" then
-          if not (callback) then
-            callback = options
-            options = { }
-          else
-            options(err.RqlDriverError("Second argument to `run` cannot be a function if a third argument is provided."))
-            return
-          end
+      -- Handle run(connection, callback)
+      if type(options) == "function" then
+        if not (callback) then
+          callback = options
+          options = { }
+        else
+          options(err.RqlDriverError("Second argument to `run` cannot be a function if a third argument is provided."))
+          return
+        end
+      else
+        -- else we suppose that we have run(connection[, options][, callback])
+        if not (options) then
+          options = { }
         end
       end
-      -- else we suppose that we have run(connection[, options][, callback])
-      if not (options) then
-        options = { }
+
+      if not callback then
+        callback = function(err, cur)
+          if err then error(err) end
+        end
       end
 
       -- Check if the arguments are valid types
