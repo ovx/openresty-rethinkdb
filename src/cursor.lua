@@ -16,7 +16,7 @@ end
 do
   local _base_0 = {
     stackSize = 100,
-    _addResponse = function(response)
+    _addResponse = function(self, response)
       if response.t == self._type or response.t == protoResponseType.SUCCESS_SEQUENCE then
         -- We push a "ok" response only if it's not empty
         if response.r.length > 0 then
@@ -50,7 +50,7 @@ do
       end
       return self
     end,
-    _getCallback = function()
+    _getCallback = function(self)
       self._iterations = self._iterations + 1
       local cb = self._cbQueue.shift()
       if self._iterations % self.stackSize == self.stackSize - 1 then
@@ -64,7 +64,7 @@ do
         return cb
       end
     end,
-    _handleRow = function()
+    _handleRow = function(self)
       local response = self._responses[0]
       local row = util.recursivelyConvertPseudotype(response.r[self._responseIndex], self._opts)
       local cb = self:_getCallback()
@@ -77,10 +77,10 @@ do
       end
       return cb(nil, row)
     end,
-    bufferEmpty = function()
+    bufferEmpty = function(self)
       return self._responses.length == 0 or self._responses[0].r.length <= self._responseIndex
     end,
-    _promptNext = function()
+    _promptNext = function(self)
       -- If there are no more waiting callbacks, just wait until the next event
       while self._cbQueue[0] do
         if self:bufferEmpty() == true then
@@ -135,7 +135,7 @@ do
         end
       end
     end,
-    _promptCont = function()
+    _promptCont = function(self)
       -- Let's ask the server for more data if we haven't already
       if not ((self._contFlag or self._endFlag)) then
         self._contFlag = true
@@ -144,17 +144,17 @@ do
       end
     end,
     -- Implement IterableResult
-    hasNext = function()
+    hasNext = function(self)
       error(err.RqlDriverError("The `hasNext` command has been removed since 1.13. Use `next` instead."))
     end,
-    _next = function(cb)
+    _next = function(self, cb)
       local fn = function(self, cb)
         self._cbQueue.push(cb)
         return self:_promptNext()
       end
       return fn(cb)
     end,
-    close = function(cb)
+    close = function(self, cb)
       if self._endFlag == true then
         return cb()
       else
@@ -167,7 +167,7 @@ do
         end
       end
     end,
-    _each = function(cb, onFinished)
+    _each = function(self, cb, onFinished)
       if not (type(cb) == 'function') then
         error(err.RqlDriverError("First argument to each must be a function."))
       end
@@ -198,7 +198,7 @@ do
       end
       return self:_next(nextCb)
     end,
-    toArray = function(cb)
+    toArray = function(self, cb)
       local fn = function(self, cb)
         local arr = { }
         local eachCb = function(self, err, row)
@@ -215,7 +215,7 @@ do
       end
       return fn(cb)
     end,
-    _makeEmitter = function()
+    _makeEmitter = function(self)
       self.emitter = EventEmitter
       self.each = function()
         error(err.RqlDriverError("You cannot use the cursor interface and the EventEmitter interface at the same time."))
@@ -224,25 +224,25 @@ do
         error(err.RqlDriverError("You cannot use the cursor interface and the EventEmitter interface at the same time."))
       end
     end,
-    addListener = function(...)
+    addListener = function(self, ...)
       if not self.emitter then
         self:_makeEmitter()
         setImmediate(function(self)
           return self:_each(self._eachCb)
         end)
       end
-      return self.emitter.addListener(unpack(arg))
+      return self.emitter.addListener(self, ...)
     end,
-    on = function(...)
+    on = function(self, ...)
       if not self.emitter then
         self:_makeEmitter()
         setImmediate(function(self)
           return self:_each(self._eachCb)
         end)
       end
-      return self.emitter.on(unpack(arg))
+      return self.emitter.on(self, ...)
     end,
-    once = function()
+    once = function(self)
       if not self.emitter then
         self:_makeEmitter()
         setImmediate(function(self)
@@ -251,7 +251,7 @@ do
       end
       return self.emitter.once()
     end,
-    removeListener = function()
+    removeListener = function(self)
       if not self.emitter then
         self:_makeEmitter()
         setImmediate(function(self)
@@ -260,7 +260,7 @@ do
       end
       return self.emitter.removeListener()
     end,
-    removeAllListeners = function()
+    removeAllListeners = function(self)
       if not self.emitter then
         self:_makeEmitter()
         setImmediate(function(self)
@@ -269,7 +269,7 @@ do
       end
       return self.emitter.removeAllListeners()
     end,
-    setMaxListeners = function()
+    setMaxListeners = function(self)
       if not self.emitter then
         self:_makeEmitter()
         setImmediate(function(self)
@@ -278,7 +278,7 @@ do
       end
       return self.emitter.setMaxListeners()
     end,
-    listeners = function()
+    listeners = function(self)
       if not self.emitter then
         self:_makeEmitter()
         setImmediate(function(self)
@@ -287,7 +287,7 @@ do
       end
       return self.emitter.listeners()
     end,
-    emit = function()
+    emit = function(self)
       if not self.emitter then
         self:_makeEmitter()
         setImmediate(function(self)
@@ -339,7 +339,7 @@ end
 do
   local _parent_0 = IterableResult
   local _base_0 = {
-    toString = function()
+    toString = function(self)
       return "[object Cursor]"
     end
   }
@@ -377,13 +377,13 @@ end
 do
   local _parent_0 = IterableResult
   local _base_0 = {
-    hasNext = function()
+    hasNext = function(self)
       error(err.RqlDriverError("`hasNext` is not available for feeds."))
     end,
-    toArray = function()
+    toArray = function(self)
       error(err.RqlDriverError("`toArray` is not available for feeds."))
     end,
-    toString = function()
+    toString = function(self)
       return "[object Feed]"
     end
   }
@@ -427,13 +427,13 @@ do
   local _parent_0 = IterableResult
   local _base_0 = {
     -- We store @__index as soon as the user starts using the cursor interface
-    _hasNext = function()
+    _hasNext = function(self)
       if not self.__index then
         self.__index = 0
       end
       return self.__index < self.length
     end,
-    _next = function(cb)
+    _next = function(self, cb)
       local fn = function(self, cb)
         if self:_hasNext() == true then
           self = self
@@ -452,7 +452,7 @@ do
       end
       return fn(cb)
     end,
-    toArray = function(cb)
+    toArray = function(self, cb)
       local fn = function(self, cb)
         -- IterableResult.toArray would create a copy
         if self.__index then
@@ -463,10 +463,10 @@ do
       end
       return fn(cb)
     end,
-    close = function()
+    close = function(self)
       return self
     end,
-    makeIterable = function(response)
+    makeIterable = function(self, response)
       response.__proto__ = { }
       for name, method in ipairs(ArrayResult.prototype) do
         if name ~= 'constructor' then

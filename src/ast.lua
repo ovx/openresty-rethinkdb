@@ -140,14 +140,14 @@ do
         end
       end
     end,
-    toString = function()
+    toString = function(self)
       return err.printQuery(self)
     end
   }
   _base_0.__index = _base_0
   local _class_0 = setmetatable({
     __init = function(self)
-      self = function(field)
+      self = function(self, field)
         return self.bracket(field)
       end
       return self
@@ -169,63 +169,63 @@ do
   local _parent_0 = TermBase
   local _base_0 = {
     eq = function(...)
-      return Eq({ }, self, unpack(arg))
+      return Eq({ }, ...)
     end,
     ne = function(...)
-      return Ne({ }, self, unpack(arg))
+      return Ne({ }, ...)
     end,
     lt = function(...)
-      return Lt({ }, self, unpack(arg))
+      return Lt({ }, ...)
     end,
     le = function(...)
-      return Le({ }, self, unpack(arg))
+      return Le({ }, ...)
     end,
     gt = function(...)
-      return Gt({ }, self, unpack(arg))
+      return Gt({ }, ...)
     end,
     ge = function(...)
-      return Ge({ }, self, unpack(arg))
+      return Ge({ }, ...)
     end,
     not_ = function(...)
-      return Not({ }, self, unpack(arg))
+      return Not({ }, ...)
     end,
     add = function(...)
-      return Add({ }, self, unpack(arg))
+      return Add({ }, ...)
     end,
     sub = function(...)
-      return Sub({ }, self, unpack(arg))
+      return Sub({ }, ...)
     end,
     mul = function(...)
-      return Mul({ }, self, unpack(arg))
+      return Mul({ }, ...)
     end,
     div = function(...)
-      return Div({ }, self, unpack(arg))
+      return Div({ }, ...)
     end,
     mod = function(...)
-      return Mod({ }, self, unpack(arg))
+      return Mod({ }, ...)
     end,
     append = function(...)
-      return Append({ }, self, unpack(arg))
+      return Append({ }, ...)
     end,
     prepend = function(...)
-      return Prepend({ }, self, unpack(arg))
+      return Prepend({ }, ...)
     end,
     difference = function(...)
-      return Difference({ }, self, unpack(arg))
+      return Difference({ }, ...)
     end,
     set_insert = function(...)
-      return SetInsert({ }, self, unpack(arg))
+      return SetInsert({ }, ...)
     end,
     set_union = function(...)
-      return SetUnion({ }, self, unpack(arg))
+      return SetUnion({ }, ...)
     end,
     set_intersection = function(...)
-      return SetIntersection({ }, self, unpack(arg))
+      return SetIntersection({ }, ...)
     end,
     set_difference = function(...)
-      return SetDifference({ }, self, unpack(arg))
+      return SetDifference({ }, ...)
     end,
-    slice = function(left, right_or_opts, opts)
+    slice = function(self, left, right_or_opts, opts)
       if opts then
         return Slice(opts, self, left, right_or_opts)
       else
@@ -241,131 +241,131 @@ do
       end
     end,
     skip = function(...)
-      return Skip({ }, self, unpack(arg))
+      return Skip({ }, ...)
     end,
     limit = function(...)
-      return Limit({ }, self, unpack(arg))
+      return Limit({ }, ...)
     end,
     get_field = function(...)
-      return GetField({ }, self, unpack(arg))
+      return GetField({ }, ...)
     end,
     contains = function(...)
-      return Contains({ }, self, unpack(arg))
+      return Contains({ }, ...)
     end,
     insert_at = function(...)
-      return InsertAt({ }, self, unpack(arg))
+      return InsertAt({ }, ...)
     end,
     splice_at = function(...)
-      return SpliceAt({ }, self, unpack(arg))
+      return SpliceAt({ }, ...)
     end,
     delete_at = function(...)
-      return DeleteAt({ }, self, unpack(arg))
+      return DeleteAt({ }, ...)
     end,
     change_at = function(...)
-      return ChangeAt({ }, self, unpack(arg))
+      return ChangeAt({ }, ...)
     end,
     indexes_of = function(...)
-      return IndexesOf({ }, self, unpack(arg))
+      return IndexesOf({ }, ...)
     end,
     has_fields = function(...)
-      return HasFields({ }, self, unpack(arg))
+      return HasFields({ }, ...)
     end,
     with_fields = function(...)
-      return WithFields({ }, self, unpack(arg))
+      return WithFields({ }, ...)
     end,
     keys = function(...)
-      return Keys({ }, self, unpack(arg))
+      return Keys({ }, ...)
     end,
     changes = function(...)
-      return Changes({ }, self, unpack(arg))
+      return Changes({ }, ...)
     end,
 
     -- pluck and without on zero fields are allowed
     pluck = function(...)
-      return Pluck({ }, self, unpack(arg))
+      return Pluck({ }, ...)
     end,
     without = function(...)
-      return Without({ }, self, unpack(arg))
+      return Without({ }, ...)
     end,
     merge = function(...)
-      return Merge({ }, self, unpack(arg))
+      return Merge({ }, ...)
     end,
-    between = function(left, right, opts)
+    between = function(self, left, right, opts)
       return Between(opts, self, left, right)
     end,
     reduce = function(...)
-      return Reduce({ }, self, unpack(arg))
+      return Reduce({ }, ...)
     end,
     map = function(...)
-      return Map({ }, self, unpack(arg))
+      return Map({ }, ...)
     end,
-    filter = function(predicate, opts)
+    filter = function(self, predicate, opts)
       return Filter(opts, self, funcWrap(predicate))
     end,
     concat_map = function(...)
-      return ConcatMap({ }, self, unpack(arg))
+      return ConcatMap({ }, ...)
     end,
-    distinct = function(opts)
+    distinct = function(self, opts)
       return Distinct(opts, self)
     end,
     count = function(...)
-      return Count({ }, self, unpack(arg))
+      return Count({ }, ...)
     end,
     union = function(...)
-      return Union({ }, self, unpack(arg))
+      return Union({ }, ...)
     end,
     nth = function(...)
-      return Nth({ }, self, unpack(arg))
+      return Nth({ }, ...)
     end,
     bracket = function(...)
-      return Bracket({ }, self, unpack(arg))
+      return Bracket({ }, ...)
     end,
     match = function(...)
-      return Match({ }, self, unpack(arg))
+      return Match({ }, ...)
     end,
     split = function(...)
-      return Split({ }, self, unpack(arg))
+      return Split({ }, ...)
     end,
     upcase = function(...)
-      return Upcase({ }, self, unpack(arg))
+      return Upcase({ }, ...)
     end,
     downcase = function(...)
-      return Downcase({ }, self, unpack(arg))
+      return Downcase({ }, ...)
     end,
     is_empty = function(...)
-      return IsEmpty({ }, self, unpack(arg))
+      return IsEmpty({ }, ...)
     end,
     inner_join = function(...)
-      return InnerJoin({ }, self, unpack(arg))
+      return InnerJoin({ }, ...)
     end,
     outer_join = function(...)
-      return OuterJoin({ }, self, unpack(arg))
+      return OuterJoin({ }, ...)
     end,
-    eq_join = function(left_attr, right, opts)
+    eq_join = function(self, left_attr, right, opts)
       return EqJoin(opts, self, funcWrap(left_attr), right)
     end,
     zip = function(...)
-      return Zip({ }, self, unpack(arg))
+      return Zip({ }, ...)
     end,
     coerce_to = function(...)
-      return CoerceTo({ }, self, unpack(arg))
+      return CoerceTo({ }, ...)
     end,
     ungroup = function(...)
-      return Ungroup({ }, self, unpack(arg))
+      return Ungroup({ }, ...)
     end,
     type_of = function(...)
-      return TypeOf({ }, self, unpack(arg))
+      return TypeOf({ }, ...)
     end,
-    update = function(func, opts)
+    update = function(self, func, opts)
       return Update(opts, self, funcWrap(func))
     end,
-    delete = function(opts)
+    delete = function(self, opts)
       return Delete(opts, self)
     end,
-    replace = function(func, opts)
+    replace = function(self, func, opts)
       return Replace(opts, self, funcWrap(func))
     end,
-    do_ = function(...)
+    do_ = function(self, ...)
       local args
       do
         local _accum_0 = { }
@@ -382,42 +382,42 @@ do
       return FunCall({ }, funcWrap(arg[arg.n]), self, unpack(args))
     end,
     default = function(...)
-      return Default({ }, self, unpack(arg))
+      return Default({ }, ...)
     end,
     or_ = function(...)
-      return Any({ }, self, unpack(arg))
+      return Any({ }, ...)
     end,
     any = function(...)
-      return Any({ }, self, unpack(arg))
+      return Any({ }, ...)
     end,
     and_ = function(...)
-      return All({ }, self, unpack(arg))
+      return All({ }, ...)
     end,
     all = function(...)
-      return All({ }, self, unpack(arg))
+      return All({ }, ...)
     end,
     for_each = function(...)
-      return ForEach({ }, self, unpack(arg))
+      return ForEach({ }, ...)
     end,
     sum = function(...)
-      return Sum({ }, self, unpack(arg))
+      return Sum({ }, ...)
     end,
     avg = function(...)
-      return Avg({ }, self, unpack(arg))
+      return Avg({ }, ...)
     end,
     min = function(...)
-      return Min({ }, self, unpack(arg))
+      return Min({ }, ...)
     end,
     max = function(...)
-      return Max({ }, self, unpack(arg))
+      return Max({ }, ...)
     end,
     info = function(...)
-      return Info({ }, self, unpack(arg))
+      return Info({ }, ...)
     end,
     sample = function(...)
-      return Sample({ }, self, unpack(arg))
+      return Sample({ }, ...)
     end,
-    group = function(...)
+    group = function(self, ...)
       -- Default if no opts dict provided
       local opts = { }
       local fields = arg
@@ -452,7 +452,7 @@ do
       end
       return Group(opts, self, unpack(fields))
     end,
-    order_by = function(...)
+    order_by = function(self, ...)
       -- Default if no opts dict provided
       local opts = { }
       local attrs = arg
@@ -492,42 +492,42 @@ do
 
     -- Geo operations
     to_geojson = function(...)
-      return ToGeoJson({ }, self, unpack(arg))
+      return ToGeoJson({ }, ...)
     end,
-    distance = function(g, opts)
+    distance = function(self, g, opts)
       return Distance(opts, self, g)
     end,
     intersects = function(...)
-      return Intersects({ }, self, unpack(arg))
+      return Intersects({ }, ...)
     end,
     includes = function(...)
-      return Includes({ }, self, unpack(arg))
+      return Includes({ }, ...)
     end,
     fill = function(...)
-      return Fill({ }, self, unpack(arg))
+      return Fill({ }, ...)
     end,
 
     -- Database operations
 
-    table_create = function(tblName, opts)
+    table_create = function(self, tblName, opts)
       return TableCreate(opts, self, tblName)
     end,
     table_drop = function(...)
-      return TableDrop({ }, self, unpack(arg))
+      return TableDrop({ }, ...)
     end,
     table_list = function(...)
-      return TableList({ }, self, unpack(arg))
+      return TableList({ }, ...)
     end,
-    table = function(tblName, opts)
+    table = function(self, tblName, opts)
       return Table(opts, self, tblName)
     end,
 
     -- Table operations
 
     get = function(...)
-      return Get({ }, self, unpack(arg))
+      return Get({ }, ...)
     end,
-    get_all = function(...)
+    get_all = function(self, ...)
       -- Default if no opts dict provided
       local opts = { }
       local keys = arg
@@ -553,10 +553,10 @@ do
       end
       return GetAll(opts, self, unpack(keys))
     end,
-    insert = function(doc, opts)
+    insert = function(self, doc, opts)
       return Insert(opts, self, rethinkdb.expr(doc))
     end,
-    index_create = function(name, defun_or_opts, opts)
+    index_create = function(self, name, defun_or_opts, opts)
       if opts then
         return IndexCreate(opts, self, name, funcWrap(defun_or_opts))
       else
@@ -573,75 +573,75 @@ do
       end
     end,
     index_drop = function(...)
-      return IndexDrop({ }, self, unpack(arg))
+      return IndexDrop({ }, ...)
     end,
     index_list = function(...)
-      return IndexList({ }, self, unpack(arg))
+      return IndexList({ }, ...)
     end,
     index_status = function(...)
-      return IndexStatus({ }, self, unpack(arg))
+      return IndexStatus({ }, ...)
     end,
     index_wait = function(...)
-      return IndexWait({ }, self, unpack(arg))
+      return IndexWait({ }, ...)
     end,
-    index_rename = function(old_name, new_name, opts)
+    index_rename = function(self, old_name, new_name, opts)
       return IndexRename(opts, self, old_name, new_name)
     end,
     sync = function(...)
-      return Sync({ }, self, unpack(arg))
+      return Sync({ }, ...)
     end,
     to_iso8601 = function(...)
-      return ToISO8601({ }, self, unpack(arg))
+      return ToISO8601({ }, ...)
     end,
     to_epoch_time = function(...)
-      return ToEpochTime({ }, self, unpack(arg))
+      return ToEpochTime({ }, ...)
     end,
     in_timezone = function(...)
-      return InTimezone({ }, self, unpack(arg))
+      return InTimezone({ }, ...)
     end,
-    during = function(t2, t3, opts)
+    during = function(self, t2, t3, opts)
       return During(opts, self, t2, t3)
     end,
     date = function(...)
-      return RQLDate({ }, self, unpack(arg))
+      return RQLDate({ }, ...)
     end,
     time_of_day = function(...)
-      return TimeOfDay({ }, self, unpack(arg))
+      return TimeOfDay({ }, ...)
     end,
     timezone = function(...)
-      return Timezone({ }, self, unpack(arg))
+      return Timezone({ }, ...)
     end,
     year = function(...)
-      return Year({ }, self, unpack(arg))
+      return Year({ }, ...)
     end,
     month = function(...)
-      return Month({ }, self, unpack(arg))
+      return Month({ }, ...)
     end,
     day = function(...)
-      return Day({ }, self, unpack(arg))
+      return Day({ }, ...)
     end,
     day_of_week = function(...)
-      return DayOfWeek({ }, self, unpack(arg))
+      return DayOfWeek({ }, ...)
     end,
     day_of_year = function(...)
-      return DayOfYear({ }, self, unpack(arg))
+      return DayOfYear({ }, ...)
     end,
     hours = function(...)
-      return Hours({ }, self, unpack(arg))
+      return Hours({ }, ...)
     end,
     minutes = function(...)
-      return Minutes({ }, self, unpack(arg))
+      return Minutes({ }, ...)
     end,
     seconds = function(...)
-      return Seconds({ }, self, unpack(arg))
+      return Seconds({ }, ...)
     end,
     uuid = function(...)
-      return UUID({ }, self, unpack(arg))
+      return UUID({ }, ...)
     end,
-    get_intersecting = function(g, opts)
+    get_intersecting = function(self, g, opts)
       return GetIntersecting(opts, self, g)
     end,
-    get_nearest = function(g, opts)
+    get_nearest = function(self, g, opts)
       return GetNearest(opts, self, g)
     end
   }
@@ -680,7 +680,7 @@ do
   local _base_0 = {
     args = { },
     optargs = { },
-    compose = function()
+    compose = function(self)
       local _exp_0 = type(self.data)
       if 'string' == _exp_0 then
         return '"' + self.data + '"'
@@ -688,7 +688,7 @@ do
         return '' + self.data
       end
     end,
-    build = function()
+    build = function(self)
       if type(self.data) == 'number' then
         if not (isFinite(self.data)) then
           error(TypeError("Illegal non-finite number `" + self.data.toString() + "`."))
@@ -731,7 +731,7 @@ end
 do
   local _parent_0 = RDBVal
   local _base_0 = {
-    build = function()
+    build = function(self)
       local res = {
         self.tt,
         { }
@@ -750,7 +750,7 @@ do
       end
       return res
     end,
-    compose = function(args, optargs)
+    compose = function(self, args, optargs)
       if self.st then
         return {
           'r.',
@@ -914,7 +914,7 @@ do
   local _base_0 = {
     tt = protoTermType.MAKE_ARRAY,
     st = '[...]', -- This is only used by the `nil` argument checker
-    compose = function(args)
+    compose = function(self, args)
       return {
         '[',
         intsp(args),
@@ -957,10 +957,10 @@ do
   local _base_0 = {
     tt = protoTermType.MAKE_OBJECT,
     st = '{...}', -- This is only used by the `nil` argument checker
-    compose = function(args, optargs)
+    compose = function(self, args, optargs)
       return kved(optargs)
     end,
-    build = function()
+    build = function(self)
       local res = { }
       for key, val in ipairs(self.optargs) do
         res[key] = val.build()
@@ -1013,7 +1013,7 @@ do
   local _parent_0 = RDBOp
   local _base_0 = {
     tt = protoTermType.VAR,
-    compose = function(args)
+    compose = function(self, args)
       return {
         'var_' .. args
       }
@@ -1162,14 +1162,14 @@ do
   local _base_0 = {
     tt = protoTermType.BINARY,
     st = 'binary',
-    compose = function()
+    compose = function(self)
       if self.args.length == 0 then
         return 'r.binary(<data>)'
       else
         return _parent_0
       end
     end,
-    build = function()
+    build = function(self)
       if self.args.length == 0 then
         local data = self.base64_data
         return {
@@ -1333,7 +1333,7 @@ do
   local _parent_0 = RDBOp
   local _base_0 = {
     tt = protoTermType.IMPLICIT_VAR,
-    compose = function()
+    compose = function(self)
       return {
         'r.row'
       }
@@ -1410,7 +1410,7 @@ do
   local _base_0 = {
     tt = protoTermType.TABLE,
     st = 'table',
-    compose = function(args, optargs)
+    compose = function(self, args, optargs)
       if isinstance(Db, self.args[0]) then
         return {
           args[0],
@@ -2371,7 +2371,7 @@ do
   local _base_0 = {
     tt = protoTermType.BRACKET,
     st = '(...)', -- This is only used by the `nil` argument checker
-    compose = function(args)
+    compose = function(self, args)
       return {
         args[0],
         '(',
@@ -4611,7 +4611,7 @@ do
   local _base_0 = {
     tt = protoTermType.FUNCALL,
     st = 'do_', -- This is only used by the `nil` argument checker
-    compose = function(args)
+    compose = function(self, args)
       if args.length > 2 then
         return {
           'r.do_(',
@@ -4860,7 +4860,7 @@ do
   local _parent_0 = RDBOp
   local _base_0 = {
     tt = protoTermType.FUNC,
-    compose = function(args)
+    compose = function(self, args)
       if hasImplicit(args[1]) == true then
         return {
           args[1]
@@ -6258,10 +6258,10 @@ function rethinkdb.http(url, opts)
   return Http(opts, url)
 end
 function rethinkdb.json(...)
-  return Json({ }, unpack(arg))
+  return Json({ }, ...)
 end
 function rethinkdb.error(...)
-  return UserError({ }, unpack(arg))
+  return UserError({ }, ...)
 end
 function rethinkdb.random(...)
   -- Default if no opts dict provided
@@ -6295,25 +6295,25 @@ function rethinkdb.table(tblName, opts)
   return Table(opts, tblName)
 end
 function rethinkdb.db(...)
-  return Db({ }, unpack(arg))
+  return Db({ }, ...)
 end
 function rethinkdb.db_create(...)
-  return DbCreate({ }, unpack(arg))
+  return DbCreate({ }, ...)
 end
 function rethinkdb.db_drop(...)
-  return DbDrop({ }, unpack(arg))
+  return DbDrop({ }, ...)
 end
 function rethinkdb.db_list(...)
-  return DbList({ }, unpack(arg))
+  return DbList({ }, ...)
 end
 function rethinkdb.table_create(tblName, opts)
   return TableCreate(opts, tblName)
 end
 function rethinkdb.table_drop(...)
-  return TableDrop({ }, unpack(arg))
+  return TableDrop({ }, ...)
 end
 function rethinkdb.table_list(...)
-  return TableList({ }, unpack(arg))
+  return TableList({ }, ...)
 end
 function rethinkdb.do_(...)
   return FunCall({ }, funcWrap(arg[arg.n]), unpack((function()
@@ -6330,82 +6330,82 @@ function rethinkdb.do_(...)
   end)()))
 end
 function rethinkdb.branch(...)
-  return Branch({ }, unpack(arg))
+  return Branch({ }, ...)
 end
 function rethinkdb.asc(...)
-  return Asc({ }, unpack(arg))
+  return Asc({ }, ...)
 end
 function rethinkdb.desc(...)
-  return Desc({ }, unpack(arg))
+  return Desc({ }, ...)
 end
 function rethinkdb.eq(...)
-  return Eq({ }, unpack(arg))
+  return Eq({ }, ...)
 end
 function rethinkdb.ne(...)
-  return Ne({ }, unpack(arg))
+  return Ne({ }, ...)
 end
 function rethinkdb.lt(...)
-  return Lt({ }, unpack(arg))
+  return Lt({ }, ...)
 end
 function rethinkdb.le(...)
-  return Le({ }, unpack(arg))
+  return Le({ }, ...)
 end
 function rethinkdb.gt(...)
-  return Gt({ }, unpack(arg))
+  return Gt({ }, ...)
 end
 function rethinkdb.ge(...)
-  return Ge({ }, unpack(arg))
+  return Ge({ }, ...)
 end
 function rethinkdb.or_(...)
-  return Any({ }, unpack(arg))
+  return Any({ }, ...)
 end
 function rethinkdb.any(...)
-  return Any({ }, unpack(arg))
+  return Any({ }, ...)
 end
 function rethinkdb.and_(...)
-  return All({ }, unpack(arg))
+  return All({ }, ...)
 end
 function rethinkdb.all(...)
-  return All({ }, unpack(arg))
+  return All({ }, ...)
 end
 function rethinkdb.not_(...)
-  return Not({ }, unpack(arg))
+  return Not({ }, ...)
 end
 function rethinkdb.add(...)
-  return Add({ }, unpack(arg))
+  return Add({ }, ...)
 end
 function rethinkdb.sub(...)
-  return Sub({ }, unpack(arg))
+  return Sub({ }, ...)
 end
 function rethinkdb.div(...)
-  return Div({ }, unpack(arg))
+  return Div({ }, ...)
 end
 function rethinkdb.mul(...)
-  return Mul({ }, unpack(arg))
+  return Mul({ }, ...)
 end
 function rethinkdb.mod(...)
-  return Mod({ }, unpack(arg))
+  return Mod({ }, ...)
 end
 function rethinkdb.type_of(...)
-  return TypeOf({ }, unpack(arg))
+  return TypeOf({ }, ...)
 end
 function rethinkdb.info(...)
-  return Info({ }, unpack(arg))
+  return Info({ }, ...)
 end
 function rethinkdb.literal(...)
-  return Literal({ }, unpack(arg))
+  return Literal({ }, ...)
 end
 function rethinkdb.iso8601(str, opts)
   return ISO8601(opts, str)
 end
 function rethinkdb.epoch_time(...)
-  return EpochTime({ }, unpack(arg))
+  return EpochTime({ }, ...)
 end
 function rethinkdb.now(...)
-  return Now({ }, unpack(arg))
+  return Now({ }, ...)
 end
 function rethinkdb.time(...)
-  return Time({ }, unpack(arg))
+  return Time({ }, ...)
 end
 do
   local _parent_0 = RDBOp
@@ -7092,25 +7092,25 @@ rethinkdb.october = October()
 rethinkdb.november = November()
 rethinkdb.december = December()
 function rethinkdb.object(...)
-  return Object({ }, unpack(arg))
+  return Object({ }, ...)
 end
 function rethinkdb.args(...)
-  return Args({ }, unpack(arg))
+  return Args({ }, ...)
 end
 function rethinkdb.geojson(...)
-  return GeoJson({ }, unpack(arg))
+  return GeoJson({ }, ...)
 end
 function rethinkdb.point(...)
-  return Point({ }, unpack(arg))
+  return Point({ }, ...)
 end
 function rethinkdb.line(...)
-  return Line({ }, unpack(arg))
+  return Line({ }, ...)
 end
 function rethinkdb.polygon(...)
-  return Polygon({ }, unpack(arg))
+  return Polygon({ }, ...)
 end
 function rethinkdb.intersects(...)
-  return Intersects({ }, unpack(arg))
+  return Intersects({ }, ...)
 end
 function rethinkdb.distance(g1, g2, opts)
   return Distance(opts, g1, g2)
@@ -7119,7 +7119,7 @@ function rethinkdb.circle(cen, rad, opts)
   return Circle(opts, cen, rad)
 end
 function rethinkdb.uuid(...)
-  return UUID({ }, unpack(arg))
+  return UUID({ }, ...)
 end
 
 -- Export all names defined on rethinkdb

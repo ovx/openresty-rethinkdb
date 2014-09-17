@@ -64,7 +64,7 @@ do
     DEFAULT_PORT = 28015,
     DEFAULT_AUTH_KEY = '',
     DEFAULT_TIMEOUT = 20, -- In seconds
-    _data = function(buf)
+    _data = function(self, buf)
       -- Buffer data, execute return results if need be
       self.buffer = Buffer.concat({
         self.buffer,
@@ -82,14 +82,14 @@ do
         self.buffer = self.buffer.slice(12 + responseLength)
       end
     end,
-    _delQuery = function(token)
+    _delQuery = function(self, token)
       -- This query is done, delete this cursor
       delete(self.outstandingCallbacks[token])
       if Object.keys(self.outstandingCallbacks).length < 1 and not self.open then
         return self:cancel()
       end
     end,
-    _processResponse = function(response, token)
+    _processResponse = function(self, response, token)
       local profile = response.p
       if self.outstandingCallbacks[token] then
         local cb, root, cursor, opts, feed
@@ -246,7 +246,7 @@ do
         return wrappedCb()
       end
     end,
-    noreplyWait = function(callback)
+    noreplyWait = function(self, callback)
       if not (self.open) then
         return callback(err.RqlDriverError("Connection is closed."))
       end
@@ -268,24 +268,24 @@ do
       }
       return self:_sendQuery(query)
     end,
-    _writeQuery = function(token, data)
+    _writeQuery = function(self, token, data)
       local tokenBuf = Buffer(8)
       tokenBuf.writeUInt32LE(token % 0xFFFFFFFF, 0)
       tokenBuf.writeUInt32LE(Math.floor(token / 0xFFFFFFFF), 4)
       self.rawSocket.write(tokenBuf)
       return self:write(Buffer(data))
     end,
-    write = function(chunk)
+    write = function(self, chunk)
       local lengthBuffer = Buffer(4)
       lengthBuffer.writeUInt32LE(chunk.length, 0)
       self.rawSocket.write(lengthBuffer)
       return self.rawSocket.write(chunk)
     end,
-    cancel = function()
+    cancel = function(self)
       self.rawSocket.destroy()
       self.outstandingCallbacks = { }
     end,
-    reconnect = function(optsOrCallback, callback)
+    reconnect = function(self, optsOrCallback, callback)
       if callback then
         local opts = optsOrCallback
         local cb = callback
@@ -371,21 +371,21 @@ do
         return cb(nil)
       end
     end,
-    _continueQuery = function(token)
+    _continueQuery = function(self, token)
       local query = {
         type = protoQueryType.CONTINUE,
         token = token
       }
       return self:_sendQuery(query)
     end,
-    _endQuery = function(token)
+    _endQuery = function(self, token)
       local query = {
         type = protoQueryType.STOP,
         token = token
       }
       return self:_sendQuery(query)
     end,
-    _sendQuery = function(query)
+    _sendQuery = function(self, query)
       -- Serialize query to JSON
       local data = {
         query.type
@@ -465,6 +465,7 @@ do
             self.buffer = self.buffer:sub(i + 1)
             if status_str == "SUCCESS" then
               -- We're good, finish setting up the connection
+              self.open = true
               return callback(nil, self)
             else
               return callback(err.RqlDriverError("Server dropped connection with message: \"" + status_str + "\""))
