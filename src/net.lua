@@ -15,8 +15,30 @@ local mkErr = util.mkErr
 local isinstance = util.isinstance
 
 local Connection
+function int_to_bytes(num, endian, signed)
+    if num < 0 and not signed then num = -num print"warning, dropping sign from number converting to unsigned" end
+    local res = {}
+    local n = math.ceil(select(2, math.frexp(num)) / 8) -- number of bytes to be used.
+    if signed and num < 0 then
+        num = num + 2 ^ n
+    end
+    for k=n,1,-1 do -- 256 = 2^8 bits per char.
+        local mul=2 ^ (8 * (k - 1))
+        res[k] = math.floor(num/mul)
+        num = num - res[k] * mul
+    end
+    assert(num==0)
+    if endian == "big" then
+        local t = {}
+        for k=1,n do
+            t[k] = res[n-k+1]
+        end
+        res = t
+    end
+    return (string.char(unpack(res)) .. "\0\0\0\0"):sub(1, 4)
+end
+
 do
-  local _parent_0 = {}
   local _base_0 = {
     DEFAULT_HOST = 'localhost',
     DEFAULT_PORT = 28015,
@@ -318,9 +340,8 @@ do
     end
   }
   _base_0.__index = _base_0
-  setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(host, callback)
+    __init = function(self, host, callback)
       if not (host) then
         host = { }
       else
@@ -338,7 +359,7 @@ do
       self.outstandingCallbacks = { }
       self.nextToken = 1
       self.open = false
-      self.buffer = Buffer(0)
+      self.buffer = ''
       self._events = self._events or { }
       local errCallback = function(self, e)
         self:removeListener('connect', conCallback)
@@ -447,78 +468,47 @@ do
           noreplyWait = false
         })
       end
-      self.rawSocket = net.connect(self.port, self.host)
-      self.rawSocket.setNoDelay()
-      local timeout = setTimeout((function(self)
-        return self.rawSocket.destroy()(self:emit('error', err.RqlDriverError("Handshake timedout")))
-      end), self.timeout * 1000)
-      self.rawSocket.once('error', function(self)
-        return clearTimeout(timeout)
-      end)
-      self.rawSocket.once('connect', function(self)
+      self.rawSocket = socket.tcp()
+      self.rawSocket:settimeout(self.timeout)
+      local status, err = self.rawSocket:connect(self.host, self.port)
+      if status then
         -- Initialize connection with magic number to validate version
-        local version = Buffer(4)
-        version.writeUInt32LE(protoVersion, 0)
-        local auth_buffer = Buffer(self.authKey, 'ascii')
-        local auth_length = Buffer(4)
-        auth_length.writeUInt32LE(auth_buffer.length, 0)
-        local protocol = Buffer(4)
+        local version = int_to_bytes(protoVersion)
+        local auth_length = int_to_bytes(self.authKey:len())
+        local protocol = int_to_bytes(protoProtocol)
 
-        -- Send the protocol type that we will be using to communicate with the server
-        protocol.writeUInt32LE(protoProtocol, 0)
-        self.rawSocket.write(Buffer.concat({
-          version,
-          auth_length,
-          auth_buffer,
+        self.rawSocket:send(
+          version ..
+          auth_length ..
+          self.authKey ..
           protocol
-        }))
+        )
 
         -- Now we have to wait for a response from the server
         -- acknowledging the connection
-        local handshake_callback = function(self, buf)
-          self.buffer = Buffer.concat({
-            self.buffer,
-            buf
-          })
-          for b, i in ipairs(self.buffer) do
-            if b == 0 then
-              self.rawSocket.removeListener('data', handshake_callback)
-              local status_buf = self.buffer.slice(0, i)
-              self.buffer = self.buffer.slice(i + 1)
-              local status_str = status_buf.toString()
-              clearTimeout(timeout)
-              if status_str == "SUCCESS" then
-                -- We're good, finish setting up the connection
-                self.rawSocket.on('data', function(self, buf)
-                  return self:_data(buf)
-                end)
-                self:emit('connect')
-                return
-              else
-                self:emit('error', err.RqlDriverError("Server dropped connection with message: \"" + status_str.trim() + "\""))
-                return
-              end
+        while 1 do
+          buf, e, partial = self.rawSocket:receive(8)
+          if buf or err == 'timeout' then
+            self.buffer = self.buffer .. (buf or partial)
+          else
+            return callback(err.RqlDriverError("Could not connect to " .. tostring(self.host) .. ":" .. tostring(self.port) .. ".\n" .. tostring(e)))
+          end
+          i, j = buf:find("\0")
+          if i then
+            local status_str = self.buffer:sub(1, i - 1)
+            self.buffer = self.buffer:sub(i + 1)
+            if status_str == "SUCCESS" then
+              -- We're good, finish setting up the connection
+              return callback(nil, self)
+            else
+              return callback(err.RqlDriverError("Server dropped connection with message: \"" + status_str + "\""))
             end
           end
         end
-        return self.rawSocket.on('data', handshake_callback)
-      end)
-      self.rawSocket.on('error', function(self, ...)
-        return self:emit('error', unpack(arg))
-      end)
-      self.rawSocket.on('close', function(self)
-        self.open = false, self:emit('close', {
-          noreplyWait = false
-        })
-      end)
-
-      -- In case the raw socket timesout, we close it and re-emit the event for the user
-      return self.rawSocket.on('timeout', function(self)
-        self.open = false, self:emit('timeout')
-      end)
+      end
     end,
     __base = _base_0,
-    __name = "TcpConnection",
+    __name = "Connection",
     __parent = _parent_0
   }, {
     __index = function(cls, name)
@@ -536,14 +526,7 @@ do
     end
   })
   _base_0.__class = _class_0
-  local self = _class_0
-  self.isAvailable = function()
-    return not (process.browser)
-  end
-  if _parent_0.__inherited then
-    _parent_0.__inherited(_parent_0, _class_0)
-  end
-  TcpConnection = _class_0
+  Connection = _class_0
 end
 
 return {
