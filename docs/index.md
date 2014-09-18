@@ -38,7 +38,7 @@ Create a new connection to the database server.  Accepts the following options:
 - `db`: the default database (default `test`).
 - `auth_key`: the authentication key (default none).
 
-If the connection cannot be established, a `RqlDriverError` exception will be thrown.
+If the connection cannot be established, a `ReQLDriverError` exception will be thrown.
 
 __Example:__ Opens a new connection to the database.
 
@@ -205,7 +205,7 @@ Create a database. A RethinkDB database is a collection of tables, similar to
 relational databases.
 
 If successful, the operation returns an object: `{"created": 1}`. If a database with the
-same name already exists the operation throws `RqlRuntimeError`.
+same name already exists the operation throws `ReQLRuntimeError`.
 
 Note: that you can only use alphanumeric characters and underscores for the database name.
 
@@ -225,7 +225,7 @@ r.db_drop(db_name) &rarr; object
 Drop a database. The database, all its tables, and corresponding data will be deleted.
 
 If successful, the operation returns the object `{"dropped": 1}`. If the specified database
-doesn't exist a `RqlRuntimeError` is thrown.
+doesn't exist a `ReQLRuntimeError` is thrown.
 
 __Example:__ Drop a database named 'superheroes'.
 
@@ -263,7 +263,7 @@ db.table_create(table_name[, options]) &rarr; object
 Create a table. A RethinkDB table is a collection of JSON documents.
 
 If successful, the operation returns an object: `{created: 1}`. If a table with the same
-name already exists, the operation throws `RqlRuntimeError`.
+name already exists, the operation throws `ReQLRuntimeError`.
 
 Note: that you can only use alphanumeric characters and underscores for the table name.
 
@@ -294,7 +294,7 @@ db.table_drop(table_name) &rarr; object
 Drop a table. The table and all its data will be deleted.
 
 If successful, the operation returns an object: {"dropped": 1}. If the specified table
-doesn't exist a `RqlRuntimeError` is thrown.
+doesn't exist a `ReQLRuntimeError` is thrown.
 
 __Example:__ Drop a table named 'dc_universe'.
 
@@ -677,7 +677,7 @@ if a non-existence errors is thrown (when you try to access a field that does no
 in a document), RethinkDB will just ignore the document.
 The `default` value can be changed by passing the symbol `default`.
 Setting this optional argument to `r.error()` will cause any non-existence errors to
-return a `RqlRuntimeError`.
+return a `ReQLRuntimeError`.
 
 
 __Example:__ Get all the users that are 30 years old.

@@ -109,10 +109,10 @@ r.table("posts").get(1).update({
 }, :non_atomic => true ).run(conn)
 ```
 
-If you forget to specify the `non_atomic` flag, you will get a `RqlRuntimeError`.
+If you forget to specify the `non_atomic` flag, you will get a `ReQLRuntimeError`.
 
 ```
-RqlRuntimeError: Could not prove function deterministic.  Maybe you want to use the non_atomic flag? 
+ReQLRuntimeError: Could not prove function deterministic.  Maybe you want to use the non_atomic flag? 
 ```
 
 __Example:__ Update the field `num_comments` with a random value between 0 and 100.  

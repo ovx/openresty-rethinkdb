@@ -20,7 +20,7 @@ r.db_drop(db_name) &rarr; object
 Drop a database. The database, all its tables, and corresponding data will be deleted.
 
 If successful, the operation returns the object `{"dropped": 1}`. If the specified database
-doesn't exist a `RqlRuntimeError` is thrown.
+doesn't exist a `ReQLRuntimeError` is thrown.
 
 __Example:__ Drop a database named 'superheroes'.
 

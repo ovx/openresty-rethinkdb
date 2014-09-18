@@ -23,7 +23,7 @@ local Replace, Insert, DbCreate, DbDrop, DbList, TableCreate, TableDrop
 local TableList, IndexCreate, IndexDrop, IndexRename, IndexList, IndexStatus
 local IndexWait, Sync, FunCall, Default, Branch, Any, All, ForEach, Func, Asc
 local Desc, Literal, ISO8601, ToISO8601, EpochTime, ToEpochTime, Now
-local InTimezone, During, RQLDate, TimeOfDay, Timezone, Year, Month, Day
+local InTimezone, During, ReQLDate, TimeOfDay, Timezone, Year, Month, Day
 local DayOfWeek, DayOfYear, Hours, Minutes, Seconds, Time, GeoJson, ToGeoJson
 local Point, Line, Polygon, Distance, Intersects, Includes, Circle
 local GetIntersecting, GetNearest, Fill, UUID, Monday, Tuesday, Wednesday
@@ -99,7 +99,7 @@ do
           callback = options
           options = { }
         else
-          options(err.RqlDriverError("Second argument to `run` cannot be a function if a third argument is provided."))
+          options(err.ReQLDriverError("Second argument to `run` cannot be a function if a third argument is provided."))
           return
         end
       else
@@ -120,11 +120,11 @@ do
         local _exp_0 = key
         if 'useOutdated' == _exp_0 or 'noreply' == _exp_0 or 'timeFormat' == _exp_0 or 'profile' == _exp_0 or 'durability' == _exp_0 or 'groupFormat' == _exp_0 or 'binaryFormat' == _exp_0 or 'batchConf' == _exp_0 or 'arrayLimit' == _exp_0 then
         else
-          callback(err.RqlDriverError("Found " + key + " which is not a valid option. valid options are {useOutdated: <bool>, noreply: <bool>, timeFormat: <string>, groupFormat: <string>, binaryFormat: <string>, profile: <bool>, durability: <string>, arrayLimit: <number>}."))
+          callback(err.ReQLDriverError("Found " + key + " which is not a valid option. valid options are {useOutdated: <bool>, noreply: <bool>, timeFormat: <string>, groupFormat: <string>, binaryFormat: <string>, profile: <bool>, durability: <string>, arrayLimit: <number>}."))
         end
       end
       if not net.isConnection(connection) then
-        callback(err.RqlDriverError("First argument to `run` must be an open connection."))
+        callback(err.ReQLDriverError("First argument to `run` must be an open connection."))
       end
       if options.noreply == true or type(callback) == 'function' then
         local status
@@ -603,7 +603,7 @@ do
       return During(opts, self, t2, t3)
     end,
     date = function(...)
-      return RQLDate({ }, ...)
+      return ReQLDate({ }, ...)
     end,
     time_of_day = function(...)
       return TimeOfDay({ }, ...)
@@ -974,7 +974,7 @@ do
       self.optargs = { }
       for key, val in ipairs(obj) do
         if not (val) then
-          error(err.RqlDriverError("Object field '" .. tostring(key) .. "' may not be nil"))
+          error(err.ReQLDriverError("Object field '" .. tostring(key) .. "' may not be nil"))
         end
         self.optargs[key] = rethinkdb.expr(val, nestingDepth - 1)
       end
@@ -1187,7 +1187,7 @@ do
           local self = _parent_0.__init(self)
           self.base64_data = data.toString("base64")
         else
-          error(TypeError("Parameter to `r.binary` must be a Buffer object or RQL query."))
+          error(TypeError("Parameter to `r.binary` must be a Buffer object or ReQL query."))
         end
       end
       return self
@@ -4894,7 +4894,7 @@ do
       end
       local body = func(unpack(args))
       if not body then
-        error(err.RqlDriverError("Anonymous function returned `nil`. Did you forget a `return`?"))
+        error(err.ReQLDriverError("Anonymous function returned `nil`. Did you forget a `return`?"))
       end
       local argsArr = MakeArray({ }, unpack(argNums))
       return _parent_0.__init(self, optargs, argsArr, body)
@@ -5298,7 +5298,7 @@ do
       return _parent_0.__init(self, ...)
     end,
     __base = _base_0,
-    __name = "RQLDate",
+    __name = "ReQLDate",
     __parent = _parent_0
   }, {
     __index = function(cls, name)
@@ -5319,7 +5319,7 @@ do
   if _parent_0.__inherited then
     _parent_0.__inherited(_parent_0, _class_0)
   end
-  RQLDate = _class_0
+  ReQLDate = _class_0
 end
 do
   local _parent_0 = RDBOp
@@ -6195,13 +6195,13 @@ function rethinkdb.expr(val, nestingDepth)
     nestingDepth = 20
   end
   if not (val) then
-    error(err.RqlDriverError("Cannot wrap nil with r.expr()."))
+    error(err.ReQLDriverError("Cannot wrap nil with r.expr()."))
   end
   if nestingDepth <= 0 then
-    error(err.RqlDriverError("Nesting depth limit exceeded"))
+    error(err.ReQLDriverError("Nesting depth limit exceeded"))
   end
   if type(nestingDepth) ~= "number" or nestingDepth == (1/0) * 0 or nestingDepth == 1/0 or nestingDepth == -1/0 then
-    error(err.RqlDriverError("Second argument to `r.expr` must be a number or nil."))
+    error(err.ReQLDriverError("Second argument to `r.expr` must be a number or nil."))
   end
   if TermBase.__class == val then
     return val

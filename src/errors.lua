@@ -1,5 +1,5 @@
-local RqlDriverError, RqlServerError, RqlRuntimeError, RqlCompileError
-local RqlClientError, RqlQueryPrinter
+local ReQLDriverError, ReQLServerError, ReQLRuntimeError, ReQLCompileError
+local ReQLClientError, ReQLQueryPrinter
 do
   local _base_0 = { }
   _base_0.__index = _base_0
@@ -9,7 +9,7 @@ do
       self.message = msg
     end,
     __base = _base_0,
-    __name = "RqlDriverError"
+    __name = "ReQLDriverError"
   }, {
     __index = _base_0,
     __call = function(cls, ...)
@@ -19,7 +19,7 @@ do
     end
   })
   _base_0.__class = _class_0
-  RqlDriverError = _class_0
+  ReQLDriverError = _class_0
 end
 do
   local _base_0 = { }
@@ -28,7 +28,7 @@ do
     __init = function(self, msg, term, frames)
       self.msg = msg
       self.frames = frames
-      self.printer = RqlQueryPrinter(term, frames)
+      self.printer = ReQLQueryPrinter(term, frames)
       if term then
         self.message = " in:\n" .. self.printer:printQuery() .. "\n" .. self.printer:printCarrots()
         if msg[-1] == '.' then
@@ -41,7 +41,7 @@ do
       end
     end,
     __base = _base_0,
-    __name = "RqlServerError"
+    __name = "ReQLServerError"
   }, {
     __index = _base_0,
     __call = function(cls, ...)
@@ -51,10 +51,10 @@ do
     end
   })
   _base_0.__class = _class_0
-  RqlServerError = _class_0
+  ReQLServerError = _class_0
 end
 do
-  local _parent_0 = RqlServerError
+  local _parent_0 = ReQLServerError
   local _base_0 = { }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -63,7 +63,7 @@ do
       return _parent_0.__init(self, ...)
     end,
     __base = _base_0,
-    __name = "RqlRuntimeError",
+    __name = "ReQLRuntimeError",
     __parent = _parent_0
   }, {
     __index = function(cls, name)
@@ -84,10 +84,10 @@ do
   if _parent_0.__inherited then
     _parent_0.__inherited(_parent_0, _class_0)
   end
-  RqlRuntimeError = _class_0
+  ReQLRuntimeError = _class_0
 end
 do
-  local _parent_0 = RqlServerError
+  local _parent_0 = ReQLServerError
   local _base_0 = { }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -96,7 +96,7 @@ do
       return _parent_0.__init(self, ...)
     end,
     __base = _base_0,
-    __name = "RqlCompileError",
+    __name = "ReQLCompileError",
     __parent = _parent_0
   }, {
     __index = function(cls, name)
@@ -117,10 +117,10 @@ do
   if _parent_0.__inherited then
     _parent_0.__inherited(_parent_0, _class_0)
   end
-  RqlCompileError = _class_0
+  ReQLCompileError = _class_0
 end
 do
-  local _parent_0 = RqlServerError
+  local _parent_0 = ReQLServerError
   local _base_0 = { }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -129,7 +129,7 @@ do
       return _parent_0.__init(self, ...)
     end,
     __base = _base_0,
-    __name = "RqlClientError",
+    __name = "ReQLClientError",
     __parent = _parent_0
   }, {
     __index = function(cls, name)
@@ -150,7 +150,7 @@ do
   if _parent_0.__inherited then
     _parent_0.__inherited(_parent_0, _class_0)
   end
-  RqlClientError = _class_0
+  ReQLClientError = _class_0
 end
 do
   local _base_0 = {
@@ -229,7 +229,7 @@ do
       self.frames = frames
     end,
     __base = _base_0,
-    __name = "RqlQueryPrinter"
+    __name = "ReQLQueryPrinter"
   }, {
     __index = _base_0,
     __call = function(cls, ...)
@@ -240,11 +240,11 @@ do
   })
   _base_0.__class = _class_0
   local self = _class_0
-  RqlQueryPrinter = _class_0
+  ReQLQueryPrinter = _class_0
 end
 return {
-  RqlDriverError = RqlDriverError,
-  RqlRuntimeError = RqlRuntimeError,
-  RqlCompileError = RqlCompileError,
-  RqlClientError = RqlClientError,
+  ReQLDriverError = ReQLDriverError,
+  ReQLRuntimeError = ReQLRuntimeError,
+  ReQLCompileError = ReQLCompileError,
+  ReQLClientError = ReQLClientError,
 }

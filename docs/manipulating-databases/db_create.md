@@ -21,7 +21,7 @@ Create a database. A RethinkDB database is a collection of tables, similar to
 relational databases.
 
 If successful, the operation returns an object: `{"created": 1}`. If a database with the
-same name already exists the operation throws `RqlRuntimeError`.
+same name already exists the operation throws `ReQLRuntimeError`.
 
 Note: that you can only use alphanumeric characters and underscores for the database name.
 

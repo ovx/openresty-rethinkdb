@@ -19,7 +19,7 @@ db.table_drop(table_name) &rarr; object
 Drop a table. The table and all its data will be deleted.
 
 If successful, the operation returns an object: {"dropped": 1}. If the specified table
-doesn't exist a `RqlRuntimeError` is thrown.
+doesn't exist a `ReQLRuntimeError` is thrown.
 
 __Example:__ Drop a table named 'dc_universe'.
 

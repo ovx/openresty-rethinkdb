@@ -27,7 +27,7 @@ function convertPseudotype(obj, opts)
     local _exp_1 = opts.timeFormat
     if 'native' == _exp_1 or not _exp_1 then
       if not (obj['epoch_time']) then
-        error(err.RqlDriverError("pseudo-type TIME " .. tostring(obj) .. " object missing expected field 'epoch_time'."))
+        error(err.ReQLDriverError("pseudo-type TIME " .. tostring(obj) .. " object missing expected field 'epoch_time'."))
       end
 
       -- We ignore the timezone field of the pseudo-type TIME object. JS dates do not support timezones.
@@ -39,7 +39,7 @@ function convertPseudotype(obj, opts)
       -- Just return the raw (`{'$reql_type$'...}`) object
       return obj
     else
-      error(err.RqlDriverError("Unknown timeFormat run option " .. tostring(opts.timeFormat) .. "."))
+      error(err.ReQLDriverError("Unknown timeFormat run option " .. tostring(opts.timeFormat) .. "."))
     end
   elseif 'GROUPED_DATA' == _exp_0 then
     local _exp_1 = opts.groupFormat
@@ -60,19 +60,19 @@ function convertPseudotype(obj, opts)
     elseif 'raw' == _exp_1 then
       return obj
     else
-      error(err.RqlDriverError("Unknown groupFormat run option " .. tostring(opts.groupFormat) .. "."))
+      error(err.ReQLDriverError("Unknown groupFormat run option " .. tostring(opts.groupFormat) .. "."))
     end
   elseif 'BINARY' == _exp_0 then
     local _exp_1 = opts.binaryFormat
     if 'native' == _exp_1 or not _exp_1 then
       if not (obj['data']) then
-        error(err.RqlDriverError("pseudo-type BINARY object missing expected field 'data'."))
+        error(err.ReQLDriverError("pseudo-type BINARY object missing expected field 'data'."))
       end
       return (Buffer(obj['data'], 'base64'))
     elseif 'raw' == _exp_1 then
       return obj
     else
-      error(err.RqlDriverError("Unknown binaryFormat run option " .. tostring(opts.binaryFormat) .. "."))
+      error(err.ReQLDriverError("Unknown binaryFormat run option " .. tostring(opts.binaryFormat) .. "."))
     end
   else
     -- Regular object or unknown pseudo type

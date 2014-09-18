@@ -28,7 +28,7 @@ options:
 - `db`: the default database (default `test`).
 - `auth_key`: the authentication key (default none).
 
-If the connection cannot be established, a `RqlDriverError` exception will be thrown.
+If the connection cannot be established, a `ReQLDriverError` exception will be thrown.
 
 __Example:__ Opens a connection using the default host and port but specifying the default database.
 

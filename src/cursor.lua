@@ -32,11 +32,11 @@ do
         if self._closeCb then
           local _exp_0 = response.t
           if protoResponseType.COMPILE_ERROR == _exp_0 then
-            self:_closeCb(mkErr(err.RqlRuntimeError, response, self._root))
+            self:_closeCb(mkErr(err.ReQLRuntimeError, response, self._root))
           elseif protoResponseType.CLIENT_ERROR == _exp_0 then
-            self:_closeCb(mkErr(err.RqlRuntimeError, response, self._root))
+            self:_closeCb(mkErr(err.ReQLRuntimeError, response, self._root))
           elseif protoResponseType.RUNTIME_ERROR == _exp_0 then
-            self:_closeCb(mkErr(err.RqlRuntimeError, response, self._root))
+            self:_closeCb(mkErr(err.ReQLRuntimeError, response, self._root))
           else
             self:_closeCb()
           end
@@ -87,7 +87,7 @@ do
           -- We prefetch things here, set `is 0` to avoid prefectch
           if self._endFlag == true then
             local cb = self:_getCallback()
-            cb(err.RqlDriverError("No more rows in the cursor."))
+            cb(err.ReQLDriverError("No more rows in the cursor."))
           else
             if self._responses.length <= 1 then
               self:_promptCont()
@@ -118,19 +118,19 @@ do
           elseif protoResponseType.COMPILE_ERROR == _exp_0 then
             self._responses.shift()
             local cb = self:_getCallback()
-            cb(mkErr(err.RqlCompileError, response, self._root))
+            cb(mkErr(err.ReQLCompileError, response, self._root))
           elseif protoResponseType.CLIENT_ERROR == _exp_0 then
             self._responses.shift()
             local cb = self:_getCallback()
-            cb(mkErr(err.RqlClientError, response, self._root))
+            cb(mkErr(err.ReQLClientError, response, self._root))
           elseif protoResponseType.RUNTIME_ERROR == _exp_0 then
             self._responses.shift()
             local cb = self:_getCallback()
-            cb(mkErr(err.RqlRuntimeError, response, self._root))
+            cb(mkErr(err.ReQLRuntimeError, response, self._root))
           else
             self._responses.shift()
             local cb = self:_getCallback()
-            cb(err.RqlDriverError("Unknown response type for cursor"))
+            cb(err.ReQLDriverError("Unknown response type for cursor"))
           end
         end
       end
@@ -145,7 +145,7 @@ do
     end,
     -- Implement IterableResult
     hasNext = function(self)
-      error(err.RqlDriverError("The `hasNext` command has been removed since 1.13. Use `next` instead."))
+      error(err.ReQLDriverError("The `hasNext` command has been removed since 1.13. Use `next` instead."))
     end,
     _next = function(self, cb)
       local fn = function(self, cb)
@@ -169,10 +169,10 @@ do
     end,
     _each = function(self, cb, onFinished)
       if not (type(cb) == 'function') then
-        error(err.RqlDriverError("First argument to each must be a function."))
+        error(err.ReQLDriverError("First argument to each must be a function."))
       end
       if onFinished and type(onFinished) ~= 'function' then
-        error(err.RqlDriverError("Optional second argument to each must be a function."))
+        error(err.ReQLDriverError("Optional second argument to each must be a function."))
       end
       local stopFlag = false
       local self = self
@@ -218,10 +218,10 @@ do
     _makeEmitter = function(self)
       self.emitter = EventEmitter
       self.each = function()
-        error(err.RqlDriverError("You cannot use the cursor interface and the EventEmitter interface at the same time."))
+        error(err.ReQLDriverError("You cannot use the cursor interface and the EventEmitter interface at the same time."))
       end
       self.next = function()
-        error(err.RqlDriverError("You cannot use the cursor interface and the EventEmitter interface at the same time."))
+        error(err.ReQLDriverError("You cannot use the cursor interface and the EventEmitter interface at the same time."))
       end
     end,
     addListener = function(self, ...)
@@ -378,10 +378,10 @@ do
   local _parent_0 = IterableResult
   local _base_0 = {
     hasNext = function(self)
-      error(err.RqlDriverError("`hasNext` is not available for feeds."))
+      error(err.ReQLDriverError("`hasNext` is not available for feeds."))
     end,
     toArray = function(self)
-      error(err.RqlDriverError("`toArray` is not available for feeds."))
+      error(err.ReQLDriverError("`toArray` is not available for feeds."))
     end,
     toString = function(self)
       return "[object Feed]"
@@ -447,7 +447,7 @@ do
             self.__index = self.__index + 1
           end
         else
-          return cb(err.RqlDriverError("No more rows in the cursor."))
+          return cb(err.ReQLDriverError("No more rows in the cursor."))
         end
       end
       return fn(cb)

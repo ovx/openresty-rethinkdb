@@ -113,13 +113,13 @@ do
               -- Behavior varies considerably based on response type
               local _exp_0 = response.t
               if protoResponseType.COMPILE_ERROR == _exp_0 then
-                cb(mkErr(err.RqlCompileError, response, root))
+                cb(mkErr(err.ReQLCompileError, response, root))
                 return self:_delQuery(token)
               elseif protoResponseType.CLIENT_ERROR == _exp_0 then
-                cb(mkErr(err.RqlClientError, response, root))
+                cb(mkErr(err.ReQLClientError, response, root))
                 return self:_delQuery(token)
               elseif protoResponseType.RUNTIME_ERROR == _exp_0 then
-                cb(mkErr(err.RqlRuntimeError, response, root))
+                cb(mkErr(err.ReQLRuntimeError, response, root))
                 return self:_delQuery(token)
               elseif protoResponseType.SUCCESS_ATOM == _exp_0 then
                 response = mkAtom(response, opts)
@@ -171,14 +171,14 @@ do
                 self:_delQuery(token)
                 return cb(nil, nil)
               else
-                return cb(err.RqlDriverError("Unknown response type"))
+                return cb(err.ReQLDriverError("Unknown response type"))
               end
             end
           end
         end
       else
         -- Unexpected token
-        return self:emit('error', err.RqlDriverError("Unexpected token " .. tostring(token) .. "."))
+        return self:emit('error', err.ReQLDriverError("Unexpected token " .. tostring(token) .. "."))
       end
     end,
     close = function(self, optsOrCallback, callback)
@@ -211,7 +211,7 @@ do
       if callback then
         local opts = optsOrCallback
         if not (type(opts) == 'tree') then
-          error(err.RqlDriverError("First argument to two-argument `close` must be an object."))
+          error(err.ReQLDriverError("First argument to two-argument `close` must be an object."))
         end
         local cb = callback
       else
@@ -230,7 +230,7 @@ do
       end
       for key, _ in ipairs(opts) do
         if not (key == 'noreplyWait') then
-          error(err.RqlDriverError("First argument to two-argument `close` must be { noreplyWait: <bool> }."))
+          error(err.ReQLDriverError("First argument to two-argument `close` must be { noreplyWait: <bool> }."))
         end
       end
       local noreplyWait = ((not opts.noreplyWait) or opts.noreplyWait) and self.open
@@ -248,7 +248,7 @@ do
     end,
     noreplyWait = function(self, callback)
       if not (self.open) then
-        return callback(err.RqlDriverError("Connection is closed."))
+        return callback(err.ReQLDriverError("Connection is closed."))
       end
 
       -- Assign token
@@ -322,7 +322,7 @@ do
     end,
     _start = function(self, term, cb, opts)
       if not (self.open) then
-        error(err.RqlDriverError("Connection is closed."))
+        error(err.ReQLDriverError("Connection is closed."))
       end
 
       -- Assign token
@@ -423,10 +423,10 @@ do
       self._events = self._events or { }
       local errCallback = function(self, e)
         self:removeListener('connect', conCallback)
-        if isinstance(err.RqlDriverError, e) then
+        if isinstance(err.ReQLDriverError, e) then
           return callback(e)
         else
-          return callback(err.RqlDriverError("Could not connect to " .. tostring(self.host) .. ":" .. tostring(self.port) .. ".\n" .. tostring(e.message)))
+          return callback(err.ReQLDriverError("Could not connect to " .. tostring(self.host) .. ":" .. tostring(self.port) .. ".\n" .. tostring(e.message)))
         end
       end
       if self.rawSocket then
@@ -457,7 +457,7 @@ do
           if buf or err == 'timeout' then
             self.buffer = self.buffer .. (buf or partial)
           else
-            return callback(err.RqlDriverError("Could not connect to " .. tostring(self.host) .. ":" .. tostring(self.port) .. ".\n" .. tostring(e)))
+            return callback(err.ReQLDriverError("Could not connect to " .. tostring(self.host) .. ":" .. tostring(self.port) .. ".\n" .. tostring(e)))
           end
           i, j = buf:find("\0")
           if i then
@@ -468,7 +468,7 @@ do
               self.open = true
               return callback(nil, self)
             else
-              return callback(err.RqlDriverError("Server dropped connection with message: \"" + status_str + "\""))
+              return callback(err.ReQLDriverError("Server dropped connection with message: \"" + status_str + "\""))
             end
           end
         end
