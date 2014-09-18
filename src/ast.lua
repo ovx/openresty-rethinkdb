@@ -690,8 +690,8 @@ do
     end,
     build = function(self)
       if type(self.data) == 'number' then
-        if not (isFinite(self.data)) then
-          error(TypeError("Illegal non-finite number `" + self.data.toString() + "`."))
+        if math.abs(self.data) == 1/0 or self.data == ((1/0) * 0) then
+          error(TypeError("Illegal non-finite number `" .. self.data:toString() .. "`."))
         end
       end
       return self.data
@@ -732,23 +732,18 @@ do
   local _parent_0 = RDBVal
   local _base_0 = {
     build = function(self)
-      local res = {
-        self.tt,
-        { }
-      }
+      local args = {}
       for i, arg in ipairs(self.args) do
-        res[1].push(arg.build())
+        args[i] = arg:build()
       end
-      local opts = { }
-      local add_opts = false
-      for key, val in ipairs(self.optargs) do
-        add_opts = true
-        opts[key] = val.build()
+      if table.getn(self.optargs) > 0 then
+        local opts = { }
+        for key, val in ipairs(self.optargs) do
+          opts[key] = val:build()
+        end
+        return {self.tt, args, opts}
       end
-      if add_opts then
-        res.push(opts)
-      end
-      return res
+      return {self.tt, args}
     end,
     compose = function(self, args, optargs)
       if self.st then
@@ -963,7 +958,7 @@ do
     build = function(self)
       local res = { }
       for key, val in ipairs(self.optargs) do
-        res[key] = val.build()
+        res[key] = val:build()
       end
       return res
     end

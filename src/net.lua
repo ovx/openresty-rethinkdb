@@ -333,29 +333,29 @@ do
       local query = { }
       query.global_optargs = { }
       query.type = protoQueryType.START
-      query.query = term.build()
+      query.query = term:build()
       query.token = token
       -- Set global options
       if self.db then
-        query.global_optargs['db'] = r.db(self.db).build()
+        query.global_optargs['db'] = r.db(self.db):build()
       end
       if opts.useOutdated then
-        query.global_optargs['use_outdated'] = r.expr(not not opts.useOutdated).build()
+        query.global_optargs['use_outdated'] = r.expr(not not opts.useOutdated):build()
       end
       if opts.noreply then
-        query.global_optargs['noreply'] = r.expr(not not opts.noreply).build()
+        query.global_optargs['noreply'] = r.expr(not not opts.noreply):build()
       end
       if opts.profile then
-        query.global_optargs['profile'] = r.expr(not not opts.profile).build()
+        query.global_optargs['profile'] = r.expr(not not opts.profile):build()
       end
       if opts.durability then
-        query.global_optargs['durability'] = r.expr(opts.durability).build()
+        query.global_optargs['durability'] = r.expr(opts.durability):build()
       end
       if opts.batchConf then
-        query.global_optargs['batch_conf'] = r.expr(opts.batchConf).build()
+        query.global_optargs['batch_conf'] = r.expr(opts.batchConf):build()
       end
       if opts.arrayLimit then
-        query.global_optargs['array_limit'] = r.expr(opts.arrayLimit).build()
+        query.global_optargs['array_limit'] = r.expr(opts.arrayLimit):build()
       end
 
       -- Save callback
