@@ -376,13 +376,11 @@ do
     end,
     _sendQuery = function(self, query)
       -- Serialize query to JSON
-      local data = {
-        query.type
-      }
+      local data = {query.type}
       if query.query then
-        data.push(query.query)
-        if query.global_optargs and Object.keys(query.global_optargs).length > 0 then
-          data.push(query.global_optargs)
+        data[2] = query.query
+        if query.global_optargs and #query.global_optargs > 0 then
+          data[3] = query.global_optargs
         end
       end
       return self:_writeQuery(query.token, JSON.stringify(data))
