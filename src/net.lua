@@ -35,27 +35,16 @@ function bytes_to_int(str, endian, signed) -- use length of string to determine 
     return n
 end
 
-function int_to_bytes(num, endian, signed)
-    if num < 0 and not signed then num = -num print"warning, dropping sign from number converting to unsigned" end
+function int_to_bytes(num)
     local res = {}
-    local n = math.ceil(select(2, math.frexp(num)) / 8) -- number of bytes to be used.
-    if signed and num < 0 then
-        num = num + 2 ^ n
+    local mul = 0
+    for k=4,1,-1 do -- 256 = 2^8 bits per char.
+        mul = 2 ^ (8 * (k - 1))
+        res[k] = math.floor(num / mul)
+        num = math.fmod(num, mul)
     end
-    for k=n,1,-1 do -- 256 = 2^8 bits per char.
-        local mul=2 ^ (8 * (k - 1))
-        res[k] = math.floor(num/mul)
-        num = num - res[k] * mul
-    end
-    assert(num==0)
-    if endian == "big" then
-        local t = {}
-        for k=1,n do
-            t[k] = res[n-k+1]
-        end
-        res = t
-    end
-    return (string.char(unpack(res)) .. "\0\0\0\0"):sub(1, 4)
+    assert(num == 0)
+    return string.char(unpack(res))
 end
 
 do
@@ -439,15 +428,11 @@ do
       local status, err = self.rawSocket:connect(self.host, self.port)
       if status then
         -- Initialize connection with magic number to validate version
-        local version = int_to_bytes(protoVersion)
-        local auth_length = int_to_bytes(self.authKey:len())
-        local protocol = int_to_bytes(protoProtocol)
-
         self.rawSocket:send(
-          version ..
-          auth_length ..
+          int_to_bytes(protoVersion) ..
+          int_to_bytes(self.authKey:len()) ..
           self.authKey ..
-          protocol
+          int_to_bytes(protoProtocol)
         )
 
         -- Now we have to wait for a response from the server
