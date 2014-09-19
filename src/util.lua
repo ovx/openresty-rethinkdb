@@ -13,7 +13,7 @@ end
 
 function toArrayBuffer(node_buffer)
   -- Convert from node buffer to array buffer
-  local arr = Uint8Array(ArrayBuffer(node_buffer.length))
+  local arr = Uint8Array(ArrayBuffer(#node_buffer))
   for value, i in ipairs(node_buffer) do
     arr[i] = value
   end

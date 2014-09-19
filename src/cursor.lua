@@ -19,7 +19,7 @@ do
     _addResponse = function(self, response)
       if response.t == self._type or response.t == protoResponseType.SUCCESS_SEQUENCE then
         -- We push a "ok" response only if it's not empty
-        if response.r.length > 0 then
+        if #response.r > 0 then
           self._responses.push(response)
         end
       else
@@ -71,14 +71,14 @@ do
       self._responseIndex = self._responseIndex + 1
 
       -- If we're done with this response, discard it
-      if self._responseIndex == response.r.length then
+      if self._responseIndex == #response.r then
         self._responses.shift()
         self._responseIndex = 0
       end
       return cb(nil, row)
     end,
     bufferEmpty = function(self)
-      return self._responses.length == 0 or self._responses[0].r.length <= self._responseIndex
+      return #self._responses == 0 or #self._responses[0].r <= self._responseIndex
     end,
     _promptNext = function(self)
       -- If there are no more waiting callbacks, just wait until the next event
@@ -89,7 +89,7 @@ do
             local cb = self:_getCallback()
             cb(err.ReQLDriverError("No more rows in the cursor."))
           else
-            if self._responses.length <= 1 then
+            if #self._responses <= 1 then
               self:_promptCont()
             end
           end
@@ -98,7 +98,7 @@ do
 
           -- Try to get a row out of the responses
           local response = self._responses[0]
-          if self._responses.length == 1 then
+          if #self._responses == 1 then
             -- We're low on data, prebuffer
             self:_promptCont()
           end
@@ -110,7 +110,7 @@ do
           elseif protoResponseType.SUCCESS_FEED == _exp_0 then
             self:_handleRow()
           elseif protoResponseType.SUCCESS_SEQUENCE == _exp_0 then
-            if response.r.length == 0 then
+            if #response.r == 0 then
               self._responses.shift()
             else
               self:_handleRow()
@@ -431,7 +431,7 @@ do
       if not self.__index then
         self.__index = 0
       end
-      return self.__index < self.length
+      return self.__index < #self
     end,
     _next = function(self, cb)
       local fn = function(self, cb)
@@ -456,7 +456,7 @@ do
       local fn = function(self, cb)
         -- IterableResult.toArray would create a copy
         if self.__index then
-          return cb(nil, self.slice(self.__index, self.length))
+          return cb(nil, self.slice(self.__index, #self))
         else
           return cb(nil, self)
         end

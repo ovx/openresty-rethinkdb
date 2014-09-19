@@ -159,7 +159,7 @@ do
     end,
     printCarrots = function(self)
       local tree
-      if self.frames.length == 0 then
+      if #self.frames == 0 then
         tree = {
           self:carrotify(self:composeTerm(self.term))
         }
@@ -210,7 +210,7 @@ do
       local str = ''
       for _, term in ipairs(tree) do
         if Array.isArray(term) then
-          if term.length == 2 and term[0] == self.carrotMarker then
+          if #term == 2 and term[0] == self.carrotMarker then
             str = str .. self:joinTree(term[1]).gsub('.', '^')
           else
             str = str .. self:joinTree(term)

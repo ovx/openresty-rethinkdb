@@ -59,10 +59,10 @@ do
         self.buffer,
         buf
       })
-      while self.buffer.length >= 12 do
+      while strlen(self.buffer) >= 12 do
         local token = self.buffer.readUInt32LE(0) + 0x100000000 * self.buffer.readUInt32LE(4)
         local responseLength = self.buffer.readUInt32LE(8)
-        if not (self.buffer.length >= (12 + responseLength)) then
+        if not (strlen(self.buffer) >= (12 + responseLength)) then
           break
         end
         local responseBuffer = self.buffer.slice(12, responseLength + 12)
@@ -74,7 +74,7 @@ do
     _delQuery = function(self, token)
       -- This query is done, delete this cursor
       delete(self.outstandingCallbacks[token])
-      if Object.keys(self.outstandingCallbacks).length < 1 and not self.open then
+      if #self.outstandingCallbacks < 1 and not self.open then
         return self:cancel()
       end
     end,
@@ -266,7 +266,7 @@ do
     end,
     write = function(self, chunk)
       local lengthBuffer = Buffer(4)
-      lengthBuffer.writeUInt32LE(chunk.length, 0)
+      lengthBuffer.writeUInt32LE(strlen(chunk), 0)
       self.rawSocket.write(lengthBuffer)
       return self.rawSocket.write(chunk)
     end,

@@ -890,11 +890,11 @@ function kved(optargs)
 end
 function intspallargs(args, optargs)
   local argrepr = { }
-  if args.length > 0 then
+  if #args > 0 then
     argrepr.push(intsp(args))
   end
-  if Object.keys(optargs).length > 0 then
-    if argrepr.length > 0 then
+  if #optargs > 0 then
+    if #argrepr > 0 then
       argrepr.push(', ')
     end
     argrepr.push(kved(optargs))
@@ -1158,14 +1158,14 @@ do
     tt = protoTermType.BINARY,
     st = 'binary',
     compose = function(self)
-      if self.args.length == 0 then
+      if #self.args == 0 then
         return 'r.binary(<data>)'
       else
         return _parent_0
       end
     end,
     build = function(self)
-      if self.args.length == 0 then
+      if #self.args == 0 then
         local data = self.base64_data
         return {
           ['$reql_type$'] = 'BINARY',
@@ -4607,7 +4607,7 @@ do
     tt = protoTermType.FUNCALL,
     st = 'do_', -- This is only used by the `nil` argument checker
     compose = function(self, args)
-      if args.length > 2 then
+      if #args > 2 then
         return {
           'r.do_(',
           intsp((function()
