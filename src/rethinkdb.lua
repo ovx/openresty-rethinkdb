@@ -3,7 +3,7 @@ return (function(rethinkdb)
   rethinkdb.connect = require('./net').connect
 
   -- Export ReQL Errors
-  rethinkdb.Error = require('./errors')
+  rethinkdb.error = require('./errors')
 
   return rethinkdb
 end)(require('./ast'))

@@ -1,5 +1,4 @@
 local socket = require('socket')
-local util = require('./util')
 local err = require('./errors')
 local cursors = require('./cursor')
 local protodef = require('./proto')
@@ -10,10 +9,9 @@ local proto_response_type = protodef.ResponseType
 -- local r = require('./ast')
 
 -- Import some names to this namespace for convienience
-local mk_atom = util.mk_atom
-local mk_err = util.mk_err
-local is_instance = util.is_instance
-local is_array = util.is_array
+local mk_atom = err.mk_atom
+local is_instance = err.is_instance
+local is_array = err.is_array
 
 local Connection
 local bytes_to_int, int_to_bytes, to_json, from_json
@@ -139,13 +137,13 @@ do
               -- Behavior varies considerably based on response type
               local _exp_0 = response.t
               if proto_response_type.COMPILE_ERROR == _exp_0 then
-                cb(mk_err(err.ReQLCompileError, response, root))
+                cb(err.ReQLCompileError(response, root))
                 return self:_del_query(token)
               elseif proto_response_type.CLIENT_ERROR == _exp_0 then
-                cb(mk_err(err.ReQLClientError, response, root))
+                cb(err.ReQLClientError(response, root))
                 return self:_del_query(token)
               elseif proto_response_type.RUNTIME_ERROR == _exp_0 then
-                cb(mk_err(err.ReQLRuntimeError, response, root))
+                cb(err.ReQLRuntimeError(response, root))
                 return self:_del_query(token)
               elseif proto_response_type.SUCCESS_ATOM == _exp_0 then
                 response = mk_atom(response, opts)

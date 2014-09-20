@@ -1,7 +1,9 @@
-local util = require('./util')
 local err = require('./errors')
 local net = require('./net')
 local proto_term_type = require('./proto').TermType
+
+local is_instance = err.is_instance
+local is_array = err.is_array
 
 -- rethinkdb is both the main export object for the module
 -- and a function that shortcuts `r.expr`.

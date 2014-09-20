@@ -1,11 +1,7 @@
 local err = require('./errors')
-local util = require('./util')
 local proto_response_type = require('./proto').ResponseType
 
--- Import some names to this namespace for convenience
-local mk_err = util.mk_err
-
-local IterableResult, Cursor, Feed, ArrayResult
+local Cursor
 
 do
   local _base_0 = {
@@ -26,11 +22,11 @@ do
         if self._close_cb then
           local _exp_0 = response.t
           if proto_response_type.COMPILE_ERROR == _exp_0 then
-            self:_close_cb(mk_err(err.ReQLRuntimeError, response, self._root))
+            self:_close_cb(err.ReQLRuntimeError(response, self._root))
           elseif proto_response_type.CLIENT_ERROR == _exp_0 then
-            self:_close_cb(mk_err(err.ReQLRuntimeError, response, self._root))
+            self:_close_cb(err.ReQLRuntimeError(response, self._root))
           elseif proto_response_type.RUNTIME_ERROR == _exp_0 then
-            self:_close_cb(mk_err(err.ReQLRuntimeError, response, self._root))
+            self:_close_cb(err.ReQLRuntimeError(response, self._root))
           else
             self:_close_cb()
           end
@@ -60,7 +56,7 @@ do
     end,
     _handle_row = function(self)
       local response = self._responses[0]
-      local row = util.recursively_convert_pseudotype(response.r[self._response_index], self._opts)
+      local row = err.recursively_convert_pseudotype(response.r[self._response_index], self._opts)
       local cb = self:_get_callback()
       self._response_index = self._response_index + 1
 
@@ -112,15 +108,15 @@ do
           elseif proto_response_type.COMPILE_ERROR == _exp_0 then
             self._responses.shift()
             local cb = self:_get_callback()
-            cb(mk_err(err.ReQLCompileError, response, self._root))
+            cb(err.ReQLCompileError(response, self._root))
           elseif proto_response_type.CLIENT_ERROR == _exp_0 then
             self._responses.shift()
             local cb = self:_get_callback()
-            cb(mk_err(err.ReQLClientError, response, self._root))
+            cb(err.ReQLClientError(response, self._root))
           elseif proto_response_type.RUNTIME_ERROR == _exp_0 then
             self._responses.shift()
             local cb = self:_get_callback()
-            cb(mk_err(err.ReQLRuntimeError, response, self._root))
+            cb(err.ReQLRuntimeError(response, self._root))
           else
             self._responses.shift()
             local cb = self:_get_callback()
