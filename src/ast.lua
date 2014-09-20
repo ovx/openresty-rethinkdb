@@ -109,12 +109,6 @@ do
         end
       end
 
-      if not callback then
-        callback = function(err, cur)
-          if err then error(err) end
-        end
-      end
-
       -- Check if the arguments are valid types
       for key, _ in ipairs(options) do
         if not ('useOutdated' == key or 'noreply' == key or 'timeFormat' == key or 'profile' == key or 'durability' == key or 'groupFormat' == key or 'binaryFormat' == key or 'batchConf' == key or 'arrayLimit' == key) then
