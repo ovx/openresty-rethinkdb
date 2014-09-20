@@ -1,19 +1,30 @@
 language: python
+
+env:
+  matrix:
+    - LUA=lua5.1 LUA_DEV=liblua5.1-dev
+    - LUA=lua5.2 LUA_DEV=liblua5.2-dev
+    - LUA=luajit LUA_DEV=libluajit-5.1-dev
+
 python:
   - '3.3'
   - 'pypy3'
+
 before_install:
   - 'source /etc/lsb-release && echo "deb http://download.rethinkdb.com/apt $DISTRIB_CODENAME main" | sudo tee /etc/apt/sources.list.d/rethinkdb.list'
   - 'wget -qO- http://download.rethinkdb.com/apt/pubkey.gpg | sudo apt-key add -'
   - 'sudo apt-get update'
-  - 'sudo apt-get install lua5.1 liblua5.1-dev luarocks rethinkdb'
+  - 'sudo apt-get install $LUA $LUA_DEV luarocks rethinkdb'
+
 # command to install dependencies
 install:
   - 'python build.py'
   - 'sudo python build.py install'
+
 # add the python rethinkdb driver so that it can be used in test setup
 before_script:
   - 'pip install rethinkdb'
+
 # command to run tests
 script:
   - 'python build.py test'
