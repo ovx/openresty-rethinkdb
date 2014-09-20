@@ -10,7 +10,7 @@ before_install:
 # command to install dependencies
 install:
   - 'python build.py'
-  - 'python build.py install'
+  - 'sudo python build.py install'
 # add the python rethinkdb driver so that it can be used in test setup
 before_script:
   - 'pip install rethinkdb'
