@@ -94,10 +94,7 @@ do
     DEFAULT_TIMEOUT = 20, -- In seconds
     _data = function(self, buf)
       -- Buffer data, execute return results if need be
-      self.buffer = Buffer.concat({
-        self.buffer,
-        buf
-      })
+      self.buffer = self.buffer .. buf
       while strlen(self.buffer) >= 12 do
         local token = self.buffer.readUInt32LE(0) + 0x100000000 * self.buffer.readUInt32LE(4)
         local responseLength = self.buffer.readUInt32LE(8)
