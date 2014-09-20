@@ -257,7 +257,7 @@ do
       local wrappedCb = function(...)
         self.open = false
         if cb then
-          return cb(unpack(arg))
+          return cb(...)
         end
       end
       if noreply_wait then
@@ -267,6 +267,12 @@ do
       end
     end,
     noreply_wait = function(self, cb)
+      callback = function(err, cur)
+        if cur then
+          cur.each(function() end)
+        end
+        cb(err)
+      end
       if not (self.open) then
         return callback(err.ReQLDriverError("Connection is closed."))
       end
@@ -375,12 +381,13 @@ do
       end
 
       -- Save callback
-      if not opts.noreply then
-        self.outstandingCallbacks[token] = {
-          cb = cb,
+      do
+        local callback = {
           root = term,
           opts = opts
         }
+        if not opts.noreply then callback.cb = cb end
+        self.outstandingCallbacks[token] = callback
       end
       self:_sendQuery(query)
       if opts.noreply and type(cb) == 'function' then
