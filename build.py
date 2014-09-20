@@ -44,10 +44,10 @@ def build(args):
 
 
 def install(args):
-    with subprocess.Popen(['luarocks', 'make']) as io:
-        if io.wait():
-            print('luarocks', 'make', "returned:", io.returncode)
-            exit(io.returncode)
+    returncode = subprocess.call(['luarocks', 'make']) as io:
+    if returncode:
+        print('luarocks', 'make', "returned:", returncode)
+        exit(returncode)
 
 
 def main():
