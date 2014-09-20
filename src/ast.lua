@@ -117,10 +117,8 @@ do
 
       -- Check if the arguments are valid types
       for key, _ in ipairs(options) do
-        local _exp_0 = key
-        if 'useOutdated' == _exp_0 or 'noreply' == _exp_0 or 'timeFormat' == _exp_0 or 'profile' == _exp_0 or 'durability' == _exp_0 or 'groupFormat' == _exp_0 or 'binaryFormat' == _exp_0 or 'batchConf' == _exp_0 or 'arrayLimit' == _exp_0 then
-        else
-          callback(err.ReQLDriverError("Found " + key + " which is not a valid option. valid options are {useOutdated: <bool>, noreply: <bool>, timeFormat: <string>, groupFormat: <string>, binaryFormat: <string>, profile: <bool>, durability: <string>, arrayLimit: <number>}."))
+        if not ('useOutdated' == key or 'noreply' == key or 'timeFormat' == key or 'profile' == key or 'durability' == key or 'groupFormat' == key or 'binaryFormat' == key or 'batchConf' == key or 'arrayLimit' == key) then
+          callback(err.ReQLDriverError("Found " .. key .. " which is not a valid option. valid options are {useOutdated: <bool>, noreply: <bool>, timeFormat: <string>, groupFormat: <string>, binaryFormat: <string>, profile: <bool>, durability: <string>, arrayLimit: <number>}."))
         end
       end
       if not net.isConnection(connection) then
