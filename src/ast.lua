@@ -1,13 +1,13 @@
 local util = require('./util')
 local err = require('./errors')
 local net = require('./net')
-local protoTermType = require('./proto').TermType
+local proto_term_type = require('./proto').TermType
 
 -- rethinkdb is both the main export object for the module
 -- and a function that shortcuts `r.expr`.
 local rethinkdb = { }
 
-local funcWrap, hasImplicit, intsp, kved, intspallargs, shouldWrap
+local func_wrap, has_implicit, intsp, kved, intspallargs, should_wrap
 
 local TermBase, RDBVal, DatumTerm, RDBOp, RDBOpWrap, MakeArray, MakeObject, Var
 local JavaScript, Http, Json, Binary, Args, UserError, Random, ImplicitVar, Db
@@ -32,45 +32,45 @@ local June, July, August, September, October, November, December
 
 -- Utilities
 
-function funcWrap(val)
+function func_wrap(val)
   if not val then
     -- Pass through the nil value so it's caught by
     -- the appropriate nil checker
     return val
   end
   val = rethinkdb.expr(val)
-  local ivarScan = function(node)
-    if not isinstance(TermBase, node) then
+  local ivar_scan = function(node)
+    if not is_instance(TermBase, node) then
       return false
     end
-    if isinstance(ImplicitVar, node) then
+    if is_instance(ImplicitVar, node) then
       return true
     end
     for _, v in ipairs(node.args) do
-      if ivarScan(v) then
+      if ivar_scan(v) then
         return true
       end
     end
     for k, v in ipairs(node.optargs) do
-      if ivarScan(v) then
+      if ivar_scan(v) then
         return true
       end
     end
     return false
   end
-  if ivarScan(val) then
+  if ivar_scan(val) then
     return Func({ }, function(x)
       return val
     end)
   end
   return val
 end
-function hasImplicit(args)
+function has_implicit(args)
   -- args is an array of (strings and arrays)
   -- We recurse to look for `r.row` which is an implicit var
   if type(args) == "tree" then
     for _, arg in ipairs(args) do
-      if hasImplicit(arg) == true then
+      if has_implicit(arg) == true then
         return true
       end
     end
@@ -86,7 +86,6 @@ end
 
 do
   local _base_0 = {
-    showRunWarning = true,
     run = function(self, connection, options, callback)
       -- Valid syntaxes are
       -- connection, callback
@@ -109,13 +108,7 @@ do
         end
       end
 
-      -- Check if the arguments are valid types
-      for key, _ in ipairs(options) do
-        if not ('useOutdated' == key or 'noreply' == key or 'timeFormat' == key or 'profile' == key or 'durability' == key or 'groupFormat' == key or 'binaryFormat' == key or 'batchConf' == key or 'arrayLimit' == key) then
-          callback(err.ReQLDriverError("Found " .. key .. " which is not a valid option. valid options are {useOutdated: <bool>, noreply: <bool>, timeFormat: <string>, groupFormat: <string>, binaryFormat: <string>, profile: <bool>, durability: <string>, arrayLimit: <number>}."))
-        end
-      end
-      if not net.isConnection(connection) then
+      if not net.is_connection(connection) then
         callback(err.ReQLDriverError("First argument to `run` must be an open connection."))
       end
       local status, err = pcall(connection:_start(self, callback, options))
@@ -129,9 +122,6 @@ do
         end
       end
     end,
-    toString = function(self)
-      return err.printQuery(self)
-    end
   }
   _base_0.__index = _base_0
   local _class_0 = setmetatable({
@@ -219,7 +209,7 @@ do
         return Slice(opts, self, left, right_or_opts)
       else
         if right_or_opts then
-          if (type(right_or_opts) == 'tree') and (not isinstance(TermBase, right_or_opts)) then
+          if (type(right_or_opts) == 'tree') and (not is_instance(TermBase, right_or_opts)) then
             return Slice(right_or_opts, self, left)
           else
             return Slice({ }, self, left, right_or_opts)
@@ -289,7 +279,7 @@ do
       return Map({ }, ...)
     end,
     filter = function(self, predicate, opts)
-      return Filter(opts, self, funcWrap(predicate))
+      return Filter(opts, self, func_wrap(predicate))
     end,
     concat_map = function(...)
       return ConcatMap({ }, ...)
@@ -331,7 +321,7 @@ do
       return OuterJoin({ }, ...)
     end,
     eq_join = function(self, left_attr, right, opts)
-      return EqJoin(opts, self, funcWrap(left_attr), right)
+      return EqJoin(opts, self, func_wrap(left_attr), right)
     end,
     zip = function(...)
       return Zip({ }, ...)
@@ -346,13 +336,13 @@ do
       return TypeOf({ }, ...)
     end,
     update = function(self, func, opts)
-      return Update(opts, self, funcWrap(func))
+      return Update(opts, self, func_wrap(func))
     end,
     delete = function(self, opts)
       return Delete(opts, self)
     end,
     replace = function(self, func, opts)
-      return Replace(opts, self, funcWrap(func))
+      return Replace(opts, self, func_wrap(func))
     end,
     do_ = function(self, ...)
       local args
@@ -368,7 +358,7 @@ do
         end
         args = _accum_0
       end
-      return FunCall({ }, funcWrap(arg[arg.n]), self, unpack(args))
+      return FunCall({ }, func_wrap(arg[arg.n]), self, unpack(args))
     end,
     default = function(...)
       return Default({ }, ...)
@@ -413,9 +403,9 @@ do
 
       -- Look for opts dict
       if arg.n > 0 then
-        local perhapsOptDict = arg[arg.n]
-        if perhapsOptDict and (type(perhapsOptDict) == 'tree') and not (isinstance(TermBase, perhapsOptDict)) then
-          opts = perhapsOptDict
+        local perhaps_opt_dict = arg[arg.n]
+        if perhaps_opt_dict and (type(perhaps_opt_dict) == 'tree') and not (is_instance(TermBase, perhaps_opt_dict)) then
+          opts = perhaps_opt_dict
           do
             local _accum_0 = { }
             local _len_0 = 1
@@ -434,7 +424,7 @@ do
         local _accum_0 = { }
         local _len_0 = 1
         for i, field in ipairs(fields) do
-          _accum_0[_len_0] = funcWrap(field)
+          _accum_0[_len_0] = func_wrap(field)
           _len_0 = _len_0 + 1
         end
         fields = _accum_0
@@ -447,9 +437,9 @@ do
       local attrs = arg
 
       -- Look for opts dict
-      local perhapsOptDict = arg[arg.n]
-      if perhapsOptDict and (type(perhapsOptDict) == 'tree') and not isinstance(TermBase, perhapsOptDict) then
-        opts = perhapsOptDict
+      local perhaps_opt_dict = arg[arg.n]
+      if perhaps_opt_dict and (type(perhaps_opt_dict) == 'tree') and not is_instance(TermBase, perhaps_opt_dict) then
+        opts = perhaps_opt_dict
         do
           local _accum_0 = { }
           local _len_0 = 1
@@ -467,10 +457,10 @@ do
         local _accum_0 = { }
         local _len_0 = 1
         for i, attr in ipairs(attrs) do
-          if isinstance(Asc, attr) or isinstance(Desc, attr) then
+          if is_instance(Asc, attr) or is_instance(Desc, attr) then
             _accum_0[_len_0] = attr
           else
-            _accum_0[_len_0] = funcWrap(attr)
+            _accum_0[_len_0] = func_wrap(attr)
           end
           _len_0 = _len_0 + 1
         end
@@ -498,8 +488,8 @@ do
 
     -- Database operations
 
-    table_create = function(self, tblName, opts)
-      return TableCreate(opts, self, tblName)
+    table_create = function(self, tbl_name, opts)
+      return TableCreate(opts, self, tbl_name)
     end,
     table_drop = function(...)
       return TableDrop({ }, ...)
@@ -507,8 +497,8 @@ do
     table_list = function(...)
       return TableList({ }, ...)
     end,
-    table = function(self, tblName, opts)
-      return Table(opts, self, tblName)
+    table = function(self, tbl_name, opts)
+      return Table(opts, self, tbl_name)
     end,
 
     -- Table operations
@@ -523,9 +513,9 @@ do
 
       -- Look for opts dict
       if arg.n > 1 then
-        local perhapsOptDict = arg[arg.n - 1]
-        if perhapsOptDict and ((type(perhapsOptDict) == 'tree') and not (isinstance(TermBase, perhapsOptDict))) then
-          opts = perhapsOptDict
+        local perhaps_opt_dict = arg[arg.n - 1]
+        if perhaps_opt_dict and ((type(perhaps_opt_dict) == 'tree') and not (is_instance(TermBase, perhaps_opt_dict))) then
+          opts = perhaps_opt_dict
           do
             local _accum_0 = { }
             local _len_0 = 1
@@ -547,14 +537,14 @@ do
     end,
     index_create = function(self, name, defun_or_opts, opts)
       if opts then
-        return IndexCreate(opts, self, name, funcWrap(defun_or_opts))
+        return IndexCreate(opts, self, name, func_wrap(defun_or_opts))
       else
         if defun_or_opts then
           -- FIXME?
-          if (type(defun_or_opts) == 'tree') and not isinstance(Function, defun_or_opts) and not isinstance(TermBase, defun_or_opts) then
+          if (type(defun_or_opts) == 'tree') and not is_instance(Function, defun_or_opts) and not is_instance(TermBase, defun_or_opts) then
             return IndexCreate(defun_or_opts, self, name)
           else
-            return IndexCreate({ }, self, name, funcWrap(defun_or_opts))
+            return IndexCreate({ }, self, name, func_wrap(defun_or_opts))
           end
         else
           return IndexCreate({ }, self, name)
@@ -680,7 +670,7 @@ do
     build = function(self)
       if type(self.data) == 'number' then
         if math.abs(self.data) == 1/0 or self.data == ((1/0) * 0) then
-          error(TypeError("Illegal non-finite number `" .. self.data:toString() .. "`."))
+          error(TypeError("Illegal non-finite number `" .. self.data:tostring() .. "`."))
         end
       end
       return self.data
@@ -744,7 +734,7 @@ do
           ')'
         }
       else
-        if shouldWrap(self.args[0]) then
+        if should_wrap(self.args[0]) then
           args[0] = {
             'r(',
             args[0],
@@ -817,7 +807,7 @@ do
       self = _parent_0.__init(self)
       self.args = {}
       for i, a in ipairs(arg) do
-        self.args[i] = rethinkdb.expr(funcWrap(a))
+        self.args[i] = rethinkdb.expr(func_wrap(a))
       end
       if optargs == nil then optargs = {} end
       self.optargs = optargs
@@ -892,13 +882,13 @@ function intspallargs(args, optargs)
   end
   return argrepr
 end
-function shouldWrap(arg)
-  return isinstance(DatumTerm, arg) or isinstance(MakeArray, arg) or isinstance(MakeObject, arg)
+function should_wrap(arg)
+  return is_instance(DatumTerm, arg) or is_instance(MakeArray, arg) or is_instance(MakeObject, arg)
 end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.MAKE_ARRAY,
+    tt = proto_term_type.MAKE_ARRAY,
     st = '[...]', -- This is only used by the `nil` argument checker
     compose = function(self, args)
       return {
@@ -941,7 +931,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.MAKE_OBJECT,
+    tt = proto_term_type.MAKE_OBJECT,
     st = '{...}', -- This is only used by the `nil` argument checker
     compose = function(self, args, optargs)
       return kved(optargs)
@@ -957,9 +947,9 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, obj, nestingDepth)
-      if nestingDepth == nil then
-        nestingDepth = 20
+    __init = function(self, obj, nesting_depth)
+      if nesting_depth == nil then
+        nesting_depth = 20
       end
       self = _parent_0.__init(self, { })
       self.optargs = { }
@@ -967,7 +957,7 @@ do
         if not (val) then
           error(err.ReQLDriverError("Object field '" .. tostring(key) .. "' may not be nil"))
         end
-        self.optargs[key] = rethinkdb.expr(val, nestingDepth - 1)
+        self.optargs[key] = rethinkdb.expr(val, nesting_depth - 1)
       end
       return self
     end,
@@ -998,7 +988,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.VAR,
+    tt = proto_term_type.VAR,
     compose = function(self, args)
       return {
         'var_' .. args
@@ -1038,7 +1028,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.JAVASCRIPT,
+    tt = proto_term_type.JAVASCRIPT,
     st = 'js'
   }
   _base_0.__index = _base_0
@@ -1074,7 +1064,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.HTTP,
+    tt = proto_term_type.HTTP,
     st = 'http'
   }
   _base_0.__index = _base_0
@@ -1110,7 +1100,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.JSON,
+    tt = proto_term_type.JSON,
     st = 'json'
   }
   _base_0.__index = _base_0
@@ -1146,7 +1136,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.BINARY,
+    tt = proto_term_type.BINARY,
     st = 'binary',
     compose = function(self)
       if #self.args == 0 then
@@ -1171,12 +1161,12 @@ do
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
     __init = function(self, data)
-      if isinstance(TermBase, data) then
+      if is_instance(TermBase, data) then
         local self = _parent_0.__init(self, { }, data)
       else
-        if isinstance(Buffer, data) then
+        if is_instance(Buffer, data) then
           local self = _parent_0.__init(self)
-          self.base64_data = data.toString("base64")
+          self.base64_data = data.tostring("base64")
         else
           error(TypeError("Parameter to `r.binary` must be a Buffer object or ReQL query."))
         end
@@ -1210,7 +1200,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.ARGS,
+    tt = proto_term_type.ARGS,
     st = 'args'
   }
   _base_0.__index = _base_0
@@ -1246,7 +1236,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.ERROR,
+    tt = proto_term_type.ERROR,
     st = 'error'
   }
   _base_0.__index = _base_0
@@ -1282,7 +1272,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.RANDOM,
+    tt = proto_term_type.RANDOM,
     st = 'random'
   }
   _base_0.__index = _base_0
@@ -1318,7 +1308,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.IMPLICIT_VAR,
+    tt = proto_term_type.IMPLICIT_VAR,
     compose = function(self)
       return {
         'r.row'
@@ -1358,7 +1348,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.DB,
+    tt = proto_term_type.DB,
     st = 'db'
   }
   _base_0.__index = _base_0
@@ -1394,10 +1384,10 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.TABLE,
+    tt = proto_term_type.TABLE,
     st = 'table',
     compose = function(self, args, optargs)
-      if isinstance(Db, self.args[0]) then
+      if is_instance(Db, self.args[0]) then
         return {
           args[0],
           '.table(',
@@ -1455,7 +1445,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.GET,
+    tt = proto_term_type.GET,
     mt = 'get'
   }
   _base_0.__index = _base_0
@@ -1491,7 +1481,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.GET_ALL,
+    tt = proto_term_type.GET_ALL,
     mt = 'get_all'
   }
   _base_0.__index = _base_0
@@ -1527,7 +1517,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.EQ,
+    tt = proto_term_type.EQ,
     mt = 'eq'
   }
   _base_0.__index = _base_0
@@ -1563,7 +1553,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.NE,
+    tt = proto_term_type.NE,
     mt = 'ne'
   }
   _base_0.__index = _base_0
@@ -1599,7 +1589,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.LT,
+    tt = proto_term_type.LT,
     mt = 'lt'
   }
   _base_0.__index = _base_0
@@ -1635,7 +1625,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.LE,
+    tt = proto_term_type.LE,
     mt = 'le'
   }
   _base_0.__index = _base_0
@@ -1671,7 +1661,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.GT,
+    tt = proto_term_type.GT,
     mt = 'gt'
   }
   _base_0.__index = _base_0
@@ -1707,7 +1697,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.GE,
+    tt = proto_term_type.GE,
     mt = 'ge'
   }
   _base_0.__index = _base_0
@@ -1743,7 +1733,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.NOT,
+    tt = proto_term_type.NOT,
     mt = 'not_'
   }
   _base_0.__index = _base_0
@@ -1779,7 +1769,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.ADD,
+    tt = proto_term_type.ADD,
     mt = 'add'
   }
   _base_0.__index = _base_0
@@ -1815,7 +1805,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.SUB,
+    tt = proto_term_type.SUB,
     mt = 'sub'
   }
   _base_0.__index = _base_0
@@ -1851,7 +1841,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.MUL,
+    tt = proto_term_type.MUL,
     mt = 'mul'
   }
   _base_0.__index = _base_0
@@ -1887,7 +1877,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.DIV,
+    tt = proto_term_type.DIV,
     mt = 'div'
   }
   _base_0.__index = _base_0
@@ -1923,7 +1913,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.MOD,
+    tt = proto_term_type.MOD,
     mt = 'mod'
   }
   _base_0.__index = _base_0
@@ -1959,7 +1949,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.APPEND,
+    tt = proto_term_type.APPEND,
     mt = 'append'
   }
   _base_0.__index = _base_0
@@ -1995,7 +1985,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.PREPEND,
+    tt = proto_term_type.PREPEND,
     mt = 'prepend'
   }
   _base_0.__index = _base_0
@@ -2031,7 +2021,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.DIFFERENCE,
+    tt = proto_term_type.DIFFERENCE,
     mt = 'difference'
   }
   _base_0.__index = _base_0
@@ -2067,7 +2057,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.SET_INSERT,
+    tt = proto_term_type.SET_INSERT,
     mt = 'set_insert'
   }
   _base_0.__index = _base_0
@@ -2103,7 +2093,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.SET_UNION,
+    tt = proto_term_type.SET_UNION,
     mt = 'set_union'
   }
   _base_0.__index = _base_0
@@ -2139,7 +2129,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.SET_INTERSECTION,
+    tt = proto_term_type.SET_INTERSECTION,
     mt = 'set_intersection'
   }
   _base_0.__index = _base_0
@@ -2175,7 +2165,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.SET_DIFFERENCE,
+    tt = proto_term_type.SET_DIFFERENCE,
     mt = 'set_difference'
   }
   _base_0.__index = _base_0
@@ -2211,7 +2201,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.SLICE,
+    tt = proto_term_type.SLICE,
     mt = 'slice'
   }
   _base_0.__index = _base_0
@@ -2247,7 +2237,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.SKIP,
+    tt = proto_term_type.SKIP,
     mt = 'skip'
   }
   _base_0.__index = _base_0
@@ -2283,7 +2273,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.LIMIT,
+    tt = proto_term_type.LIMIT,
     mt = 'limit'
   }
   _base_0.__index = _base_0
@@ -2319,7 +2309,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.GET_FIELD,
+    tt = proto_term_type.GET_FIELD,
     mt = 'get_field'
   }
   _base_0.__index = _base_0
@@ -2355,7 +2345,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.BRACKET,
+    tt = proto_term_type.BRACKET,
     st = '(...)', -- This is only used by the `nil` argument checker
     compose = function(self, args)
       return {
@@ -2399,7 +2389,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.CONTAINS,
+    tt = proto_term_type.CONTAINS,
     mt = 'contains'
   }
   _base_0.__index = _base_0
@@ -2435,7 +2425,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.INSERT_AT,
+    tt = proto_term_type.INSERT_AT,
     mt = 'insert_at'
   }
   _base_0.__index = _base_0
@@ -2471,7 +2461,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.SPLICE_AT,
+    tt = proto_term_type.SPLICE_AT,
     mt = 'splice_at'
   }
   _base_0.__index = _base_0
@@ -2507,7 +2497,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.DELETE_AT,
+    tt = proto_term_type.DELETE_AT,
     mt = 'delete_at'
   }
   _base_0.__index = _base_0
@@ -2543,7 +2533,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.CHANGE_AT,
+    tt = proto_term_type.CHANGE_AT,
     mt = 'change_at'
   }
   _base_0.__index = _base_0
@@ -2579,7 +2569,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.CONTAINS,
+    tt = proto_term_type.CONTAINS,
     mt = 'contains'
   }
   _base_0.__index = _base_0
@@ -2615,7 +2605,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.HAS_FIELDS,
+    tt = proto_term_type.HAS_FIELDS,
     mt = 'has_fields'
   }
   _base_0.__index = _base_0
@@ -2651,7 +2641,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.WITH_FIELDS,
+    tt = proto_term_type.WITH_FIELDS,
     mt = 'with_fields'
   }
   _base_0.__index = _base_0
@@ -2687,7 +2677,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.KEYS,
+    tt = proto_term_type.KEYS,
     mt = 'keys'
   }
   _base_0.__index = _base_0
@@ -2723,7 +2713,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.CHANGES,
+    tt = proto_term_type.CHANGES,
     mt = 'changes'
   }
   _base_0.__index = _base_0
@@ -2759,7 +2749,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.OBJECT,
+    tt = proto_term_type.OBJECT,
     mt = 'object'
   }
   _base_0.__index = _base_0
@@ -2795,7 +2785,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.PLUCK,
+    tt = proto_term_type.PLUCK,
     mt = 'pluck'
   }
   _base_0.__index = _base_0
@@ -2831,7 +2821,7 @@ end
 do
   local _parent_0 = RDBOpWrap
   local _base_0 = {
-    tt = protoTermType.INDEXES_OF,
+    tt = proto_term_type.INDEXES_OF,
     mt = 'indexes_of'
   }
   _base_0.__index = _base_0
@@ -2867,7 +2857,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.WITHOUT,
+    tt = proto_term_type.WITHOUT,
     mt = 'without'
   }
   _base_0.__index = _base_0
@@ -2903,7 +2893,7 @@ end
 do
   local _parent_0 = RDBOpWrap
   local _base_0 = {
-    tt = protoTermType.MERGE,
+    tt = proto_term_type.MERGE,
     mt = 'merge'
   }
   _base_0.__index = _base_0
@@ -2939,7 +2929,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.BETWEEN,
+    tt = proto_term_type.BETWEEN,
     mt = 'between'
   }
   _base_0.__index = _base_0
@@ -2975,7 +2965,7 @@ end
 do
   local _parent_0 = RDBOpWrap
   local _base_0 = {
-    tt = protoTermType.REDUCE,
+    tt = proto_term_type.REDUCE,
     mt = 'reduce'
   }
   _base_0.__index = _base_0
@@ -3011,7 +3001,7 @@ end
 do
   local _parent_0 = RDBOpWrap
   local _base_0 = {
-    tt = protoTermType.MAP,
+    tt = proto_term_type.MAP,
     mt = 'map'
   }
   _base_0.__index = _base_0
@@ -3047,7 +3037,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.FILTER,
+    tt = proto_term_type.FILTER,
     mt = 'filter'
   }
   _base_0.__index = _base_0
@@ -3083,7 +3073,7 @@ end
 do
   local _parent_0 = RDBOpWrap
   local _base_0 = {
-    tt = protoTermType.CONCATMAP,
+    tt = proto_term_type.CONCATMAP,
     mt = 'concat_map'
   }
   _base_0.__index = _base_0
@@ -3119,7 +3109,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.ORDERBY,
+    tt = proto_term_type.ORDERBY,
     mt = 'order_by'
   }
   _base_0.__index = _base_0
@@ -3155,7 +3145,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.DISTINCT,
+    tt = proto_term_type.DISTINCT,
     mt = 'distinct'
   }
   _base_0.__index = _base_0
@@ -3191,7 +3181,7 @@ end
 do
   local _parent_0 = RDBOpWrap
   local _base_0 = {
-    tt = protoTermType.COUNT,
+    tt = proto_term_type.COUNT,
     mt = 'count'
   }
   _base_0.__index = _base_0
@@ -3227,7 +3217,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.UNION,
+    tt = proto_term_type.UNION,
     mt = 'union'
   }
   _base_0.__index = _base_0
@@ -3263,7 +3253,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.NTH,
+    tt = proto_term_type.NTH,
     mt = 'nth'
   }
   _base_0.__index = _base_0
@@ -3299,7 +3289,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.MATCH,
+    tt = proto_term_type.MATCH,
     mt = 'match'
   }
   _base_0.__index = _base_0
@@ -3335,7 +3325,7 @@ end
 do
   local _parent_0 = RDBOpWrap
   local _base_0 = {
-    tt = protoTermType.SPLIT,
+    tt = proto_term_type.SPLIT,
     mt = 'split'
   }
   _base_0.__index = _base_0
@@ -3371,7 +3361,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.UPCASE,
+    tt = proto_term_type.UPCASE,
     mt = 'upcase'
   }
   _base_0.__index = _base_0
@@ -3407,7 +3397,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.DOWNCASE,
+    tt = proto_term_type.DOWNCASE,
     mt = 'downcase'
   }
   _base_0.__index = _base_0
@@ -3443,7 +3433,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.IS_EMPTY,
+    tt = proto_term_type.IS_EMPTY,
     mt = 'is_empty'
   }
   _base_0.__index = _base_0
@@ -3479,7 +3469,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.GROUP,
+    tt = proto_term_type.GROUP,
     mt = 'group'
   }
   _base_0.__index = _base_0
@@ -3515,7 +3505,7 @@ end
 do
   local _parent_0 = RDBOpWrap
   local _base_0 = {
-    tt = protoTermType.SUM,
+    tt = proto_term_type.SUM,
     mt = 'sum'
   }
   _base_0.__index = _base_0
@@ -3551,7 +3541,7 @@ end
 do
   local _parent_0 = RDBOpWrap
   local _base_0 = {
-    tt = protoTermType.AVG,
+    tt = proto_term_type.AVG,
     mt = 'avg'
   }
   _base_0.__index = _base_0
@@ -3587,7 +3577,7 @@ end
 do
   local _parent_0 = RDBOpWrap
   local _base_0 = {
-    tt = protoTermType.MIN,
+    tt = proto_term_type.MIN,
     mt = 'min'
   }
   _base_0.__index = _base_0
@@ -3623,7 +3613,7 @@ end
 do
   local _parent_0 = RDBOpWrap
   local _base_0 = {
-    tt = protoTermType.MAX,
+    tt = proto_term_type.MAX,
     mt = 'max'
   }
   _base_0.__index = _base_0
@@ -3659,7 +3649,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.INNER_JOIN,
+    tt = proto_term_type.INNER_JOIN,
     mt = 'inner_join'
   }
   _base_0.__index = _base_0
@@ -3695,7 +3685,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.OUTER_JOIN,
+    tt = proto_term_type.OUTER_JOIN,
     mt = 'outer_join'
   }
   _base_0.__index = _base_0
@@ -3731,7 +3721,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.EQ_JOIN,
+    tt = proto_term_type.EQ_JOIN,
     mt = 'eq_join'
   }
   _base_0.__index = _base_0
@@ -3767,7 +3757,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.ZIP,
+    tt = proto_term_type.ZIP,
     mt = 'zip'
   }
   _base_0.__index = _base_0
@@ -3803,7 +3793,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.COERCE_TO,
+    tt = proto_term_type.COERCE_TO,
     mt = 'coerce_to'
   }
   _base_0.__index = _base_0
@@ -3839,7 +3829,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.UNGROUP,
+    tt = proto_term_type.UNGROUP,
     mt = 'ungroup'
   }
   _base_0.__index = _base_0
@@ -3875,7 +3865,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.TYPEOF,
+    tt = proto_term_type.TYPEOF,
     mt = 'type_of'
   }
   _base_0.__index = _base_0
@@ -3911,7 +3901,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.INFO,
+    tt = proto_term_type.INFO,
     mt = 'info'
   }
   _base_0.__index = _base_0
@@ -3947,7 +3937,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.SAMPLE,
+    tt = proto_term_type.SAMPLE,
     mt = 'sample'
   }
   _base_0.__index = _base_0
@@ -3983,7 +3973,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.UPDATE,
+    tt = proto_term_type.UPDATE,
     mt = 'update'
   }
   _base_0.__index = _base_0
@@ -4019,7 +4009,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.DELETE,
+    tt = proto_term_type.DELETE,
     mt = 'delete'
   }
   _base_0.__index = _base_0
@@ -4055,7 +4045,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.REPLACE,
+    tt = proto_term_type.REPLACE,
     mt = 'replace'
   }
   _base_0.__index = _base_0
@@ -4091,7 +4081,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.INSERT,
+    tt = proto_term_type.INSERT,
     mt = 'insert'
   }
   _base_0.__index = _base_0
@@ -4127,7 +4117,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.DB_CREATE,
+    tt = proto_term_type.DB_CREATE,
     st = 'db_create'
   }
   _base_0.__index = _base_0
@@ -4163,7 +4153,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.DB_DROP,
+    tt = proto_term_type.DB_DROP,
     st = 'db_drop'
   }
   _base_0.__index = _base_0
@@ -4199,7 +4189,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.DB_LIST,
+    tt = proto_term_type.DB_LIST,
     st = 'db_list'
   }
   _base_0.__index = _base_0
@@ -4235,7 +4225,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.TABLE_CREATE,
+    tt = proto_term_type.TABLE_CREATE,
     mt = 'table_create'
   }
   _base_0.__index = _base_0
@@ -4271,7 +4261,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.TABLE_DROP,
+    tt = proto_term_type.TABLE_DROP,
     mt = 'table_drop'
   }
   _base_0.__index = _base_0
@@ -4307,7 +4297,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.TABLE_LIST,
+    tt = proto_term_type.TABLE_LIST,
     mt = 'table_list'
   }
   _base_0.__index = _base_0
@@ -4343,7 +4333,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.INDEX_CREATE,
+    tt = proto_term_type.INDEX_CREATE,
     mt = 'index_create'
   }
   _base_0.__index = _base_0
@@ -4379,7 +4369,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.INDEX_DROP,
+    tt = proto_term_type.INDEX_DROP,
     mt = 'index_drop'
   }
   _base_0.__index = _base_0
@@ -4415,7 +4405,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.INDEX_RENAME,
+    tt = proto_term_type.INDEX_RENAME,
     mt = 'index_rename'
   }
   _base_0.__index = _base_0
@@ -4451,7 +4441,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.INDEX_LIST,
+    tt = proto_term_type.INDEX_LIST,
     mt = 'index_list'
   }
   _base_0.__index = _base_0
@@ -4487,7 +4477,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.INDEX_STATUS,
+    tt = proto_term_type.INDEX_STATUS,
     mt = 'index_status'
   }
   _base_0.__index = _base_0
@@ -4523,7 +4513,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.INDEX_WAIT,
+    tt = proto_term_type.INDEX_WAIT,
     mt = 'index_wait'
   }
   _base_0.__index = _base_0
@@ -4559,7 +4549,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.SYNC,
+    tt = proto_term_type.SYNC,
     mt = 'sync'
   }
   _base_0.__index = _base_0
@@ -4595,7 +4585,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.FUNCALL,
+    tt = proto_term_type.FUNCALL,
     st = 'do_', -- This is only used by the `nil` argument checker
     compose = function(self, args)
       if #args > 2 then
@@ -4616,7 +4606,7 @@ do
           ')'
         }
       else
-        if shouldWrap(self.args[1]) then
+        if should_wrap(self.args[1]) then
           args[1] = {
             'r(',
             args[1],
@@ -4665,7 +4655,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.DEFAULT,
+    tt = proto_term_type.DEFAULT,
     mt = 'default'
   }
   _base_0.__index = _base_0
@@ -4701,7 +4691,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.BRANCH,
+    tt = proto_term_type.BRANCH,
     st = 'branch'
   }
   _base_0.__index = _base_0
@@ -4737,7 +4727,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.ANY,
+    tt = proto_term_type.ANY,
     mt = 'or_'
   }
   _base_0.__index = _base_0
@@ -4773,7 +4763,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.ALL,
+    tt = proto_term_type.ALL,
     mt = 'and_'
   }
   _base_0.__index = _base_0
@@ -4809,7 +4799,7 @@ end
 do
   local _parent_0 = RDBOpWrap
   local _base_0 = {
-    tt = protoTermType.FOREACH,
+    tt = proto_term_type.FOREACH,
     mt = 'for_each'
   }
   _base_0.__index = _base_0
@@ -4845,24 +4835,24 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.FUNC,
+    tt = proto_term_type.FUNC,
     compose = function(self, args)
-      if hasImplicit(args[1]) == true then
+      if has_implicit(args[1]) == true then
         return {
           args[1]
         }
       else
-        local varStr = ""
+        local var_str = ""
         for arg, i in ipairs(args[0][1]) do -- ['0', ', ', '1']
           if i % 2 == 0 then
-            varStr = varStr + Var.compose(arg)
+            var_str = var_str + Var.compose(arg)
           else
-            varStr = varStr + arg
+            var_str = var_str + arg
           end
         end
         return {
           'function(',
-          varStr,
+          var_str,
           ') { return ',
           args[1],
           '; }'
@@ -4875,20 +4865,20 @@ do
   local _class_0 = setmetatable({
     __init = function(self, optargs, func)
       local args = { }
-      local argNums = { }
+      local arg_nums = { }
       local i = 0
       while i < func.length do
-        argNums.push(Func.nextVarId)
-        args.push(Var({ }, Func.nextVarId))
-        Func.nextVarId = Func.nextVarId + 1
+        arg_nums.push(Func.next_var_id)
+        args.push(Var({ }, Func.next_var_id))
+        Func.next_var_id = Func.next_var_id + 1
         i = i + 1
       end
       local body = func(unpack(args))
       if not body then
         error(err.ReQLDriverError("Anonymous function returned `nil`. Did you forget a `return`?"))
       end
-      local argsArr = MakeArray({ }, unpack(argNums))
-      return _parent_0.__init(self, optargs, argsArr, body)
+      local args_arr = MakeArray({ }, unpack(arg_nums))
+      return _parent_0.__init(self, optargs, args_arr, body)
     end,
     __base = _base_0,
     __name = "Func",
@@ -4910,7 +4900,7 @@ do
   })
   _base_0.__class = _class_0
   local self = _class_0
-  self.nextVarId = 0
+  self.next_var_id = 0
   if _parent_0.__inherited then
     _parent_0.__inherited(_parent_0, _class_0)
   end
@@ -4919,7 +4909,7 @@ end
 do
   local _parent_0 = RDBOpWrap
   local _base_0 = {
-    tt = protoTermType.ASC,
+    tt = proto_term_type.ASC,
     st = 'asc'
   }
   _base_0.__index = _base_0
@@ -4955,7 +4945,7 @@ end
 do
   local _parent_0 = RDBOpWrap
   local _base_0 = {
-    tt = protoTermType.DESC,
+    tt = proto_term_type.DESC,
     st = 'desc'
   }
   _base_0.__index = _base_0
@@ -4991,7 +4981,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.LITERAL,
+    tt = proto_term_type.LITERAL,
     st = 'literal'
   }
   _base_0.__index = _base_0
@@ -5027,7 +5017,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.ISO8601,
+    tt = proto_term_type.ISO8601,
     st = 'iso8601'
   }
   _base_0.__index = _base_0
@@ -5063,7 +5053,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.TO_ISO8601,
+    tt = proto_term_type.TO_ISO8601,
     mt = 'to_iso8601'
   }
   _base_0.__index = _base_0
@@ -5099,7 +5089,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.EPOCH_TIME,
+    tt = proto_term_type.EPOCH_TIME,
     st = 'epoch_time'
   }
   _base_0.__index = _base_0
@@ -5135,7 +5125,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.TO_EPOCH_TIME,
+    tt = proto_term_type.TO_EPOCH_TIME,
     mt = 'to_epoch_time'
   }
   _base_0.__index = _base_0
@@ -5171,7 +5161,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.NOW,
+    tt = proto_term_type.NOW,
     st = 'now'
   }
   _base_0.__index = _base_0
@@ -5207,7 +5197,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.IN_TIMEZONE,
+    tt = proto_term_type.IN_TIMEZONE,
     mt = 'in_timezone'
   }
   _base_0.__index = _base_0
@@ -5243,7 +5233,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.DURING,
+    tt = proto_term_type.DURING,
     mt = 'during'
   }
   _base_0.__index = _base_0
@@ -5279,7 +5269,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.DATE,
+    tt = proto_term_type.DATE,
     mt = 'date'
   }
   _base_0.__index = _base_0
@@ -5315,7 +5305,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.TIME_OF_DAY,
+    tt = proto_term_type.TIME_OF_DAY,
     mt = 'time_of_day'
   }
   _base_0.__index = _base_0
@@ -5351,7 +5341,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.TIMEZONE,
+    tt = proto_term_type.TIMEZONE,
     mt = 'timezone'
   }
   _base_0.__index = _base_0
@@ -5387,7 +5377,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.YEAR,
+    tt = proto_term_type.YEAR,
     mt = 'year'
   }
   _base_0.__index = _base_0
@@ -5423,7 +5413,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.MONTH,
+    tt = proto_term_type.MONTH,
     mt = 'month'
   }
   _base_0.__index = _base_0
@@ -5459,7 +5449,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.DAY,
+    tt = proto_term_type.DAY,
     mt = 'day'
   }
   _base_0.__index = _base_0
@@ -5495,7 +5485,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.DAY_OF_WEEK,
+    tt = proto_term_type.DAY_OF_WEEK,
     mt = 'day_of_week'
   }
   _base_0.__index = _base_0
@@ -5531,7 +5521,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.DAY_OF_YEAR,
+    tt = proto_term_type.DAY_OF_YEAR,
     mt = 'day_of_year'
   }
   _base_0.__index = _base_0
@@ -5567,7 +5557,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.HOURS,
+    tt = proto_term_type.HOURS,
     mt = 'hours'
   }
   _base_0.__index = _base_0
@@ -5603,7 +5593,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.MINUTES,
+    tt = proto_term_type.MINUTES,
     mt = 'minutes'
   }
   _base_0.__index = _base_0
@@ -5639,7 +5629,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.SECONDS,
+    tt = proto_term_type.SECONDS,
     mt = 'seconds'
   }
   _base_0.__index = _base_0
@@ -5675,7 +5665,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.TIME,
+    tt = proto_term_type.TIME,
     st = 'time'
   }
   _base_0.__index = _base_0
@@ -5711,7 +5701,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.GEOJSON,
+    tt = proto_term_type.GEOJSON,
     mt = 'geojson'
   }
   _base_0.__index = _base_0
@@ -5747,7 +5737,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.TO_GEOJSON,
+    tt = proto_term_type.TO_GEOJSON,
     mt = 'to_geojson'
   }
   _base_0.__index = _base_0
@@ -5783,7 +5773,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.POINT,
+    tt = proto_term_type.POINT,
     mt = 'point'
   }
   _base_0.__index = _base_0
@@ -5819,7 +5809,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.LINE,
+    tt = proto_term_type.LINE,
     mt = 'line'
   }
   _base_0.__index = _base_0
@@ -5855,7 +5845,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.POLYGON,
+    tt = proto_term_type.POLYGON,
     mt = 'polygon'
   }
   _base_0.__index = _base_0
@@ -5891,7 +5881,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.DISTANCE,
+    tt = proto_term_type.DISTANCE,
     mt = 'distance'
   }
   _base_0.__index = _base_0
@@ -5927,7 +5917,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.INTERSECTS,
+    tt = proto_term_type.INTERSECTS,
     mt = 'intersects'
   }
   _base_0.__index = _base_0
@@ -5963,7 +5953,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.INCLUDES,
+    tt = proto_term_type.INCLUDES,
     mt = 'includes'
   }
   _base_0.__index = _base_0
@@ -5999,7 +5989,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.CIRCLE,
+    tt = proto_term_type.CIRCLE,
     mt = 'circle'
   }
   _base_0.__index = _base_0
@@ -6035,7 +6025,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.GET_INTERSECTING,
+    tt = proto_term_type.GET_INTERSECTING,
     mt = 'get_intersecting'
   }
   _base_0.__index = _base_0
@@ -6071,7 +6061,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.GET_NEAREST,
+    tt = proto_term_type.GET_NEAREST,
     mt = 'get_nearest'
   }
   _base_0.__index = _base_0
@@ -6107,7 +6097,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.FILL,
+    tt = proto_term_type.FILL,
     mt = 'fill'
   }
   _base_0.__index = _base_0
@@ -6143,7 +6133,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.UUID,
+    tt = proto_term_type.UUID,
     st = 'uuid'
   }
   _base_0.__index = _base_0
@@ -6181,17 +6171,17 @@ end
 -- All top level exported functions
 
 -- Wrap a native Lua value in an ReQL datum
-function rethinkdb.expr(val, nestingDepth)
-  if nestingDepth == nil then
-    nestingDepth = 20
+function rethinkdb.expr(val, nesting_depth)
+  if nesting_depth == nil then
+    nesting_depth = 20
   end
   if not (val) then
     error(err.ReQLDriverError("Cannot wrap nil with r.expr()."))
   end
-  if nestingDepth <= 0 then
+  if nesting_depth <= 0 then
     error(err.ReQLDriverError("Nesting depth limit exceeded"))
   end
-  if type(nestingDepth) ~= "number" or nestingDepth == (1/0) * 0 or nestingDepth == 1/0 or nestingDepth == -1/0 then
+  if type(nesting_depth) ~= "number" or nesting_depth == (1/0) * 0 or nesting_depth == 1/0 or nesting_depth == -1/0 then
     error(err.ReQLDriverError("Second argument to `r.expr` must be a number or nil."))
   end
   if TermBase.__class == val then
@@ -6201,7 +6191,7 @@ function rethinkdb.expr(val, nestingDepth)
     return Func({ }, val)
   end
   if nil then
-    return ISO8601({ }, val.toISOString())
+    return ISO8601({ }, val.to_iso_string())
   end
   if nil then
     return Binary(val)
@@ -6228,10 +6218,10 @@ function rethinkdb.expr(val, nestingDepth)
       end
     end
     if t == "dict" then
-      return MakeObject(val, nestingDepth)
+      return MakeObject(val, nesting_depth)
     end
     for i, v in ipairs(val) do
-      val[i] = rethinkdb.expr(v, nestingDepth - 1)
+      val[i] = rethinkdb.expr(v, nesting_depth - 1)
     end
     return MakeArray({ }, unpack(val))
   end
@@ -6255,9 +6245,9 @@ function rethinkdb.random(...)
   local limits = arg
 
   -- Look for opts dict
-  local perhapsOptDict = arg[arg.n - 1]
-  if perhapsOptDict and ((type(perhapsOptDict) == 'tree') and not (isinstance(TermBase, perhapsOptDict))) then
-    opts = perhapsOptDict
+  local perhaps_opt_dict = arg[arg.n - 1]
+  if perhaps_opt_dict and ((type(perhaps_opt_dict) == 'tree') and not (is_instance(TermBase, perhaps_opt_dict))) then
+    opts = perhaps_opt_dict
     do
       local _accum_0 = { }
       local _len_0 = 1
@@ -6277,8 +6267,8 @@ function rethinkdb.binary(data)
   return Binary(data)
 end
 rethinkdb.row = ImplicitVar({ })
-function rethinkdb.table(tblName, opts)
-  return Table(opts, tblName)
+function rethinkdb.table(tbl_name, opts)
+  return Table(opts, tbl_name)
 end
 function rethinkdb.db(...)
   return Db({ }, ...)
@@ -6292,8 +6282,8 @@ end
 function rethinkdb.db_list(...)
   return DbList({ }, ...)
 end
-function rethinkdb.table_create(tblName, opts)
-  return TableCreate(opts, tblName)
+function rethinkdb.table_create(tbl_name, opts)
+  return TableCreate(opts, tbl_name)
 end
 function rethinkdb.table_drop(...)
   return TableDrop({ }, ...)
@@ -6302,7 +6292,7 @@ function rethinkdb.table_list(...)
   return TableList({ }, ...)
 end
 function rethinkdb.do_(...)
-  return FunCall({ }, funcWrap(arg[arg.n]), unpack((function()
+  return FunCall({ }, func_wrap(arg[arg.n]), unpack((function()
     local _accum_0 = { }
     local _len_0 = 1
     local _list_0 = arg
@@ -6396,7 +6386,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.MONDAY
+    tt = proto_term_type.MONDAY
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -6431,7 +6421,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.TUESDAY
+    tt = proto_term_type.TUESDAY
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -6466,7 +6456,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.WEDNESDAY
+    tt = proto_term_type.WEDNESDAY
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -6501,7 +6491,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.THURSDAY
+    tt = proto_term_type.THURSDAY
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -6536,7 +6526,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.FRIDAY
+    tt = proto_term_type.FRIDAY
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -6571,7 +6561,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.SATURDAY
+    tt = proto_term_type.SATURDAY
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -6606,7 +6596,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.SUNDAY
+    tt = proto_term_type.SUNDAY
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -6648,7 +6638,7 @@ rethinkdb.sunday = Sunday()
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.JANUARY
+    tt = proto_term_type.JANUARY
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -6683,7 +6673,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.FEBRUARY
+    tt = proto_term_type.FEBRUARY
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -6718,7 +6708,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.MARCH
+    tt = proto_term_type.MARCH
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -6753,7 +6743,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.APRIL
+    tt = proto_term_type.APRIL
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -6788,7 +6778,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.MAY
+    tt = proto_term_type.MAY
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -6823,7 +6813,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.JUNE
+    tt = proto_term_type.JUNE
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -6858,7 +6848,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.JULY
+    tt = proto_term_type.JULY
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -6893,7 +6883,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.AUGUST
+    tt = proto_term_type.AUGUST
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -6928,7 +6918,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.SEPTEMBER
+    tt = proto_term_type.SEPTEMBER
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -6963,7 +6953,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.OCTOBER
+    tt = proto_term_type.OCTOBER
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -6998,7 +6988,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.NOVEMBER
+    tt = proto_term_type.NOVEMBER
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
@@ -7033,7 +7023,7 @@ end
 do
   local _parent_0 = RDBOp
   local _base_0 = {
-    tt = protoTermType.DECEMBER
+    tt = proto_term_type.DECEMBER
   }
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)

@@ -1,7 +1,7 @@
 local err = require('./errors')
 
-local plural, toArrayBuffer, convertPseudotype, recursivelyConvertPseudotype
-local mkAtom, mkSeq, mkErr, is_array
+local plural, to_array_buffer, convert_pseudotype, recursively_convert_pseudotype
+local mk_atom, mk_seq, mk_err, is_array
 
 function is_array(obj)
   if type(obj) ~= 'tree' or obj:maxn() == 0 then return false end
@@ -19,7 +19,7 @@ function plural(number)
   end
 end
 
-function toArrayBuffer(node_buffer)
+function to_array_buffer(node_buffer)
   -- Convert from node buffer to array buffer
   local arr = Uint8Array(ArrayBuffer(#node_buffer))
   for value, i in ipairs(node_buffer) do
@@ -27,12 +27,12 @@ function toArrayBuffer(node_buffer)
   end
   return arr.buffer
 end
-function convertPseudotype(obj, opts)
+function convert_pseudotype(obj, opts)
   -- An R_OBJECT may be a regular object or a "pseudo-type" so we need a
   -- second layer of type switching here on the obfuscated field "$reql_type$"
   local _exp_0 = obj['$reql_type$']
   if 'TIME' == _exp_0 then
-    local _exp_1 = opts.timeFormat
+    local _exp_1 = opts.time_format
     if 'native' == _exp_1 or not _exp_1 then
       if not (obj['epoch_time']) then
         error(err.ReQLDriverError("pseudo-type TIME " .. tostring(obj) .. " object missing expected field 'epoch_time'."))
@@ -47,10 +47,10 @@ function convertPseudotype(obj, opts)
       -- Just return the raw (`{'$reql_type$'...}`) object
       return obj
     else
-      error(err.ReQLDriverError("Unknown timeFormat run option " .. tostring(opts.timeFormat) .. "."))
+      error(err.ReQLDriverError("Unknown time_format run option " .. tostring(opts.time_format) .. "."))
     end
   elseif 'GROUPED_DATA' == _exp_0 then
-    local _exp_1 = opts.groupFormat
+    local _exp_1 = opts.group_format
     if 'native' == _exp_1 or not _exp_1 then
       -- Don't convert the data into a map, because the keys could be objects which doesn't work in JS
       -- Instead, we have the following format:
@@ -68,10 +68,10 @@ function convertPseudotype(obj, opts)
     elseif 'raw' == _exp_1 then
       return obj
     else
-      error(err.ReQLDriverError("Unknown groupFormat run option " .. tostring(opts.groupFormat) .. "."))
+      error(err.ReQLDriverError("Unknown group_format run option " .. tostring(opts.group_format) .. "."))
     end
   elseif 'BINARY' == _exp_0 then
-    local _exp_1 = opts.binaryFormat
+    local _exp_1 = opts.binary_format
     if 'native' == _exp_1 or not _exp_1 then
       if not (obj['data']) then
         error(err.ReQLDriverError("pseudo-type BINARY object missing expected field 'data'."))
@@ -80,33 +80,33 @@ function convertPseudotype(obj, opts)
     elseif 'raw' == _exp_1 then
       return obj
     else
-      error(err.ReQLDriverError("Unknown binaryFormat run option " .. tostring(opts.binaryFormat) .. "."))
+      error(err.ReQLDriverError("Unknown binary_format run option " .. tostring(opts.binary_format) .. "."))
     end
   else
     -- Regular object or unknown pseudo type
     return obj
   end
 end
-function recursivelyConvertPseudotype(obj, opts)
+function recursively_convert_pseudotype(obj, opts)
   if type(obj) == 'tree' then
     for key, value in ipairs(obj) do
-      obj[key] = recursivelyConvertPseudotype(value, opts)
+      obj[key] = recursively_convert_pseudotype(value, opts)
     end
-    obj = convertPseudotype(obj, opts)
+    obj = convert_pseudotype(obj, opts)
   end
   return obj
 end
-function mkAtom(response, opts)
-  return recursivelyConvertPseudotype(response.r[0], opts)
+function mk_atom(response, opts)
+  return recursively_convert_pseudotype(response.r[0], opts)
 end
-function mkSeq(response, opts)
-  return recursivelyConvertPseudotype(response.r, opts)
+function mk_seq(response, opts)
+  return recursively_convert_pseudotype(response.r, opts)
 end
-function mkErr(ErrClass, response, root)
-  return ErrClass(mkAtom(response), root, response.b)
+function mk_err(ErrClass, response, root)
+  return ErrClass(mk_atom(response), root, response.b)
 end
 
-function isinstance(class, obj)
+function is_instance(class, obj)
   if not obj then return false end
   local obj_cls = obj.__class
   while obj_cls do
@@ -119,11 +119,11 @@ function isinstance(class, obj)
 end
 
 return {
-  isinstance = isinstance,
+  is_instance = is_instance,
   is_array = is_array,
-  toArrayBuffer = toArrayBuffer,
-  recursivelyConvertPseudotype = recursivelyConvertPseudotype,
-  mkAtom = mkAtom,
-  mkSeq = mkSeq,
-  mkErr = mkErr
+  to_array_buffer = to_array_buffer,
+  recursively_convert_pseudotype = recursively_convert_pseudotype,
+  mk_atom = mk_atom,
+  mk_seq = mk_seq,
+  mk_err = mk_err
 }

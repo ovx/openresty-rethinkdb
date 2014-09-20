@@ -30,7 +30,7 @@ do
       self.frames = frames
       self.printer = ReQLQueryPrinter(term, frames)
       if term then
-        self.message = " in:\n" .. self.printer:printQuery() .. "\n" .. self.printer:printCarrots()
+        self.message = " in:\n" .. self.printer:print_query() .. "\n" .. self.printer:print_carrots()
         if msg[-1] == '.' then
           self.message = msg:sub(1, -2) .. self.message
         else
@@ -154,47 +154,47 @@ do
 end
 do
   local _base_0 = {
-    printQuery = function(self)
-      return self:joinTree(self:composeTerm(self.term))
+    print_query = function(self)
+      return self:join_tree(self:compose_term(self.term))
     end,
-    printCarrots = function(self)
+    print_carrots = function(self)
       local tree
       if #self.frames == 0 then
         tree = {
-          self:carrotify(self:composeTerm(self.term))
+          self:carrotify(self:compose_term(self.term))
         }
       else
-        tree = self:composeCarrots(self.term, self.frames)
+        tree = self:compose_carrots(self.term, self.frames)
       end
-      return self:joinTree(tree).gsub('[^\^]', ' ')
+      return self:join_tree(tree).gsub('[^\^]', ' ')
     end,
-    composeTerm = function(self, term)
+    compose_term = function(self, term)
       local args = {}
       for i, arg in ipairs(term.args) do
-        args[i] = self:composeTerm(arg)
+        args[i] = self:compose_term(arg)
       end
       local optargs = { }
       for key, arg in ipairs(term.optargs) do
-        optargs[key] = self:composeTerm(arg)
+        optargs[key] = self:compose_term(arg)
       end
       return term:compose(args, optargs)
     end,
-    composeCarrots = function(self, term, frames)
+    compose_carrots = function(self, term, frames)
       local frame = frames.shift()
       local args = {}
       for arg, i in ipairs(term.args) do
         if frame == i then
-          args[i] = self:composeCarrots(arg, frames)
+          args[i] = self:compose_carrots(arg, frames)
         else
-          args[i] = self:composeTerm(arg)
+          args[i] = self:compose_term(arg)
         end
       end
       local optargs = { }
       for key, arg in ipairs(term.optargs) do
         if frame == key then
-          optargs[key] = self:composeCarrots(arg, frames)
+          optargs[key] = self:compose_carrots(arg, frames)
         else
-          optargs[key] = self:composeTerm(arg)
+          optargs[key] = self:compose_term(arg)
         end
       end
       if frame then
@@ -202,18 +202,18 @@ do
       end
       return self:carrotify(term.compose(args, optargs))
     end,
-    carrotMarker = { },
+    carrot_marker = { },
     carrotify = function(self, tree)
-      return {carrotMarker, tree}
+      return {carrot_marker, tree}
     end,
-    joinTree = function(self, tree)
+    join_tree = function(self, tree)
       local str = ''
       for _, term in ipairs(tree) do
-        if Array.isArray(term) then
-          if #term == 2 and term[0] == self.carrotMarker then
-            str = str .. self:joinTree(term[1]).gsub('.', '^')
+        if is_array(term) then
+          if #term == 2 and term[0] == self.carrot_marker then
+            str = str .. self:join_tree(term[1]).gsub('.', '^')
           else
-            str = str .. self:joinTree(term)
+            str = str .. self:join_tree(term)
           end
         else
           str = str .. term
