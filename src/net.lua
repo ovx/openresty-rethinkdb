@@ -295,13 +295,11 @@ do
       return self:_sendQuery(query)
     end,
     _writeQuery = function(self, token, data)
-      return self.rawSocket:send(int_to_bytes(token, 8) .. data)
-    end,
-    write = function(self, chunk)
-      local lengthBuffer = Buffer(4)
-      lengthBuffer.writeUInt32LE(strlen(chunk), 0)
-      self.rawSocket.write(lengthBuffer)
-      return self.rawSocket.write(chunk)
+      self.rawSocket:send(
+        int_to_bytes(token, 8) ..
+        int_to_bytes(#data, 4) ..
+        data
+      )
     end,
     cancel = function(self)
       self.rawSocket.destroy()
