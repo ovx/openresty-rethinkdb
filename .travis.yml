@@ -9,7 +9,8 @@ before_install:
   - 'sudo apt-get install lua5.1 liblua5.1-dev rethinkdb'
 # command to install dependencies
 install:
-  - 'LUAINC_linux=/usr/include/lua5.1 python build.py'
+  - 'python build.py'
+  - 'python build.py install'
 # add the python rethinkdb driver so that it can be used in test setup
 before_script:
   - 'pip install rethinkdb'
