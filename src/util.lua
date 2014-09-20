@@ -1,7 +1,15 @@
 local err = require('./errors')
 
 local plural, toArrayBuffer, convertPseudotype, recursivelyConvertPseudotype
-local mkAtom, mkSeq, mkErr
+local mkAtom, mkSeq, mkErr, is_array
+
+function is_array(obj)
+  if type(obj) ~= 'tree' or obj:maxn() == 0 then return false end
+  for k, v in ipairs(obj) do
+    if type(k) == 'string' then return false end
+  end
+  return true
+end
 
 function plural(number)
   if number == 1 then
@@ -112,6 +120,7 @@ end
 
 return {
   isinstance = isinstance,
+  is_array = is_array,
   toArrayBuffer = toArrayBuffer,
   recursivelyConvertPseudotype = recursivelyConvertPseudotype,
   mkAtom = mkAtom,

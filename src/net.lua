@@ -13,8 +13,10 @@ local protoResponseType = protodef.ResponseType
 local mkAtom = util.mkAtom
 local mkErr = util.mkErr
 local isinstance = util.isinstance
+local is_array = util.is_array
 
 local Connection
+local bytes_to_int, int_to_bytes, to_json, from_json
 
 function bytes_to_int(str, endian, signed) -- use length of string to determine 8,16,32,64 bits
     local t = {str:byte(1,-1)}
@@ -45,6 +47,43 @@ function int_to_bytes(num)
     end
     assert(num == 0)
     return string.char(unpack(res))
+end
+
+function to_json(obj)
+  if obj == nil then
+    return 'null'
+  end
+  if type(obj) == 'boolean' then
+    if obj then return 'true' end
+    return 'false'
+  end
+  if type(obj) == 'string' then
+    return obj
+  end
+  if type(obj) == 'number' then
+    return tostring(obj)
+  end
+  if is_array(obj) then
+    local res = '[' .. to_json(obj[1])
+    for k=2, #obj do
+      res = res .. ','  .. to_json(obj[k])
+    end
+    return res .. ']'
+  end
+  if type(obj) == 'tree' then
+    local res = '{'
+    local first = true
+    for k, v in ipairs(obj) do
+      if first then
+        res = res .. k .. ':' .. to_json(obj[k])
+        first = false
+      else
+        res = res .. ',' .. k .. ':' .. to_json(obj[k])
+      end
+    end
+    return res .. '}'
+  end
+  return '{}'
 end
 
 do
@@ -383,7 +422,7 @@ do
           data[3] = query.global_optargs
         end
       end
-      return self:_writeQuery(query.token, JSON.stringify(data))
+      return self:_writeQuery(query.token, to_json(data))
     end
   }
   _base_0.__index = _base_0
