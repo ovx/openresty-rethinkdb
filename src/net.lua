@@ -418,7 +418,21 @@ do
           data[3] = query.global_optargs
         end
       end
-      return self:_writeQuery(query.token, to_json(data))
+      self:_writeQuery(query.token, to_json(data))
+      local callback = self.outstandingCallbacks[query.token]
+      if not callback.opts.noreply then
+        local cb = callback.cb
+        if type(cb) == 'function' then
+          local cursor = cursors.Cursor(
+            self,
+            query.token,
+            query.opts,
+            query.root
+          )
+          cb(cursor)
+          cursor:close()
+        end
+      end
     end
   }
   _base_0.__index = _base_0
@@ -484,7 +498,8 @@ do
             if status_str == "SUCCESS" then
               -- We're good, finish setting up the connection
               self.open = true
-              return callback(nil, self)
+              callback(nil, self)
+              self:close({noreply_wait = false})
             else
               return callback(err.ReQLDriverError("Server dropped connection with message: \"" + status_str + "\""))
             end
