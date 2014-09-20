@@ -1,6 +1,6 @@
 local err = require('./errors')
 local util = require('./util')
-local protoResponseType = require('./proto-def').ResponseType
+local protoResponseType = require('./proto').ResponseType
 
 -- Import some names to this namespace for convenience
 local mkErr = util.mkErr

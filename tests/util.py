@@ -31,7 +31,7 @@ class LuaTestCase(unittest.TestCase):
             ['lua', file + '.lua'],
             env=dict(
                 os.environ,
-                LUA_PATH='../src/?.lua;../build/share/lua/5.1/?.lua'
+                LUA_PATH='../src/?.lua;;'
             ), **kwargs
         )
 

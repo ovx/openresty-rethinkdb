@@ -1,7 +1,7 @@
 local util = require('./util')
 local err = require('./errors')
 local net = require('./net')
-local protoTermType = require('./proto-def').TermType
+local protoTermType = require('./proto').TermType
 
 -- rethinkdb is both the main export object for the module
 -- and a function that shortcuts `r.expr`.
