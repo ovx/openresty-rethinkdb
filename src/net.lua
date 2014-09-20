@@ -256,25 +256,20 @@ do
           end
         end
       end
-      for key, _ in ipairs(opts) do
-        if not (key == 'noreplyWait') then
-          error(err.ReQLDriverError("First argument to two-argument `close` must be { noreplyWait: <bool> }."))
-        end
-      end
-      local noreplyWait = ((not opts.noreplyWait) or opts.noreplyWait) and self.open
-      local wrappedCb = function(self, ...)
+      local noreply_wait = opts.noreply_wait and self.open
+      local wrappedCb = function(...)
         self.open = false
         if cb then
           return cb(unpack(arg))
         end
       end
-      if noreplyWait then
-        return self:noreplyWait(wrappedCb)
+      if noreply_wait then
+        return self:noreply_wait(wrappedCb)
       else
         return wrappedCb()
       end
     end,
-    noreplyWait = function(self, callback)
+    noreply_wait = function(self, cb)
       if not (self.open) then
         return callback(err.ReQLDriverError("Connection is closed."))
       end
@@ -467,7 +462,7 @@ do
       end
       if self.rawSocket then
         self:close({
-          noreplyWait = false
+          noreply_wait = false
         })
       end
       self.rawSocket = socket.tcp()
