@@ -37,10 +37,10 @@ function bytes_to_int(str, endian, signed) -- use length of string to determine 
     return n
 end
 
-function int_to_bytes(num)
+function int_to_bytes(num, bytes)
     local res = {}
     local mul = 0
-    for k=4,1,-1 do -- 256 = 2^8 bits per char.
+    for k=bytes,1,-1 do -- 256 = 2^8 bits per char.
         mul = 2 ^ (8 * (k - 1))
         res[k] = math.floor(num / mul)
         num = math.fmod(num, mul)
@@ -297,11 +297,7 @@ do
       return self:_sendQuery(query)
     end,
     _writeQuery = function(self, token, data)
-      local tokenBuf = Buffer(8)
-      tokenBuf.writeUInt32LE(token % 0xFFFFFFFF, 0)
-      tokenBuf.writeUInt32LE(Math.floor(token / 0xFFFFFFFF), 4)
-      self.rawSocket.write(tokenBuf)
-      return self:write(Buffer(data))
+      return self.rawSocket:send(int_to_bytes(token, 8) .. data)
     end,
     write = function(self, chunk)
       local lengthBuffer = Buffer(4)
@@ -466,10 +462,10 @@ do
       if status then
         -- Initialize connection with magic number to validate version
         self.rawSocket:send(
-          int_to_bytes(protoVersion) ..
-          int_to_bytes(self.authKey:len()) ..
+          int_to_bytes(protoVersion, 4) ..
+          int_to_bytes(self.authKey:len(), 4) ..
           self.authKey ..
-          int_to_bytes(protoProtocol)
+          int_to_bytes(protoProtocol, 4)
         )
 
         -- Now we have to wait for a response from the server
