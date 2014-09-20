@@ -134,9 +134,6 @@ do
       end
     end,
     -- Implement IterableResult
-    has_next = function(self)
-      error(err.ReQLDriverError("The `has_next` command has been removed since 1.13. Use `next` instead."))
-    end,
     _next = function(self, cb)
       local fn = function(self, cb)
         self._cb_queue.push(cb)
@@ -314,7 +311,7 @@ do
       self.each = self._each
     end,
     __base = _base_0,
-    __name = "IterableResult"
+    __name = "Cursor"
   }, {
     __index = _base_0,
     __call = function(cls, ...)
@@ -324,191 +321,7 @@ do
     end
   })
   _base_0.__class = _class_0
-  IterableResult = _class_0
-end
-do
-  local _parent_0 = IterableResult
-  local _base_0 = {
-    to_string = function(self)
-      return "[object Cursor]"
-    end
-  }
-  _base_0.__index = _base_0
-  setmetatable(_base_0, _parent_0.__base)
-  local _class_0 = setmetatable({
-    __init = function(self)
-      self._type = proto_response_type.SUCCESS_PARTIAL
-      return _parent_0
-    end,
-    __base = _base_0,
-    __name = "Cursor",
-    __parent = _parent_0
-  }, {
-    __index = function(cls, name)
-      local val = rawget(_base_0, name)
-      if val == nil then
-        return _parent_0[name]
-      else
-        return val
-      end
-    end,
-    __call = function(cls, ...)
-      local _self_0 = setmetatable({}, _base_0)
-      cls.__init(_self_0, ...)
-      return _self_0
-    end
-  })
-  _base_0.__class = _class_0
-  if _parent_0.__inherited then
-    _parent_0.__inherited(_parent_0, _class_0)
-  end
   Cursor = _class_0
 end
-do
-  local _parent_0 = IterableResult
-  local _base_0 = {
-    has_next = function(self)
-      error(err.ReQLDriverError("`has_next` is not available for feeds."))
-    end,
-    to_array = function(self)
-      error(err.ReQLDriverError("`to_array` is not available for feeds."))
-    end,
-    to_string = function(self)
-      return "[object Feed]"
-    end
-  }
-  _base_0.__index = _base_0
-  setmetatable(_base_0, _parent_0.__base)
-  local _class_0 = setmetatable({
-    __init = function(self)
-      self._type = proto_response_type.SUCCESS_FEED
-      return _parent_0
-    end,
-    __base = _base_0,
-    __name = "Feed",
-    __parent = _parent_0
-  }, {
-    __index = function(cls, name)
-      local val = rawget(_base_0, name)
-      if val == nil then
-        return _parent_0[name]
-      else
-        return val
-      end
-    end,
-    __call = function(cls, ...)
-      local _self_0 = setmetatable({}, _base_0)
-      cls.__init(_self_0, ...)
-      return _self_0
-    end
-  })
-  _base_0.__class = _class_0
-  if _parent_0.__inherited then
-    _parent_0.__inherited(_parent_0, _class_0)
-  end
-  Feed = _class_0
-end
 
-
--- Used to wrap array results so they support the same iterable result
--- API as cursors.
-
-do
-  local _parent_0 = IterableResult
-  local _base_0 = {
-    -- We store @__index as soon as the user starts using the cursor interface
-    _has_next = function(self)
-      if not self.__index then
-        self.__index = 0
-      end
-      return self.__index < #self
-    end,
-    _next = function(self, cb)
-      local fn = function(self, cb)
-        if self:_has_next() == true then
-          self = self
-          if self.__index % self.stack_size == self.stack_size - 1 then
-            return set_immediate(function()
-              cb(nil, self[self.__index])
-              self.__index = self.__index + 1
-            end)
-          else
-            cb(nil, self[self.__index])
-            self.__index = self.__index + 1
-          end
-        else
-          return cb(err.ReQLDriverError("No more rows in the cursor."))
-        end
-      end
-      return fn(cb)
-    end,
-    to_array = function(self, cb)
-      local fn = function(self, cb)
-        -- IterableResult.to_array would create a copy
-        if self.__index then
-          return cb(nil, self.slice(self.__index, #self))
-        else
-          return cb(nil, self)
-        end
-      end
-      return fn(cb)
-    end,
-    close = function(self)
-      return self
-    end,
-    make_iterable = function(self, response)
-      response.__proto__ = { }
-      for name, method in ipairs(ArrayResult.prototype) do
-        if name ~= 'constructor' then
-          if name == '_each' then
-            response.__proto__['each'] = method
-            response.__proto__['_each'] = method
-          else
-            if name == '_next' then
-              response.__proto__['next'] = method
-              response.__proto__['_next'] = method
-            else
-              response.__proto__[name] = method
-            end
-          end
-        end
-      end
-      response.__proto__.__proto__ = { }
-      return response
-    end
-  }
-  _base_0.__index = _base_0
-  setmetatable(_base_0, _parent_0.__base)
-  local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
-    __base = _base_0,
-    __name = "ArrayResult",
-    __parent = _parent_0
-  }, {
-    __index = function(cls, name)
-      local val = rawget(_base_0, name)
-      if val == nil then
-        return _parent_0[name]
-      else
-        return val
-      end
-    end,
-    __call = function(cls, ...)
-      local _self_0 = setmetatable({}, _base_0)
-      cls.__init(_self_0, ...)
-      return _self_0
-    end
-  })
-  _base_0.__class = _class_0
-  if _parent_0.__inherited then
-    _parent_0.__inherited(_parent_0, _class_0)
-  end
-  ArrayResult = _class_0
-end
-return {
-  Cursor = Cursor,
-  Feed = Feed,
-  make_iterable = ArrayResult.make_iterable
-}
+return Cursor
