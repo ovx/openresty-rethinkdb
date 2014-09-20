@@ -393,25 +393,17 @@ do
       end
     end,
     _continueQuery = function(self, token)
-      local query = {
-        type = protoQueryType.CONTINUE,
-        token = token
-      }
-      return self:_sendQuery(query)
+      return self:_writeQuery(token, to_json(protoQueryType.CONTINUE))
     end,
     _endQuery = function(self, token)
-      local query = {
-        type = protoQueryType.STOP,
-        token = token
-      }
-      return self:_sendQuery(query)
+      return self:_writeQuery(token, to_json(protoQueryType.STOP))
     end,
     _sendQuery = function(self, query)
       -- Serialize query to JSON
       local data = {query.type}
       if query.query then
         data[2] = query.query
-        if query.global_optargs and #query.global_optargs > 0 then
+        if #query.global_optargs > 0 then
           data[3] = query.global_optargs
         end
       end
