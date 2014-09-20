@@ -4,3 +4,6 @@ __pycache__/
 
 # Distribution / packaging
 build
+
+# Testing
+rethinkdb_data/
