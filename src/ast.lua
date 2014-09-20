@@ -790,6 +790,7 @@ do
         arg[i] = rethinkdb.expr(a)
       end
       self.args = arg
+      if optargs == nil then optargs = {} end
       self.optargs = optargs
       return self
     end,
@@ -829,6 +830,7 @@ do
       for i, a in ipairs(arg) do
         self.args[i] = rethinkdb.expr(funcWrap(a))
       end
+      if optargs == nil then optargs = {} end
       self.optargs = optargs
       return self
     end,
