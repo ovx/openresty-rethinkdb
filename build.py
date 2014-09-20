@@ -46,7 +46,7 @@ def build(args):
 def install(args):
     with subprocess.Popen(['luarocks', 'make']) as io:
         if io.wait():
-            print(repr(cmd), "returned:", io.returncode)
+            print('luarocks', 'make', "returned:", io.returncode)
             exit(io.returncode)
 
 
