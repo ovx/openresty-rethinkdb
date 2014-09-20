@@ -124,17 +124,14 @@ do
       if not net.isConnection(connection) then
         callback(err.ReQLDriverError("First argument to `run` must be an open connection."))
       end
-      if options.noreply == true or type(callback) == 'function' then
-        local status
-        status, err = pcall(connection:_start(self, callback, options))
-        if not (status) then
-          -- It was decided that, if we can, we prefer to invoke the callback
-          -- with any errors rather than throw them as normal exceptions.
-          -- Thus we catch errors here and invoke the callback instead of
-          -- letting the error bubble up.
-          if type(callback) == 'function' then
-            return callback(err)
-          end
+      local status, err = pcall(connection:_start(self, callback, options))
+      if not (status) then
+        -- It was decided that, if we can, we prefer to invoke the callback
+        -- with any errors rather than throw them as normal exceptions.
+        -- Thus we catch errors here and invoke the callback instead of
+        -- letting the error bubble up.
+        if type(callback) == 'function' then
+          return callback(err)
         end
       end
     end,
