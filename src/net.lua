@@ -16,21 +16,11 @@ local is_array = err.is_array
 local Connection
 local bytes_to_int, int_to_bytes, to_json, from_json
 
-function bytes_to_int(str, endian, signed) -- use length of string to determine 8,16,32,64 bits
+function bytes_to_int(str)
     local t = {str:byte(1,-1)}
-    if endian == "big" then --reverse bytes
-        local tt = {}
-        for k=1,#t do
-            tt[#t-k+1] = t[k]
-        end
-        t = tt
-    end
     local n = 0
     for k=1,#t do
         n = n + t[k] * 2 ^ ((k - 1) * 8)
-    end
-    if signed then
-        n = (n > 2 ^ (#t * 8 - 1) - 1) and (n - 2 ^ (#t * 8)) or n -- if last bit set, negative.
     end
     return n
 end
@@ -38,12 +28,11 @@ end
 function int_to_bytes(num, bytes)
     local res = {}
     local mul = 0
-    for k=bytes,1,-1 do -- 256 = 2^8 bits per char.
+    for k=bytes,1,-1 do
         mul = 2 ^ (8 * (k - 1))
         res[k] = math.floor(num / mul)
         num = math.fmod(num, mul)
     end
-    assert(num == 0)
     return string.char(unpack(res))
 end
 
