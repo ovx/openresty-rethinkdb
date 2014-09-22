@@ -10,10 +10,10 @@ do
       if response.t == self._type or response.t == proto_response_type.SUCCESS_SEQUENCE then
         -- We push a "ok" response only if it's not empty
         if #response.r > 0 then
-          self._responses.push(response)
+          table.insert(self._responses, response)
         end
       else
-        self._responses.push(response)
+        table.insert(self._responses, response)
       end
       self._outstanding_requests = self._outstanding_requests - 1
       if response.t ~= self._type then
