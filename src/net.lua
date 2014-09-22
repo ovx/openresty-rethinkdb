@@ -1,6 +1,6 @@
 local socket = require('socket')
 local err = require('./errors')
-local cursors = require('./cursor')
+local Cursor = require('./cursor')
 local protodef = require('./proto')
 local proto_version = protodef.Version.V0_3
 local proto_protocol = protodef.Protocol.JSON
@@ -146,10 +146,7 @@ do
                 cb(err.ReQLRuntimeError(response, root))
                 return self:_del_query(token)
               elseif proto_response_type.SUCCESS_ATOM == _exp_0 then
-                response = mk_atom(response, opts)
-                if is_array(response) then
-                  response = cursors.make_iterable(response)
-                end
+                response = {mk_atom(response, opts)}
                 if profile then
                   response = {
                     profile = profile,
@@ -159,7 +156,7 @@ do
                 cb(nil, response)
                 return self:_del_query(token)
               elseif proto_response_type.SUCCESS_PARTIAL == _exp_0 then
-                cursor = cursors.Cursor(self, token, opts, root)
+                cursor = Cursor(self, token, opts, root)
                 self.outstanding_callbacks[token].cursor = cursor
                 if profile then
                   return cb(nil, {
@@ -170,7 +167,7 @@ do
                   return cb(nil, cursor._add_response(response))
                 end
               elseif proto_response_type.SUCCESS_SEQUENCE == _exp_0 then
-                cursor = cursors.Cursor(self, token, opts, root)
+                cursor = Cursor(self, token, opts, root)
                 self:_del_query(token)
                 if profile then
                   return cb(nil, {
@@ -181,7 +178,7 @@ do
                   return cb(nil, cursor._add_response(response))
                 end
               elseif proto_response_type.SUCCESS_FEED == _exp_0 then
-                feed = cursors.Feed(self, token, opts, root)
+                feed = Cursor(self, token, opts, root)
                 self.outstanding_callbacks[token].feed = feed
                 if profile then
                   return cb(nil, {
@@ -381,7 +378,13 @@ do
       do
         local callback = {
           root = term,
-          opts = opts
+          opts = opts,
+          cursor = Cursor(
+            self,
+            token,
+            query.global_optargs,
+            term
+          )
         }
         if not opts.noreply then callback.cb = cb end
         self.outstanding_callbacks[token] = callback
@@ -408,19 +411,14 @@ do
       end
       self:_write_query(query.token, to_json(data))
       local callback = self.outstanding_callbacks[query.token]
+      local cursor = callback.cursor
       if not callback.opts.noreply then
         local cb = callback.cb
         if type(cb) == 'function' then
-          local cursor = cursors.Cursor(
-            self,
-            query.token,
-            query.opts,
-            query.root
-          )
           cb(cursor)
-          cursor:close()
         end
       end
+      cursor:close()
     end
   }
   _base_0.__index = _base_0
