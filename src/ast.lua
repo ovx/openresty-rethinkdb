@@ -113,7 +113,11 @@ do
       if not net.is_connection(connection) then
         callback(err.ReQLDriverError("First argument to `run` must be an open connection."))
       end
-      local status, err = pcall(connection:_start(self, callback, options))
+      local status, err = pcall(
+        connection._start,
+        connection,
+        self, callback, options
+      )
       if not (status) then
         -- It was decided that, if we can, we prefer to invoke the callback
         -- with any errors rather than throw them as normal exceptions.
