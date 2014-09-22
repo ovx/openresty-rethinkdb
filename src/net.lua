@@ -51,16 +51,22 @@ function to_json(obj)
     return tostring(obj)
   end
   if is_array(obj) then
-    local res = '[' .. to_json(obj[1])
-    for k=2, #obj do
-      res = res .. ','  .. to_json(obj[k])
+    local res = '['
+    local first = true
+    for _, v in ipairs(obj) do
+      if first then
+        res = res .. to_json(v)
+        first = false
+      else
+        res = res .. ',' .. to_json(v)
+      end
     end
     return res .. ']'
   end
   if type(obj) == 'tree' then
     local res = '{'
     local first = true
-    for k, v in ipairs(obj) do
+    for k, v in pairs(obj) do
       if first then
         res = res .. k .. ':' .. to_json(obj[k])
         first = false
