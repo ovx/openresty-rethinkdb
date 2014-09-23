@@ -369,24 +369,26 @@ do
         query.global_optargs['array_limit'] = r.expr(opts.array_limit):build()
       end
 
+      local cursor = Cursor(self, token, query.global_optargs, term)
+
       -- Save callback
       do
         local callback = {
           root = term,
           opts = opts,
-          cursor = Cursor(
-            self,
-            token,
-            query.global_optargs,
-            term
-          )
+          cursor = cursor
         }
         if not opts.noreply then callback.cb = cb end
         self.outstanding_callbacks[token] = callback
       end
       self:_send_query(query)
-      if opts.noreply and type(cb) == 'function' then
-        return cb(nil)
+      if type(cb) == 'function' then
+        if opts.noreply then
+          return cb(nil)
+        end
+        local res = cb(nil, cursor)
+        cursor:close()
+        return res
       end
     end,
     _continue_query = function(self, token)
@@ -405,15 +407,6 @@ do
         end
       end
       self:_write_query(query.token, to_json(data))
-      local callback = self.outstanding_callbacks[query.token]
-      local cursor = callback.cursor
-      if not callback.opts.noreply then
-        local cb = callback.cb
-        if type(cb) == 'function' then
-          cb(cursor)
-        end
-      end
-      cursor:close()
     end
   }
   _base_0.__index = _base_0
