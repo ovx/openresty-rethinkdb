@@ -351,13 +351,13 @@ do
         query.global_optargs['db'] = r.db(self.db):build()
       end
       if opts.use_outdated then
-        query.global_optargs['use_outdated'] = r.expr(not not opts.use_outdated):build()
+        query.global_optargs['use_outdated'] = r.expr(true):build()
       end
       if opts.noreply then
-        query.global_optargs['noreply'] = r.expr(not not opts.noreply):build()
+        query.global_optargs['noreply'] = r.expr(true):build()
       end
       if opts.profile then
-        query.global_optargs['profile'] = r.expr(not not opts.profile):build()
+        query.global_optargs['profile'] = r.expr(true):build()
       end
       if opts.durability then
         query.global_optargs['durability'] = r.expr(opts.durability):build()
