@@ -400,7 +400,7 @@ do
         -- Now we have to wait for a response from the server
         -- acknowledging the connection
         while 1 do
-          buf, e, partial = self.raw_socket:receive(8)
+          buf, err, partial = self.raw_socket:receive(8)
           if buf or err == 'timeout' then
             self.buffer = self.buffer .. (buf or partial)
           else
