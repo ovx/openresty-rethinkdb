@@ -301,31 +301,13 @@ do
 
       -- Construct query
       local query = { }
-      query.global_optargs = { }
+      query.global_optargs = opts
       query.type = proto_query_type.START
       query.query = term:build()
       query.token = token
       -- Set global options
       if self.db then
-        query.global_optargs['db'] = r.db(self.db):build()
-      end
-      if opts.use_outdated then
-        query.global_optargs['use_outdated'] = r.expr(true):build()
-      end
-      if opts.noreply then
-        query.global_optargs['noreply'] = r.expr(true):build()
-      end
-      if opts.profile then
-        query.global_optargs['profile'] = r.expr(true):build()
-      end
-      if opts.durability then
-        query.global_optargs['durability'] = r.expr(opts.durability):build()
-      end
-      if opts.batch_conf then
-        query.global_optargs['batch_conf'] = r.expr(opts.batch_conf):build()
-      end
-      if opts.array_limit then
-        query.global_optargs['array_limit'] = r.expr(opts.array_limit):build()
+        query.global_optargs.db = r.db(self.db):build()
       end
 
       local cursor = Cursor(self, token, query.global_optargs, term)
