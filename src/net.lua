@@ -1,4 +1,6 @@
 local socket = require('socket')
+local json = require('json')
+
 local err = require('./errors')
 local Cursor = require('./cursor')
 local protodef = require('./proto')
@@ -14,7 +16,7 @@ local is_instance = err.is_instance
 local is_array = err.is_array
 
 local Connection
-local bytes_to_int, int_to_bytes, to_json, from_json
+local bytes_to_int, int_to_bytes
 
 function bytes_to_int(str)
     local t = {str:byte(1,-1)}
@@ -34,49 +36,6 @@ function int_to_bytes(num, bytes)
         num = math.fmod(num, mul)
     end
     return string.char(unpack(res))
-end
-
-function to_json(obj)
-  if obj == nil then
-    return 'null'
-  end
-  if type(obj) == 'boolean' then
-    if obj then return 'true' end
-    return 'false'
-  end
-  if type(obj) == 'string' then
-    return obj
-  end
-  if type(obj) == 'number' then
-    return tostring(obj)
-  end
-  if is_array(obj) then
-    local res = '['
-    local first = true
-    for _, v in ipairs(obj) do
-      if first then
-        res = res .. to_json(v)
-        first = false
-      else
-        res = res .. ',' .. to_json(v)
-      end
-    end
-    return res .. ']'
-  end
-  if type(obj) == 'tree' then
-    local res = '{'
-    local first = true
-    for k, v in pairs(obj) do
-      if first then
-        res = res .. k .. ':' .. to_json(obj[k])
-        first = false
-      else
-        res = res .. ',' .. k .. ':' .. to_json(obj[k])
-      end
-    end
-    return res .. '}'
-  end
-  return '{}'
 end
 
 do
@@ -392,10 +351,10 @@ do
       end
     end,
     _continue_query = function(self, token)
-      return self:_write_query(token, to_json(proto_query_type.CONTINUE))
+      return self:_write_query(token, json.encode(proto_query_type.CONTINUE))
     end,
     _end_query = function(self, token)
-      return self:_write_query(token, to_json(proto_query_type.STOP))
+      return self:_write_query(token, json.encode(proto_query_type.STOP))
     end,
     _send_query = function(self, query)
       -- Serialize query to JSON
@@ -406,7 +365,7 @@ do
           data[3] = query.global_optargs
         end
       end
-      self:_write_query(query.token, to_json(data))
+      self:_write_query(query.token, json.encode(data))
     end
   }
   _base_0.__index = _base_0

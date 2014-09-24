@@ -12,6 +12,7 @@ description = {
 dependencies = {
   'lua ~> 5.1',
   'luasocket >= 2',
+  'luajson ~> 1.3',
 }
 build = {
   type = 'builtin',
