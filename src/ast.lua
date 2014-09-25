@@ -6190,7 +6190,7 @@ function rethinkdb.expr(val, nesting_depth)
   if type(nesting_depth) ~= "number" or nesting_depth == (1/0) * 0 or nesting_depth == 1/0 or nesting_depth == -1/0 then
     error(errors.ReQLDriverError("Second argument to `r.expr` must be a number or nil."))
   end
-  if TermBase.__class == val then
+  if is_instance(TermBase, val) then
     return val
   end
   if type(val) == "function" then
