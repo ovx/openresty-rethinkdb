@@ -6190,19 +6190,19 @@ function rethinkdb.expr(val, nesting_depth)
   if type(nesting_depth) ~= "number" or nesting_depth == (1/0) * 0 or nesting_depth == 1/0 or nesting_depth == -1/0 then
     error(errors.ReQLDriverError("Second argument to `r.expr` must be a number or nil."))
   end
-  if is_instance(TermBase, val) then
-    return val
-  end
   if type(val) == "function" then
     return Func({ }, val)
   end
-  if is_array(val) then
-    for i, v in ipairs(val) do
-      val[i] = rethinkdb.expr(v, nesting_depth - 1)
+  if type(val) == 'table' then
+    if type(val.build) == 'function' then
+      return val
     end
-    return MakeArray({ }, unpack(val))
-  end
-  if type(val) == 'tree' then
+    if is_array(val) then
+      for i, v in ipairs(val) do
+        val[i] = rethinkdb.expr(v, nesting_depth - 1)
+      end
+      return MakeArray({ }, unpack(val))
+    end
     return MakeObject(val, nesting_depth)
   end
   return DatumTerm(val)
