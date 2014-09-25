@@ -403,7 +403,7 @@ do
         if perhaps_opt_dict and (type(perhaps_opt_dict) == 'table') and not (is_instance(TermBase, perhaps_opt_dict)) then
           opts = perhaps_opt_dict
           fields[fields.n] = nil
-          fields.n -= 1
+          fields.n = fields.n - 1
         end
       end
       for i=1, fields.n do
@@ -421,7 +421,7 @@ do
       if perhaps_opt_dict and (type(perhaps_opt_dict) == 'table') and not is_instance(TermBase, perhaps_opt_dict) then
         opts = perhaps_opt_dict
         attrs[attrs.n] = nil
-        attrs.n -= 1
+        attrs.n = attrs.n - 1
       end
       for i, attr in ipairs(attrs) do
         if not (is_instance(Asc, attr) or is_instance(Desc, attr)) then
