@@ -668,9 +668,9 @@ do
     compose = function(self)
       local _exp_0 = type(self.data)
       if 'string' == _exp_0 then
-        return '"' + self.data + '"'
+        return '"' .. self.data .. '"'
       else
-        return '' + self.data
+        return '' .. self.data
       end
     end,
     build = function(self)
