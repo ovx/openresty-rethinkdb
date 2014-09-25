@@ -6187,7 +6187,7 @@ function rethinkdb.expr(val, nesting_depth)
   if nesting_depth <= 0 then
     error(errors.ReQLDriverError("Nesting depth limit exceeded"))
   end
-  if type(nesting_depth) ~= "number" or nesting_depth == (1/0) * 0 or nesting_depth == 1/0 or nesting_depth == -1/0 then
+  if type(nesting_depth) ~= "number" then
     error(errors.ReQLDriverError("Second argument to `r.expr` must be a number or nil."))
   end
   if type(val) == "function" then
