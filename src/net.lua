@@ -75,10 +75,7 @@ do
     end,
     _del_query = function(self, token)
       -- This query is done, delete this cursor
-      delete(self.outstanding_callbacks[token])
-      if #self.outstanding_callbacks < 1 and not self.open then
-        return self:cancel()
-      end
+      self.outstanding_callbacks[token] = nil
     end,
     _process_response = function(self, response, token)
       local profile = response.p
