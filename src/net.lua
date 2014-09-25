@@ -46,12 +46,12 @@ do
     _get_response = function(self, reqest_token)
       local response_length = 0
       local token = 0
+      local buf, err, partial
       -- Buffer data, execute return results if need be
       while true do
-        buf, err = self.raw_socket:receive(1024)
-        print(buf)
-        print(err)
-        if err and err ~= 'timeout' then
+        buf, err, partial = self.raw_socket:receive(1024)
+        buf = buf or partial
+        if (not buf) and err then
           return self.outstanding_callbacks[token].callback(
             err.ReQLDriverError()
           )
@@ -411,8 +411,9 @@ do
         -- acknowledging the connection
         while 1 do
           buf, err, partial = self.raw_socket:receive(8)
-          if buf or err == 'timeout' then
-            self.buffer = self.buffer .. (buf or partial)
+          buf = buf or partial
+          if buf then
+            self.buffer = self.buffer .. buf
           else
             return callback(err.ReQLDriverError("Could not connect to " .. tostring(self.host) .. ":" .. tostring(self.port) .. ".\n" .. tostring(e)))
           end
