@@ -53,7 +53,7 @@ function func_wrap(val)
         return true
       end
     end
-    for k, v in ipairs(node.optargs) do
+    for _, v in pairs(node.optargs) do
       if ivar_scan(v) then
         return true
       end
