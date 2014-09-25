@@ -52,7 +52,7 @@ do
         buf, err, partial = self.raw_socket:receive(1024)
         buf = buf or partial
         if (not buf) and err then
-          return self.outstanding_callbacks[token].callback(
+          return self.outstanding_callbacks[token].cb(
             errors.ReQLDriverError()
           )
         end
