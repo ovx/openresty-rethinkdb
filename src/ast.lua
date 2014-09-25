@@ -41,7 +41,7 @@ function func_wrap(val)
     return val
   end
   val = rethinkdb.expr(val)
-  local ivar_scan = function(node)
+  function ivar_scan(node)
     if not is_instance(TermBase, node) then
       return false
     end
