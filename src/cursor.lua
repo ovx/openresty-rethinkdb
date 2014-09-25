@@ -33,9 +33,7 @@ do
       end
       self._cont_flag = false
       if self._close_asap == false then
-        self:_prompt_next()
-      else
-        self:close(self._close_cb)
+        self:_prompt_cont()
       end
     end,
     _prompt_cont = function(self)
@@ -81,6 +79,7 @@ do
     end,
     close = function(self, cb)
       if not self._end_flag then
+        self._close_asap = true
         self._conn:_end_query(self._token)
       end
       if cb then return cb() end
