@@ -194,22 +194,22 @@ do
       callback = wrapped_cb
 
       if callback then
-        local opts = opts_or_callback
+        opts = opts_or_callback
         if not (type(opts) == 'tree') then
           error(err.ReQLDriverError("First argument to two-argument `close` must be an object."))
         end
-        local cb = callback
+        cb = callback
       else
         if type(opts_or_callback) == 'tree' then
-          local opts = opts_or_callback
-          local cb = nil
+          opts = opts_or_callback
+          cb = nil
         else
           if type(opts_or_callback) == 'function' then
-            local opts = { }
-            local cb = opts_or_callback
+            opts = { }
+            cb = opts_or_callback
           else
-            local opts = opts_or_callback
-            local cb = nil
+            opts = opts_or_callback
+            cb = nil
           end
         end
       end
