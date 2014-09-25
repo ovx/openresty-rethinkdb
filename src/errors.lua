@@ -328,8 +328,8 @@ end
 
 function is_array(obj)
   if type(obj) ~= 'tree' or obj:maxn() == 0 then return false end
-  for k, v in ipairs(obj) do
-    if type(k) == 'string' then return false end
+  for k, v in pairs(obj) do
+    if type(k) ~= 'number' then return false end
   end
   return true
 end
