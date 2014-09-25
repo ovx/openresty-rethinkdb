@@ -1,7 +1,7 @@
 local socket = require('socket')
 local json = require('json')
 
-local err = require('./errors')
+local errors = require('./errors')
 local Cursor = require('./cursor')
 local protodef = require('./proto')
 local proto_version = protodef.Version.V0_3
@@ -10,9 +10,9 @@ local proto_query_type = protodef.QueryType
 local proto_response_type = protodef.ResponseType
 
 -- Import some names to this namespace for convienience
-local mk_atom = err.mk_atom
-local is_instance = err.is_instance
-local is_array = err.is_array
+local mk_atom = errors.mk_atom
+local is_instance = errors.is_instance
+local is_array = errors.is_array
 
 local Connection
 local bytes_to_int, int_to_bytes
@@ -53,7 +53,7 @@ do
         buf = buf or partial
         if (not buf) and err then
           return self.outstanding_callbacks[token].callback(
-            err.ReQLDriverError()
+            errors.ReQLDriverError()
           )
         end
         self.buffer = self.buffer .. buf
@@ -163,7 +163,7 @@ do
         end
       else
         -- Unexpected token
-        return self:emit('error', err.ReQLDriverError("Unexpected token " .. tostring(token) .. "."))
+        return self:emit('error', errors.ReQLDriverError("Unexpected token " .. tostring(token) .. "."))
       end
     end,
     close = function(self, opts_or_callback, callback)
@@ -196,7 +196,7 @@ do
       if callback then
         opts = opts_or_callback
         if not (type(opts) == 'tree') then
-          error(err.ReQLDriverError("First argument to two-argument `close` must be an object."))
+          error(errors.ReQLDriverError("First argument to two-argument `close` must be an object."))
         end
         cb = callback
       else
@@ -234,7 +234,7 @@ do
         cb(err)
       end
       if not (self.open) then
-        return callback(err.ReQLDriverError("Connection is closed."))
+        return callback(errors.ReQLDriverError("Connection is closed."))
       end
 
       -- Assign token
@@ -302,7 +302,7 @@ do
     end,
     _start = function(self, term, cb, opts)
       if not (self.open) then
-        error(err.ReQLDriverError("Connection is closed."))
+        cb(errors.ReQLDriverError("Connection is closed."))
       end
 
       -- Assign token
@@ -384,10 +384,10 @@ do
       self._events = self._events or { }
       local err_callback = function(self, e)
         self:remove_listener('connect', con_callback)
-        if is_instance(err.ReQLDriverError, e) then
+        if is_instance(errors.ReQLDriverError, e) then
           return callback(e)
         else
-          return callback(err.ReQLDriverError("Could not connect to " .. tostring(self.host) .. ":" .. tostring(self.port) .. ".\n" .. tostring(e.message)))
+          return callback(errors.ReQLDriverError("Could not connect to " .. tostring(self.host) .. ":" .. tostring(self.port) .. ".\n" .. tostring(e.message)))
         end
       end
       if self.raw_socket then
@@ -415,7 +415,7 @@ do
           if buf then
             self.buffer = self.buffer .. buf
           else
-            return callback(err.ReQLDriverError("Could not connect to " .. tostring(self.host) .. ":" .. tostring(self.port) .. ".\n" .. tostring(e)))
+            return callback(errors.ReQLDriverError("Could not connect to " .. tostring(self.host) .. ":" .. tostring(self.port) .. ".\n" .. tostring(e)))
           end
           i, j = buf:find("\0")
           if i then
@@ -427,7 +427,7 @@ do
               callback(nil, self)
               self:close({noreply_wait = false})
             else
-              return callback(err.ReQLDriverError("Server dropped connection with message: \"" + status_str + "\""))
+              return callback(errors.ReQLDriverError("Server dropped connection with message: \"" + status_str + "\""))
             end
           end
         end

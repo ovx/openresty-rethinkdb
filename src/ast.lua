@@ -1,9 +1,9 @@
-local err = require('./errors')
+local errors = require('./errors')
 local net = require('./net')
 local proto_term_type = require('./proto').TermType
 
-local is_instance = err.is_instance
-local is_array = err.is_array
+local is_instance = errors.is_instance
+local is_array = errors.is_array
 
 -- rethinkdb is both the main export object for the module
 -- and a function that shortcuts `r.expr`.
@@ -100,7 +100,7 @@ do
           callback = options
           options = { }
         else
-          options(err.ReQLDriverError("Second argument to `run` cannot be a function if a third argument is provided."))
+          options(errors.ReQLDriverError("Second argument to `run` cannot be a function if a third argument is provided."))
           return
         end
       else
@@ -111,7 +111,7 @@ do
       end
 
       if not net.is_connection(connection) then
-        callback(err.ReQLDriverError("First argument to `run` must be an open connection."))
+        callback(errors.ReQLDriverError("First argument to `run` must be an open connection."))
       end
       local status, err = pcall(
         connection._start,
@@ -961,7 +961,7 @@ do
       self.optargs = { }
       for key, val in ipairs(obj) do
         if not (val) then
-          error(err.ReQLDriverError("Object field '" .. tostring(key) .. "' may not be nil"))
+          error(errors.ReQLDriverError("Object field '" .. tostring(key) .. "' may not be nil"))
         end
         self.optargs[key] = rethinkdb.expr(val, nesting_depth - 1)
       end
@@ -4881,7 +4881,7 @@ do
       end
       local body = func(unpack(args))
       if not body then
-        error(err.ReQLDriverError("Anonymous function returned `nil`. Did you forget a `return`?"))
+        error(errors.ReQLDriverError("Anonymous function returned `nil`. Did you forget a `return`?"))
       end
       local args_arr = MakeArray({ }, unpack(arg_nums))
       return _parent_0.__init(self, optargs, args_arr, body)
@@ -6182,13 +6182,13 @@ function rethinkdb.expr(val, nesting_depth)
     nesting_depth = 20
   end
   if not (val) then
-    error(err.ReQLDriverError("Cannot wrap nil with r.expr()."))
+    error(errors.ReQLDriverError("Cannot wrap nil with r.expr()."))
   end
   if nesting_depth <= 0 then
-    error(err.ReQLDriverError("Nesting depth limit exceeded"))
+    error(errors.ReQLDriverError("Nesting depth limit exceeded"))
   end
   if type(nesting_depth) ~= "number" or nesting_depth == (1/0) * 0 or nesting_depth == 1/0 or nesting_depth == -1/0 then
-    error(err.ReQLDriverError("Second argument to `r.expr` must be a number or nil."))
+    error(errors.ReQLDriverError("Second argument to `r.expr` must be a number or nil."))
   end
   if TermBase.__class == val then
     return val

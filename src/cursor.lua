@@ -1,4 +1,4 @@
-local err = require('./errors')
+local errors = require('./errors')
 local proto_response_type = require('./proto').ResponseType
 
 local Cursor
@@ -21,11 +21,11 @@ do
         if self._close_cb then
           local _exp_0 = response.t
           if proto_response_type.COMPILE_ERROR == _exp_0 then
-            self._close_cb(err.ReQLRuntimeError(response, self._root))
+            self._close_cb(errors.ReQLRuntimeError(response, self._root))
           elseif proto_response_type.CLIENT_ERROR == _exp_0 then
-            self._close_cb(err.ReQLRuntimeError(response, self._root))
+            self._close_cb(errors.ReQLRuntimeError(response, self._root))
           elseif proto_response_type.RUNTIME_ERROR == _exp_0 then
-            self._close_cb(err.ReQLRuntimeError(response, self._root))
+            self._close_cb(errors.ReQLRuntimeError(response, self._root))
           else
             self._close_cb()
           end
@@ -53,7 +53,7 @@ do
       if not self._responses[1] then
         -- We prefetch things here, set `is 0` to avoid prefectch
         if self._end_flag == true then
-          return cb(err.ReQLDriverError("No more rows in the cursor."))
+          return cb(errors.ReQLDriverError("No more rows in the cursor."))
         end
         self:_prompt_cont()
       end
@@ -61,7 +61,7 @@ do
       -- Error responses are not discarded, and the error will be sent to all future callbacks
       local t = response.t
       if proto_response_type.SUCCESS_PARTIAL == t or proto_response_type.SUCCESS_FEED == t or proto_response_type.SUCCESS_SEQUENCE == t then
-        local row = err.recursively_convert_pseudotype(response.r[self._response_index], self._opts)
+        local row = errors.recursively_convert_pseudotype(response.r[self._response_index], self._opts)
         self._response_index = self._response_index + 1
 
         -- If we're done with this response, discard it
@@ -71,13 +71,13 @@ do
         end
         return cb(nil, row)
       elseif proto_response_type.COMPILE_ERROR == t then
-        return cb(err.ReQLCompileError(response, self._root))
+        return cb(errors.ReQLCompileError(response, self._root))
       elseif proto_response_type.CLIENT_ERROR == t then
-        return cb(err.ReQLClientError(response, self._root))
+        return cb(errors.ReQLClientError(response, self._root))
       elseif proto_response_type.RUNTIME_ERROR == t then
-        return cb(err.ReQLRuntimeError(response, self._root))
+        return cb(errors.ReQLRuntimeError(response, self._root))
       end
-      return cb(err.ReQLDriverError("Unknown response type for cursor"))
+      return cb(errors.ReQLDriverError("Unknown response type for cursor"))
     end,
     close = function(self, cb)
       if not self._end_flag then
@@ -87,14 +87,14 @@ do
     end,
     each = function(self, cb, on_finished)
       if type(cb) ~= 'function' then
-        error(err.ReQLDriverError("First argument to each must be a function."))
+        error(errors.ReQLDriverError("First argument to each must be a function."))
       end
       if on_finished and type(on_finished) ~= 'function' then
-        error(err.ReQLDriverError("Optional second argument to each must be a function."))
+        error(errors.ReQLDriverError("Optional second argument to each must be a function."))
       end
       function next_cb(err, data)
         if err then
-          if err.message ~= 'No more rows in the cursor.' then
+          if errors.message ~= 'No more rows in the cursor.' then
             return cb(err)
           end
           if on_finished then
@@ -110,7 +110,7 @@ do
     to_array = function(self, cb)
       if not self._type then self:_prompt_cont() end
       if self._type == proto_response_type.SUCCESS_FEED then
-        return cb(err.ReQLDriverError("`to_array` is not available for feeds."))
+        return cb(errors.ReQLDriverError("`to_array` is not available for feeds."))
       end
       local arr = {}
       return self:each(
