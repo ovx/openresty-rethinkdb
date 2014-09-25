@@ -22,13 +22,13 @@ do
         if self._close_cb then
           local _exp_0 = response.t
           if proto_response_type.COMPILE_ERROR == _exp_0 then
-            self:_close_cb(err.ReQLRuntimeError(response, self._root))
+            self._close_cb(err.ReQLRuntimeError(response, self._root))
           elseif proto_response_type.CLIENT_ERROR == _exp_0 then
-            self:_close_cb(err.ReQLRuntimeError(response, self._root))
+            self._close_cb(err.ReQLRuntimeError(response, self._root))
           elseif proto_response_type.RUNTIME_ERROR == _exp_0 then
-            self:_close_cb(err.ReQLRuntimeError(response, self._root))
+            self._close_cb(err.ReQLRuntimeError(response, self._root))
           else
-            self:_close_cb()
+            self._close_cb()
           end
         end
       end
@@ -130,7 +130,7 @@ do
       if not ((self._cont_flag or self._end_flag)) then
         self._cont_flag = true
         self._outstanding_requests = self._outstanding_requests + 1
-        return self._conn._continue_query(self._token)
+        self._conn:_continue_query(self._token)
       end
     end,
     -- Implement IterableResult
