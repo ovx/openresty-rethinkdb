@@ -6196,40 +6196,14 @@ function rethinkdb.expr(val, nesting_depth)
   if type(val) == "function" then
     return Func({ }, val)
   end
-  if nil then
-    return ISO8601({ }, val.to_iso_string())
-  end
-  if nil then
-    return Binary(val)
-  end
-  if type(val) == "tree" then
-    local t = nil
-    for i, v in ipairs(val) do
-      if t == "dict" and type(i) == "number" then
-        error("")
-      end
-      if t == "array" and type(i) == "string" then
-        error("")
-      end
-      if not t then
-        if type(i) == "number" then
-          t = "array"
-        else
-          if type(i) == "string" then
-            t = "dict"
-          else
-            error("")
-          end
-        end
-      end
-    end
-    if t == "dict" then
-      return MakeObject(val, nesting_depth)
-    end
+  if is_array(val) then
     for i, v in ipairs(val) do
       val[i] = rethinkdb.expr(v, nesting_depth - 1)
     end
     return MakeArray({ }, unpack(val))
+  end
+  if type(val) == 'tree' then
+    return MakeObject(val, nesting_depth)
   end
   return DatumTerm(val)
 end
