@@ -1,3 +1,4 @@
+"""
 ###
 # Tests the driver cursor API
 ###
@@ -44,3 +45,4 @@ if __name__ == '__main__':
 
     if not res.wasSuccessful():
         exit(1)
+"""

@@ -1,3 +1,4 @@
+"""
 #!/usr/bin/env python
 
 from __future__ import print_function
@@ -43,9 +44,9 @@ with RethinkDBTestServers(4, server_build_dir=server_build_dir) as servers:
         print('.', end=' ')
         stdout.flush()
     print("Done\n")
-    
+
     basedir = os.path.dirname(__file__)
-    
+
     if not lang or lang == 'py':
         print("Running Python")
         res = res | call([os.environ.get('INTERPRETER_PATH', 'python'), os.path.join(basedir, "cursor.py"), str(port), str(num_rows)])
@@ -62,3 +63,4 @@ with RethinkDBTestServers(4, server_build_dir=server_build_dir) as servers:
 
 if res is not 0:
     exit(1)
+"""
