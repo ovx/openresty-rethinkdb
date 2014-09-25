@@ -335,7 +335,7 @@ function is_array(obj)
 end
 
 function is_instance(class, obj)
-  if not obj then return false end
+  if type(obj) ~= 'table' then return false end
   local obj_cls = obj.__class
   while obj_cls do
     if obj_cls == class then
