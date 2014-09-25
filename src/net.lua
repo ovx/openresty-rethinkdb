@@ -75,7 +75,7 @@ do
     end,
     _del_query = function(self, token)
       -- This query is done, delete this cursor
-      self.outstanding_callbacks[token] = nil
+      self.outstanding_callbacks[token] = {}
     end,
     _process_response = function(self, response, token)
       local profile = response.p
