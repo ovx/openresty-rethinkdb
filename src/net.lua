@@ -8,7 +8,6 @@ local proto_version = protodef.Version.V0_3
 local proto_protocol = protodef.Protocol.JSON
 local proto_query_type = protodef.QueryType
 local proto_response_type = protodef.ResponseType
--- local r = require('./ast')
 
 -- Import some names to this namespace for convienience
 local mk_atom = err.mk_atom
@@ -44,20 +43,34 @@ do
     DEFAULT_PORT = 28015,
     DEFAULT_AUTH_KEY = '',
     DEFAULT_TIMEOUT = 20, -- In seconds
-    _data = function(self, buf)
+    _get_response = function(self, reqest_token)
+      local response_length = 0
+      local token = 0
       -- Buffer data, execute return results if need be
-      self.buffer = self.buffer .. buf
-      while strlen(self.buffer) >= 12 do
-        local token = bytes_to_int(self.buffer:sub(1, 8))
-        self.response_length = bytes_to_int(self.buffer:sub(9, 12))
-        self.buffer = self.buffer:sub(12)
-        if not (strlen(self.buffer) >= self.response_length) then
-          break
+      while true do
+        buf, err = self.raw_socket:receive(1024)
+        print(buf)
+        print(err)
+        if err and err ~= 'timeout' then
+          return self.outstanding_callbacks[token].callback(
+            err.ReQLDriverError()
+          )
         end
-        local response_buffer = self.buffer:sub(1, self.response_length)
-        self.buffer = self.buffer.sub(self.response_length)
-        local response = JSON.parse(response_buffer)
-        self:_process_response(response, token)
+        self.buffer = self.buffer .. buf
+        if response_length > 0 then
+          if string.len(self.buffer) >= response_length then
+            local response_buffer = string.sub(self.buffer, 1, response_length)
+            self.buffer = string.sub(self.buffer, response_length + 1)
+            response_length = 0
+            self:_process_response(json.decode(response_buffer), token)
+            if token == reqest_token then return end
+          end
+        else
+          if string.len(self.buffer) >= 12 then
+            token = bytes_to_int(self.buffer:sub(1, 8))
+            response_length = bytes_to_int(self.buffer:sub(9, 12))
+          end
+        end
       end
     end,
     _del_query = function(self, token)

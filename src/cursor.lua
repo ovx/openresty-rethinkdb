@@ -132,6 +132,7 @@ do
         self._outstanding_requests = self._outstanding_requests + 1
         self._conn:_continue_query(self._token)
       end
+      self._conn:_get_response(self._token)
     end,
     -- Implement IterableResult
     _next = function(self, cb)
