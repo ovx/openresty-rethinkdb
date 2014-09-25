@@ -69,6 +69,7 @@ do
           if string.len(self.buffer) >= 12 then
             token = bytes_to_int(self.buffer:sub(1, 8))
             response_length = bytes_to_int(self.buffer:sub(9, 12))
+            self.buffer = self.buffer:sub(13)
           end
         end
       end
