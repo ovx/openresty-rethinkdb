@@ -5,7 +5,6 @@ local Cursor
 
 do
   local _base_0 = {
-    stack_size = 100,
     _add_response = function(self, response)
       if not self._type then self._type = response.t end
       if response.t == self._type or response.t == proto_response_type.SUCCESS_SEQUENCE then
@@ -37,92 +36,6 @@ do
         self:_prompt_next()
       else
         self:close(self._close_cb)
-      end
-      return self
-    end,
-    _get_callback = function(self)
-      self._iterations = self._iterations + 1
-      local cb = self._cb_queue.shift()
-      if self._iterations % self.stack_size == self.stack_size - 1 then
-        local immediate_cb = (function(err, row)
-          return set_immediate(function()
-            return cb(err, row)
-          end)
-        end)
-        return immediate_cb
-      else
-        return cb
-      end
-    end,
-    _handle_row = function(self)
-      local response = self._responses[0]
-      local row = err.recursively_convert_pseudotype(response.r[self._response_index], self._opts)
-      local cb = self:_get_callback()
-      self._response_index = self._response_index + 1
-
-      -- If we're done with this response, discard it
-      if self._response_index == #response.r then
-        self._responses.shift()
-        self._response_index = 0
-      end
-      return cb(nil, row)
-    end,
-    buffer_empty = function(self)
-      return #self._responses == 0 or #self._responses[0].r <= self._response_index
-    end,
-    _prompt_next = function(self)
-      -- If there are no more waiting callbacks, just wait until the next event
-      while self._cb_queue[0] do
-        if self:buffer_empty() == true then
-          -- We prefetch things here, set `is 0` to avoid prefectch
-          if self._end_flag == true then
-            local cb = self:_get_callback()
-            cb(err.ReQLDriverError("No more rows in the cursor."))
-          else
-            if #self._responses <= 1 then
-              self:_prompt_cont()
-            end
-          end
-          return
-        else
-
-          -- Try to get a row out of the responses
-          local response = self._responses[0]
-          if #self._responses == 1 then
-            -- We're low on data, prebuffer
-            self:_prompt_cont()
-          end
-
-          -- Error responses are not discarded, and the error will be sent to all future callbacks
-          local _exp_0 = response.t
-          if proto_response_type.SUCCESS_PARTIAL == _exp_0 then
-            self:_handle_row()
-          elseif proto_response_type.SUCCESS_FEED == _exp_0 then
-            self:_handle_row()
-          elseif proto_response_type.SUCCESS_SEQUENCE == _exp_0 then
-            if #response.r == 0 then
-              self._responses.shift()
-            else
-              self:_handle_row()
-            end
-          elseif proto_response_type.COMPILE_ERROR == _exp_0 then
-            self._responses.shift()
-            local cb = self:_get_callback()
-            cb(err.ReQLCompileError(response, self._root))
-          elseif proto_response_type.CLIENT_ERROR == _exp_0 then
-            self._responses.shift()
-            local cb = self:_get_callback()
-            cb(err.ReQLClientError(response, self._root))
-          elseif proto_response_type.RUNTIME_ERROR == _exp_0 then
-            self._responses.shift()
-            local cb = self:_get_callback()
-            cb(err.ReQLRuntimeError(response, self._root))
-          else
-            self._responses.shift()
-            local cb = self:_get_callback()
-            cb(err.ReQLDriverError("Unknown response type for cursor"))
-          end
-        end
       end
     end,
     _prompt_cont = function(self)
@@ -221,14 +134,11 @@ do
       self._opts = opts
       self._root = root -- current query
       self._responses = { }
-      self._outstanding_requests = 1 -- Because we haven't add the response yet
-      self._iterations = 0
       self._response_index = 1
       self._end_flag = false
       self._cont_flag = false
       self._close_asap = false
       self._cont = nil
-      self._cb_queue = { }
     end,
     __base = _base_0,
     __name = "Cursor"
