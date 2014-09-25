@@ -87,7 +87,7 @@ do
           cb, root, cursor, opts = _obj_0.cb, _obj_0.root, _obj_0.cursor, _obj_0.opts
         end
         if cursor then
-          cursor._add_response(response)
+          cursor:_add_response(response)
           if cursor._end_flag and cursor._outstanding_requests == 0 then
             return self:_del_query(token)
           end
@@ -120,32 +120,21 @@ do
               if profile then
                 return cb(nil, {
                   profile = profile,
-                  value = cursor._add_response(response)
+                  value = cursor:_add_response(response)
                 })
               else
-                return cb(nil, cursor._add_response(response))
+                return cb(nil, cursor:_add_response(response))
               end
-            elseif proto_response_type.SUCCESS_SEQUENCE == _exp_0 then
+            elseif proto_response_type.SUCCESS_SEQUENCE == _exp_0 or proto_response_type.SUCCESS_FEED == _exp_0 then
               cursor = Cursor(self, token, opts, root)
               self:_del_query(token)
               if profile then
                 return cb(nil, {
                   profile = profile,
-                  value = cursor._add_response(response)
+                  value = cursor:_add_response(response)
                 })
               else
-                return cb(nil, cursor._add_response(response))
-              end
-            elseif proto_response_type.SUCCESS_FEED == _exp_0 then
-              feed = Cursor(self, token, opts, root)
-              self.outstanding_callbacks[token].feed = feed
-              if profile then
-                return cb(nil, {
-                  profile = profile,
-                  value = feed._add_response(response)
-                })
-              else
-                return cb(nil, feed._add_response(response))
+                return cb(nil, cursor:_add_response(response))
               end
             elseif proto_response_type.WAIT_COMPLETE == _exp_0 then
               self:_del_query(token)
