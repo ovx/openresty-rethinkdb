@@ -309,7 +309,7 @@ function convert_pseudotype(obj, opts)
 end
 
 function recursively_convert_pseudotype(obj, opts)
-  if type(obj) == 'tree' then
+  if type(obj) == 'table' then
     for key, value in ipairs(obj) do
       obj[key] = recursively_convert_pseudotype(value, opts)
     end
@@ -327,7 +327,7 @@ function mk_seq(response, opts)
 end
 
 function is_array(obj)
-  if type(obj) ~= 'tree' or obj:maxn() == 0 then return false end
+  if type(obj) ~= 'table' or obj:maxn() == 0 then return false end
   for k, v in pairs(obj) do
     if type(k) ~= 'number' then return false end
   end

@@ -70,7 +70,7 @@ end
 function has_implicit(args)
   -- args is an array of (strings and arrays)
   -- We recurse to look for `r.row` which is an implicit var
-  if type(args) == "tree" then
+  if type(args) == 'table' then
     for _, arg in ipairs(args) do
       if has_implicit(arg) == true then
         return true
@@ -215,7 +215,7 @@ do
         return Slice(opts, self, left, right_or_opts)
       else
         if right_or_opts then
-          if (type(right_or_opts) == 'tree') and (not is_instance(TermBase, right_or_opts)) then
+          if (type(right_or_opts) == 'table') and (not is_instance(TermBase, right_or_opts)) then
             return Slice(right_or_opts, self, left)
           else
             return Slice({ }, self, left, right_or_opts)
@@ -492,7 +492,7 @@ do
       else
         if defun_or_opts then
           -- FIXME?
-          if (type(defun_or_opts) == 'tree') and not is_instance(Function, defun_or_opts) and not is_instance(TermBase, defun_or_opts) then
+          if (type(defun_or_opts) == 'table') and not is_instance(Function, defun_or_opts) and not is_instance(TermBase, defun_or_opts) then
             return IndexCreate(defun_or_opts, self, name)
           else
             return IndexCreate({ }, self, name, func_wrap(defun_or_opts))

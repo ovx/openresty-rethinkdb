@@ -155,7 +155,7 @@ do
         opts = opts_or_callback
         cb = callback
       else
-        if type(opts_or_callback) == 'tree' then
+        if type(opts_or_callback) == 'table' then
           opts = opts_or_callback
           cb = nil
         else
@@ -178,12 +178,12 @@ do
 
       if callback then
         opts = opts_or_callback
-        if not (type(opts) == 'tree') then
+        if not (type(opts) == 'table') then
           error(errors.ReQLDriverError("First argument to two-argument `close` must be an object."))
         end
         cb = callback
       else
-        if type(opts_or_callback) == 'tree' then
+        if type(opts_or_callback) == 'table' then
           opts = opts_or_callback
           cb = nil
         else
