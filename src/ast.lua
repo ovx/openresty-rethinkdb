@@ -351,20 +351,10 @@ do
       return Replace(opts, self, func_wrap(func))
     end,
     do_ = function(self, ...)
-      local args
-      do
-        local _accum_0 = { }
-        local _len_0 = 1
-        local _list_0 = arg
-        local _max_0 = (arg.n - 1)
-        for _index_0 = 1, _max_0 < 0 and #_list_0 + _max_0 or _max_0 do
-          local a = _list_0[_index_0]
-          _accum_0[_len_0] = a
-          _len_0 = _len_0 + 1
-        end
-        args = _accum_0
-      end
-      return FunCall({ }, func_wrap(arg[arg.n]), self, unpack(args))
+      local args = {...}
+      local func = func_wrap(args[args.n])
+      args[args.n] = nil
+      return FunCall({ }, func, self, unpack(args))
     end,
     default = function(...)
       return Default({ }, ...)
@@ -405,72 +395,38 @@ do
     group = function(self, ...)
       -- Default if no opts dict provided
       local opts = { }
-      local fields = arg
+      local fields = {...}
 
       -- Look for opts dict
-      if arg.n > 0 then
-        local perhaps_opt_dict = arg[arg.n]
-        if perhaps_opt_dict and (type(perhaps_opt_dict) == 'tree') and not (is_instance(TermBase, perhaps_opt_dict)) then
+      if fields.n > 0 then
+        local perhaps_opt_dict = fields[fields.n]
+        if perhaps_opt_dict and (type(perhaps_opt_dict) == 'table') and not (is_instance(TermBase, perhaps_opt_dict)) then
           opts = perhaps_opt_dict
-          do
-            local _accum_0 = { }
-            local _len_0 = 1
-            local _list_0 = arg
-            local _max_0 = (arg.n - 1)
-            for _index_0 = 1, _max_0 < 0 and #_list_0 + _max_0 or _max_0 do
-              local a = _list_0[_index_0]
-              _accum_0[_len_0] = a
-              _len_0 = _len_0 + 1
-            end
-            fields = _accum_0
-          end
+          fields[fields.n] = nil
+          fields.n -= 1
         end
       end
-      do
-        local _accum_0 = { }
-        local _len_0 = 1
-        for i, field in ipairs(fields) do
-          _accum_0[_len_0] = func_wrap(field)
-          _len_0 = _len_0 + 1
-        end
-        fields = _accum_0
+      for i=1, fields.n do
+        fields[i] = func_wrap(fields[i])
       end
       return Group(opts, self, unpack(fields))
     end,
     order_by = function(self, ...)
       -- Default if no opts dict provided
       local opts = { }
-      local attrs = arg
+      local attrs = {...}
 
       -- Look for opts dict
-      local perhaps_opt_dict = arg[arg.n]
-      if perhaps_opt_dict and (type(perhaps_opt_dict) == 'tree') and not is_instance(TermBase, perhaps_opt_dict) then
+      local perhaps_opt_dict = attrs[attrs.n]
+      if perhaps_opt_dict and (type(perhaps_opt_dict) == 'table') and not is_instance(TermBase, perhaps_opt_dict) then
         opts = perhaps_opt_dict
-        do
-          local _accum_0 = { }
-          local _len_0 = 1
-          local _list_0 = arg
-          local _max_0 = (arg.n - 1)
-          for _index_0 = 1, _max_0 < 0 and #_list_0 + _max_0 or _max_0 do
-            local a = _list_0[_index_0]
-            _accum_0[_len_0] = a
-            _len_0 = _len_0 + 1
-          end
-          attrs = _accum_0
-        end
+        attrs[attrs.n] = nil
+        attrs.n -= 1
       end
-      do
-        local _accum_0 = { }
-        local _len_0 = 1
-        for i, attr in ipairs(attrs) do
-          if is_instance(Asc, attr) or is_instance(Desc, attr) then
-            _accum_0[_len_0] = attr
-          else
-            _accum_0[_len_0] = func_wrap(attr)
-          end
-          _len_0 = _len_0 + 1
+      for i, attr in ipairs(attrs) do
+        if not (is_instance(Asc, attr) or is_instance(Desc, attr)) then
+          attrs[i] = func_wrap(attr)
         end
-        attrs = _accum_0
       end
       return OrderBy(opts, self, unpack(attrs))
     end,
@@ -515,25 +471,14 @@ do
     get_all = function(self, ...)
       -- Default if no opts dict provided
       local opts = { }
-      local keys = arg
+      local keys = {...}
 
       -- Look for opts dict
-      if arg.n > 1 then
-        local perhaps_opt_dict = arg[arg.n - 1]
-        if perhaps_opt_dict and ((type(perhaps_opt_dict) == 'tree') and not (is_instance(TermBase, perhaps_opt_dict))) then
+      if keys.n > 1 then
+        local perhaps_opt_dict = keys[keys.n]
+        if perhaps_opt_dict and ((type(perhaps_opt_dict) == 'table') and not (is_instance(TermBase, perhaps_opt_dict))) then
           opts = perhaps_opt_dict
-          do
-            local _accum_0 = { }
-            local _len_0 = 1
-            local _list_0 = arg
-            local _max_0 = (arg.n - 1)
-            for _index_0 = 1, _max_0 < 0 and #_list_0 + _max_0 or _max_0 do
-              local a = _list_0[_index_0]
-              _accum_0[_len_0] = a
-              _len_0 = _len_0 + 1
-            end
-            keys = _accum_0
-          end
+          keys[keys.n] = nil
         end
       end
       return GetAll(opts, self, unpack(keys))
@@ -4872,12 +4817,10 @@ do
     __init = function(self, optargs, func)
       local args = { }
       local arg_nums = { }
-      local i = 0
-      while i < func.length do
+      for i=1, 10 do
         arg_nums.push(Func.next_var_id)
         args.push(Var({ }, Func.next_var_id))
         Func.next_var_id = Func.next_var_id + 1
-        i = i + 1
       end
       local body = func(unpack(args))
       if not body then
@@ -6222,24 +6165,13 @@ end
 function rethinkdb.random(...)
   -- Default if no opts dict provided
   local opts = { }
-  local limits = arg
+  local limits = {...}
 
   -- Look for opts dict
-  local perhaps_opt_dict = arg[arg.n - 1]
-  if perhaps_opt_dict and ((type(perhaps_opt_dict) == 'tree') and not (is_instance(TermBase, perhaps_opt_dict))) then
+  local perhaps_opt_dict = limits[limits.n]
+  if perhaps_opt_dict and ((type(perhaps_opt_dict) == 'table') and not (is_instance(TermBase, perhaps_opt_dict))) then
     opts = perhaps_opt_dict
-    do
-      local _accum_0 = { }
-      local _len_0 = 1
-      local _list_0 = arg
-      local _max_0 = (arg.n - 1)
-      for _index_0 = 1, _max_0 < 0 and #_list_0 + _max_0 or _max_0 do
-        local a = _list_0[_index_0]
-        _accum_0[_len_0] = a
-        _len_0 = _len_0 + 1
-      end
-      limits = _accum_0
-    end
+    limits[limits.n] = nil
   end
   return Random(opts, unpack(limits))
 end
@@ -6272,18 +6204,10 @@ function rethinkdb.table_list(...)
   return TableList({ }, ...)
 end
 function rethinkdb.do_(...)
-  return FunCall({ }, func_wrap(arg[arg.n]), unpack((function()
-    local _accum_0 = { }
-    local _len_0 = 1
-    local _list_0 = arg
-    local _max_0 = (arg.n - 1)
-    for _index_0 = 1, _max_0 < 0 and #_list_0 + _max_0 or _max_0 do
-      local a = _list_0[_index_0]
-      _accum_0[_len_0] = a
-      _len_0 = _len_0 + 1
-    end
-    return _accum_0
-  end)()))
+  args = {...}
+  func = func_wrap(args[args.n])
+  args[args.n] = nil
+  return FunCall({ }, func, unpack(args))
 end
 function rethinkdb.branch(...)
   return Branch({ }, ...)

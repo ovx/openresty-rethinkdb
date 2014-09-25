@@ -167,10 +167,10 @@ do
           end
         end
       end
-      local wrapped_cb = function(self, ...)
+      local wrapped_cb = function(...)
         self.raw_socket["end"]()
         if cb then
-          return cb(unpack(arg))
+          return cb(...)
         end
       end
 
