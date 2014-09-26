@@ -386,8 +386,9 @@ do
             if status_str == "SUCCESS" then
               -- We're good, finish setting up the connection
               self.open = true
-              callback(nil, self)
+              local res = callback(nil, self)
               self:close({noreply_wait = false})
+              return res
             else
               return callback(errors.ReQLDriverError("Server dropped connection with message: \"" + status_str + "\""))
             end
