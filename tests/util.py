@@ -45,6 +45,8 @@ class LuaTestCase(unittest.TestCase):
             return e.output
 
     def tearDown(self):
+        if not self.tables:
+            return
         with r.connect() as c:
             for table in self.tables:
                 table.delete().run(c)
