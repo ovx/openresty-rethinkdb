@@ -181,8 +181,6 @@ do
         end
       end
 
-      callback = wrapped_cb
-
       local noreply_wait = opts.noreply_wait and self.open
 
       if noreply_wait then
