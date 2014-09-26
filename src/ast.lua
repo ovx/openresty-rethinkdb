@@ -657,14 +657,15 @@ do
       for i, arg in ipairs(self.args) do
         args[i] = arg:build()
       end
-      if table.getn(self.optargs) > 0 then
+      res = {self.tt, args}
+      if #self.optargs > 0 then
         local opts = { }
-        for key, val in ipairs(self.optargs) do
+        for key, val in pairs(self.optargs) do
           opts[key] = val:build()
         end
-        return {self.tt, args, opts}
+        table.insert(res, opts)
       end
-      return {self.tt, args}
+      return res
     end,
     compose = function(self, args, optargs)
       if self.st then
