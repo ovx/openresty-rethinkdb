@@ -170,7 +170,7 @@ do
       else
         tree = self:compose_carrots(self.term, self.frames)
       end
-      return self:join_tree(tree).gsub('[^\^]', ' ')
+      return self:join_tree(tree).gsub('[^%^]', ' ')
     end,
     compose_term = function(self, term)
       local args = {}
