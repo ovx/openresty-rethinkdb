@@ -4818,8 +4818,8 @@ do
       local args = { }
       local arg_nums = { }
       for i=1, 10 do
-        arg_nums.push(Func.next_var_id)
-        args.push(Var({ }, Func.next_var_id))
+        table.insert(arg_nums, Func.next_var_id)
+        table.insert(args, Var({ }, Func.next_var_id))
         Func.next_var_id = Func.next_var_id + 1
       end
       local body = func(unpack(args))
