@@ -150,25 +150,32 @@ do
       end
     end,
     close = function(self, opts_or_callback, callback)
-      local opts, cb
+      local opts = {}
+      local cb
       if callback then
+        if type(opts_or_callback) ~= 'table' then
+          error(errors.ReQLDriverError("First argument to two-argument `close` must be an object."))
+        end
         opts = opts_or_callback
         cb = callback
       else
         if type(opts_or_callback) == 'table' then
           opts = opts_or_callback
-          cb = nil
         else
           if type(opts_or_callback) == "function" then
-            opts = { }
             cb = opts_or_callback
-          else
-            opts = { }
           end
         end
       end
+
+      if cb and type(cb) ~= 'function' then
+        error(errors.ReQLDriverError("First argument to two-argument `close` must be an object."))
+      end
+
       local wrapped_cb = function(...)
-        self.raw_socket["end"]()
+        self.open = false
+        self.raw_socket:shutdown()
+        self.raw_socket:close()
         if cb then
           return cb(...)
         end
@@ -176,38 +183,12 @@ do
 
       callback = wrapped_cb
 
-      if callback then
-        opts = opts_or_callback
-        if not (type(opts) == 'table') then
-          error(errors.ReQLDriverError("First argument to two-argument `close` must be an object."))
-        end
-        cb = callback
-      else
-        if type(opts_or_callback) == 'table' then
-          opts = opts_or_callback
-          cb = nil
-        else
-          if type(opts_or_callback) == 'function' then
-            opts = { }
-            cb = opts_or_callback
-          else
-            opts = opts_or_callback
-            cb = nil
-          end
-        end
-      end
       local noreply_wait = opts.noreply_wait and self.open
-      local wrapped_cb = function(...)
-        self.open = false
-        if cb then
-          return cb(...)
-        end
-      end
+
       if noreply_wait then
         return self:noreply_wait(wrapped_cb)
-      else
-        return wrapped_cb()
       end
+      return wrapped_cb()
     end,
     noreply_wait = function(self, cb)
       callback = function(err, cur)
