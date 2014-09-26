@@ -327,7 +327,7 @@ function mk_seq(response, opts)
 end
 
 function is_array(obj)
-  if type(obj) ~= 'table' or obj:maxn() == 0 then return false end
+  if type(obj) ~= 'table' or (obj[1] == nil) then return false end
   for k, v in pairs(obj) do
     if type(k) ~= 'number' then return false end
   end
