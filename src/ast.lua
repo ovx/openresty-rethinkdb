@@ -791,7 +791,8 @@ function intsp(seq)
   }
   for _index_0 = 2, #seq do
     local e = seq[_index_0]
-    res.push(', ', e)
+    table.insert(res, ', ')
+    table.insert(res, e)
   end
   return res
 end
@@ -817,13 +818,13 @@ end
 function intspallargs(args, optargs)
   local argrepr = { }
   if #args > 0 then
-    argrepr.push(intsp(args))
+    table.insert(argrepr, intsp(args))
   end
   if #optargs > 0 then
     if #argrepr > 0 then
-      argrepr.push(', ')
+      table.insert(argrepr, ', ')
     end
-    argrepr.push(kved(optargs))
+    table.insert(argrepr, kved(optargs))
   end
   return argrepr
 end
