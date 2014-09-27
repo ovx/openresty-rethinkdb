@@ -242,10 +242,7 @@ do
         self.outstanding_callbacks[token] = callback
       end
       self:_send_query(query)
-      if type(cb) == 'function' then
-        if opts.noreply then
-          return cb(nil)
-        end
+      if type(cb) == 'function' and not opts.noreply then
         local res = cb(nil, cursor)
         cursor:close()
         return res
