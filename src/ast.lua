@@ -676,25 +676,24 @@ do
           ')'
         }
       else
-        if should_wrap(self.args[0]) then
-          args[0] = {
+        if self.args then
+        if should_wrap(self.args[1]) then
+          args[1] = {
             'r(',
-            args[0],
+            args[1],
             ')'
           }
         end
+        end
         return {
-          args[0],
+          args[1],
           '.',
           self.mt,
           '(',
           intspallargs((function()
             local _accum_0 = { }
-            local _len_0 = 1
             for _index_0 = 2, #args do
-              local a = args[_index_0]
-              _accum_0[_len_0] = a
-              _len_0 = _len_0 + 1
+              _accum_0[_index_0 - 1] = args[_index_0]
             end
             return _accum_0
           end)(), optargs),
@@ -779,7 +778,7 @@ do
   RDBOpWrap = _class_0
 end
 function intsp(seq)
-  if not (seq[0]) then
+  if seq[1] == nil then
     return { }
   end
   local res = {
@@ -4474,7 +4473,7 @@ do
         }
       else
         local var_str = ""
-        for arg, i in ipairs(args[0][1]) do -- ['0', ', ', '1']
+        for arg, i in ipairs(args[1][2]) do -- ['0', ', ', '1']
           if i % 2 == 0 then
             var_str = var_str + Var.compose(arg)
           else
