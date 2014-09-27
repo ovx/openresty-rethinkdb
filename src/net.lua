@@ -81,67 +81,15 @@ do
     _process_response = function(self, response, token)
       local profile = response.p
       if self.outstanding_callbacks[token] then
-        local cb, root, cursor, opts, feed
+        local root, cursor, opts
         do
           local _obj_0 = self.outstanding_callbacks[token]
-          cb, root, cursor, opts = _obj_0.cb, _obj_0.root, _obj_0.cursor, _obj_0.opts
+          root, cursor, opts = _obj_0.root, _obj_0.cursor, _obj_0.opts
         end
         if cursor then
           cursor:_add_response(response)
           if cursor._end_flag and cursor._outstanding_requests == 0 then
             return self:_del_query(token)
-          end
-        else
-          if cb then
-            -- Behavior varies considerably based on response type
-            local _exp_0 = response.t
-            if proto_response_type.COMPILE_ERROR == _exp_0 then
-              cb(errors.ReQLCompileError(response.r[1], root, response.b))
-              return self:_del_query(token)
-            elseif proto_response_type.CLIENT_ERROR == _exp_0 then
-              cb(errors.ReQLClientError(response.r[1], root, response.b))
-              return self:_del_query(token)
-            elseif proto_response_type.RUNTIME_ERROR == _exp_0 then
-              cb(errors.ReQLRuntimeError(response.r[1], root, response.b))
-              return self:_del_query(token)
-            elseif proto_response_type.SUCCESS_ATOM == _exp_0 then
-              response = {mk_atom(response, opts)}
-              if profile then
-                response = {
-                  profile = profile,
-                  value = response
-                }
-              end
-              cb(nil, response)
-              return self:_del_query(token)
-            elseif proto_response_type.SUCCESS_PARTIAL == _exp_0 then
-              cursor = Cursor(self, token, opts, root)
-              self.outstanding_callbacks[token].cursor = cursor
-              if profile then
-                return cb(nil, {
-                  profile = profile,
-                  value = cursor:_add_response(response)
-                })
-              else
-                return cb(nil, cursor:_add_response(response))
-              end
-            elseif proto_response_type.SUCCESS_SEQUENCE == _exp_0 or proto_response_type.SUCCESS_FEED == _exp_0 then
-              cursor = Cursor(self, token, opts, root)
-              self:_del_query(token)
-              if profile then
-                return cb(nil, {
-                  profile = profile,
-                  value = cursor:_add_response(response)
-                })
-              else
-                return cb(nil, cursor:_add_response(response))
-              end
-            elseif proto_response_type.WAIT_COMPLETE == _exp_0 then
-              self:_del_query(token)
-              return cb(nil, nil)
-            else
-              return cb(errors.ReQLDriverError("Unknown response type"))
-            end
           end
         end
       else
@@ -291,7 +239,6 @@ do
           opts = opts,
           cursor = cursor
         }
-        if not opts.noreply then callback.cb = cb end
         self.outstanding_callbacks[token] = callback
       end
       self:_send_query(query)
