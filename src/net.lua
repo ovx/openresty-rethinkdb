@@ -146,7 +146,7 @@ do
         end
       else
         -- Unexpected token
-        return self:emit('error', errors.ReQLDriverError("Unexpected token " .. tostring(token) .. "."))
+        return error(errors.ReQLDriverError("Unexpected token " .. token .. "."))
       end
     end,
     close = function(self, opts_or_callback, callback)
