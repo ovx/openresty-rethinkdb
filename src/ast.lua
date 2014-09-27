@@ -707,13 +707,12 @@ do
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
     __init = function(self, optargs, ...)
-      for i, a in ipairs(arg) do
-        arg[i] = rethinkdb.expr(a)
+      self.args = {...}
+      for i, a in ipairs(self.args) do
+        self.args[i] = rethinkdb.expr(a)
       end
-      self.args = arg
       if optargs == nil then optargs = {} end
       self.optargs = optargs
-      return self
     end,
     __base = _base_0,
     __name = "RDBOp",
