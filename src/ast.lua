@@ -929,9 +929,10 @@ do
   local _base_0 = {
     tt = proto_term_type.VAR,
     compose = function(self, args)
-      return {
-        'var_' .. args
-      }
+      for i, v in ipairs(args) do
+        args[i] = 'var_' .. v
+      end
+      return args
     end
   }
   _base_0.__index = _base_0
