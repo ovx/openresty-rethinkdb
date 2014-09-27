@@ -14,22 +14,8 @@ do
         end
       else
         table.insert(self._responses, response)
-      end
-      if response.t ~= self._type then
         -- We got an error or a SUCCESS_SEQUENCE
         self._end_flag = true
-        if self._close_cb then
-          local _exp_0 = response.t
-          if proto_response_type.COMPILE_ERROR == _exp_0 then
-            self._close_cb(errors.ReQLRuntimeError(response, self._root))
-          elseif proto_response_type.CLIENT_ERROR == _exp_0 then
-            self._close_cb(errors.ReQLRuntimeError(response, self._root))
-          elseif proto_response_type.RUNTIME_ERROR == _exp_0 then
-            self._close_cb(errors.ReQLRuntimeError(response, self._root))
-          else
-            self._close_cb()
-          end
-        end
       end
       self._cont_flag = false
     end,
