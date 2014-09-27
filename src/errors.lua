@@ -184,7 +184,7 @@ do
       return term:compose(args, optargs)
     end,
     compose_carrots = function(self, term, frames)
-      local frame = frames.shift()
+      local frame = table.remove(frames, 1)
       local args = {}
       for arg, i in ipairs(term.args) do
         if frame == i then
