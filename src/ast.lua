@@ -797,7 +797,7 @@ function kved(optargs)
     intsp((function()
       local _accum_0 = { }
       local _len_0 = 1
-      for k, v in ipairs(optargs) do
+      for k, v in pairs(optargs) do
         _accum_0[_len_0] = {
           k,
           ': ',
