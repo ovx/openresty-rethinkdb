@@ -252,10 +252,10 @@ do
       end
     end,
     _continue_query = function(self, token)
-      return self:_write_query(token, json.encode(proto_query_type.CONTINUE))
+      return self:_write_query(token, json.encode({proto_query_type.CONTINUE}))
     end,
     _end_query = function(self, token)
-      return self:_write_query(token, json.encode(proto_query_type.STOP))
+      return self:_write_query(token, json.encode({proto_query_type.STOP}))
     end,
     _send_query = function(self, query)
       -- Serialize query to JSON
