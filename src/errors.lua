@@ -329,7 +329,7 @@ function is_instance(class, obj)
   if type(obj) ~= 'table' then return false end
   local obj_cls = obj.__class
   while obj_cls do
-    if obj_cls == class then
+    if obj_cls.__name == class.__name then
       return true
     end
     obj_cls = obj_cls.__parent
