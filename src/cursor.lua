@@ -8,6 +8,7 @@ do
     _add_response = function(self, response)
       if not self._type then self._type = response.t end
       if response.t == self._type or response.t == proto_response_type.SUCCESS_SEQUENCE then
+        -- We insert a "ok" response only if it's not empty
         if #response.r > 0 then
           table.insert(self._responses, response)
         end
