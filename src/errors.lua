@@ -10,7 +10,7 @@ do
   local _class_0 = setmetatable({
     __init = function(self, msg)
       self.msg = msg
-      self.message = msg
+      self.message = self.__class.__name .. ' ' .. msg
     end,
     __base = _base_0,
     __name = "ReQLDriverError"
@@ -36,12 +36,12 @@ do
       if term then
         self.message = " in:\n" .. self.printer:print_query() .. "\n" .. self.printer:print_carrots()
         if msg[-1] == '.' then
-          self.message = msg:sub(1, -2) .. self.message
+          self.message = self.__class.__name .. ' ' .. msg:sub(1, -2) .. self.message
         else
-          self.message = msg .. self.message
+          self.message = self.__class.__name .. ' ' .. msg .. self.message
         end
       else
-        self.message = msg
+        self.message = self.__class.__name .. ' ' .. msg
       end
     end,
     __base = _base_0,
