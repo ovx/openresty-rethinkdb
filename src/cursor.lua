@@ -131,7 +131,7 @@ do
       self._responses = { }
       self._response_index = 1
       self._end_flag = false
-      self._cont_flag = false
+      self._cont_flag = true
       self._cont = nil
     end,
     __base = _base_0,
