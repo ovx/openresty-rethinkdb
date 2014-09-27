@@ -8,7 +8,7 @@ import rethinkdb as r
 class LuaTestCase(unittest.TestCase):
     tables = None
 
-    def create_table(self, table, data):
+    def create_table(self, table, data=None):
         db, _, table = table.rpartition('.')
         db = db or 'test'
         with r.connect() as c:
@@ -21,7 +21,7 @@ class LuaTestCase(unittest.TestCase):
             except r.errors.RqlRuntimeError:
                 pass
             table = r.db(db).table(table)
-            table.insert(data).run(c)
+            if data: table.insert(data).run(c)
         self.tables = self.tables or []
         self.tables.append(table)
         return table
