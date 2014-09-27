@@ -785,9 +785,8 @@ function intsp(seq)
     seq[1]
   }
   for _index_0 = 2, #seq do
-    local e = seq[_index_0]
     table.insert(res, ', ')
-    table.insert(res, e)
+    table.insert(res, seq[_index_0])
   end
   return res
 end
