@@ -213,7 +213,7 @@ do
     join_tree = function(self, tree)
       local str = ''
       for _, term in ipairs(tree) do
-        if is_array(term) then
+        if type(term) == 'table' then
           if #term == 2 and term[0] == self.carrot_marker then
             str = str .. self:join_tree(term[1]):gsub('.', '^')
           else
