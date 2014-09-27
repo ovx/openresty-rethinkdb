@@ -893,7 +893,6 @@ do
       for key, val in ipairs(obj) do
         self.optargs[key] = rethinkdb.expr(val, nesting_depth - 1)
       end
-      return self
     end,
     __base = _base_0,
     __name = "MakeObject",
@@ -4502,7 +4501,7 @@ do
         error(errors.ReQLDriverError("Anonymous function returned `nil`. Did you forget a `return`?"))
       end
       local args_arr = MakeArray({ }, unpack(arg_nums))
-      return _parent_0.__init(self, optargs, args_arr, body)
+      _parent_0.__init(self, optargs, args_arr, body)
     end,
     __base = _base_0,
     __name = "Func",
