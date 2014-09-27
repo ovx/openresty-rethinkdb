@@ -52,9 +52,7 @@ do
         buf, err, partial = self.raw_socket:receive(1024)
         buf = buf or partial
         if (not buf) and err then
-          return self.outstanding_callbacks[token].cb(
-            errors.ReQLDriverError()
-          )
+          error(errors.ReQLDriverError('connection returned: ' .. err))
         end
         self.buffer = self.buffer .. buf
         if response_length > 0 then

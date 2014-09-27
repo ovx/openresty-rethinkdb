@@ -164,6 +164,7 @@ do
       return self:join_tree(tree):gsub('[^%^]', ' ')
     end,
     compose_term = function(self, term)
+      if type(term) ~= 'table' then return '' .. term end
       local args = {}
       for i, arg in ipairs(term.args) do
         args[i] = self:compose_term(arg)
@@ -301,7 +302,7 @@ end
 
 function recursively_convert_pseudotype(obj, opts)
   if type(obj) == 'table' then
-    for key, value in ipairs(obj) do
+    for key, value in pairs(obj) do
       obj[key] = recursively_convert_pseudotype(value, opts)
     end
     obj = convert_pseudotype(obj, opts)

@@ -31,7 +31,7 @@ do
     -- Implement IterableResult
     next = function(self, cb)
       -- Try to get a row out of the responses
-      if not self._responses[1] then
+      while not self._responses[1] do
         -- We prefetch things here, set `is 0` to avoid prefectch
         if self._end_flag == true then
           return cb(errors.ReQLDriverError("No more rows in the cursor."))
