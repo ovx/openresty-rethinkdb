@@ -814,7 +814,7 @@ function intspallargs(args, optargs)
   if #args > 0 then
     table.insert(argrepr, intsp(args))
   end
-  if #optargs > 0 then
+  if optargs and #optargs > 0 then
     if #argrepr > 0 then
       table.insert(argrepr, ', ')
     end
