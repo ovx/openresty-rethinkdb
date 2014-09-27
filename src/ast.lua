@@ -35,13 +35,13 @@ local June, July, August, September, October, November, December
 
 -- Utilities
 
-function func_wrap(val)
+function func_wrap(val, optargs)
   if not val then
     -- Pass through the nil value so it's caught by
     -- the appropriate nil checker
     return val
   end
-  val = rethinkdb.expr(val)
+  val = rethinkdb.expr(val, nil, optargs)
   function ivar_scan(node)
     if not is_instance(TermBase, node) then
       return false
@@ -62,7 +62,7 @@ function func_wrap(val)
     return false
   end
   if ivar_scan(val) then
-    return Func({ }, function(x)
+    return Func(optargs, function(x)
       return val
     end)
   end
@@ -271,7 +271,7 @@ do
       return Between(opts, self, left, right)
     end,
     reduce = function(...)
-      return Reduce({ }, ...)
+      return Reduce({arity = 2}, ...)
     end,
     map = function(...)
       return Map({ }, ...)
@@ -747,7 +747,7 @@ do
       self = _parent_0.__init(self)
       self.args = {}
       for i, a in ipairs(arg) do
-        self.args[i] = rethinkdb.expr(func_wrap(a))
+        self.args[i] = rethinkdb.expr(func_wrap(optargs, a))
       end
       if optargs == nil then optargs = {} end
       self.optargs = optargs
@@ -875,7 +875,7 @@ do
     end,
     build = function(self)
       local res = { }
-      for key, val in ipairs(self.optargs) do
+      for key, val in pairs(self.optargs) do
         res[key] = val:build()
       end
       return res
@@ -885,12 +885,9 @@ do
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
     __init = function(self, obj, nesting_depth)
-      if nesting_depth == nil then
-        nesting_depth = 20
-      end
-      self = _parent_0.__init(self, { })
+      self.args = {}
       self.optargs = { }
-      for key, val in ipairs(obj) do
+      for key, val in pairs(obj) do
         self.optargs[key] = rethinkdb.expr(val, nesting_depth - 1)
       end
     end,
@@ -923,6 +920,7 @@ do
   local _base_0 = {
     tt = proto_term_type.VAR,
     compose = function(self, args)
+      if not args then return {} end
       for i, v in ipairs(args) do
         args[i] = 'var_' .. v
       end
@@ -4468,11 +4466,11 @@ do
         }
       else
         local var_str = ""
-        for arg, i in ipairs(args[1][2]) do -- ['0', ', ', '1']
+        for i, arg in ipairs(args[1][2]) do -- ['0', ', ', '1']
           if i % 2 == 0 then
-            var_str = var_str + Var.compose(arg)
+            var_str = var_str .. Var.compose(arg)
           else
-            var_str = var_str + arg
+            var_str = var_str .. arg
           end
         end
         return {
@@ -4491,7 +4489,8 @@ do
     __init = function(self, optargs, func)
       local args = { }
       local arg_nums = { }
-      for i=1, 10 do
+      if not optargs then optargs = {} end
+      for i=1, optargs.arity or 1 do
         table.insert(arg_nums, Func.next_var_id)
         table.insert(args, Var({ }, Func.next_var_id))
         Func.next_var_id = Func.next_var_id + 1
@@ -4500,6 +4499,7 @@ do
       if not body then
         error(errors.ReQLDriverError("Anonymous function returned `nil`. Did you forget a `return`?"))
       end
+      optargs.arity = nil
       local args_arr = MakeArray({ }, unpack(arg_nums))
       _parent_0.__init(self, optargs, args_arr, body)
     end,
@@ -5689,7 +5689,7 @@ end
 -- All top level exported functions
 
 -- Wrap a native Lua value in an ReQL datum
-function rethinkdb.expr(val, nesting_depth)
+function rethinkdb.expr(val, nesting_depth, optargs)
   if nesting_depth == nil then
     nesting_depth = 20
   end
@@ -5700,7 +5700,10 @@ function rethinkdb.expr(val, nesting_depth)
     error(errors.ReQLDriverError("Second argument to `r.expr` must be a number or nil."))
   end
   if type(val) == "function" then
-    return Func({ }, val)
+    return Func(optargs, val)
+  end
+  if is_instance(TermBase, val) then
+    return val
   end
   if type(val) == 'table' then
     if type(val.build) == 'function' then
@@ -5710,7 +5713,7 @@ function rethinkdb.expr(val, nesting_depth)
       for i, v in ipairs(val) do
         val[i] = rethinkdb.expr(v, nesting_depth - 1)
       end
-      return MakeArray({ }, unpack(val))
+      return MakeArray(optargs, unpack(val))
     end
     return MakeObject(val, nesting_depth)
   end
