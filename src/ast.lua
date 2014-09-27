@@ -570,9 +570,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "RDBVal",
     __parent = _parent_0
@@ -847,9 +844,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "MakeArray",
     __parent = _parent_0
@@ -944,9 +938,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Var",
     __parent = _parent_0
@@ -980,9 +971,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "JavaScript",
     __parent = _parent_0
@@ -1016,9 +1004,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Http",
     __parent = _parent_0
@@ -1052,9 +1037,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Json",
     __parent = _parent_0
@@ -1152,9 +1134,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Args",
     __parent = _parent_0
@@ -1188,9 +1167,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "UserError",
     __parent = _parent_0
@@ -1224,9 +1200,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Random",
     __parent = _parent_0
@@ -1264,9 +1237,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "ImplicitVar",
     __parent = _parent_0
@@ -1300,9 +1270,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Db",
     __parent = _parent_0
@@ -1361,9 +1328,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Table",
     __parent = _parent_0
@@ -1397,9 +1361,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Get",
     __parent = _parent_0
@@ -1433,9 +1394,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "GetAll",
     __parent = _parent_0
@@ -1469,9 +1427,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Eq",
     __parent = _parent_0
@@ -1505,9 +1460,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Ne",
     __parent = _parent_0
@@ -1541,9 +1493,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Lt",
     __parent = _parent_0
@@ -1577,9 +1526,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Le",
     __parent = _parent_0
@@ -1613,9 +1559,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Gt",
     __parent = _parent_0
@@ -1649,9 +1592,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Ge",
     __parent = _parent_0
@@ -1685,9 +1625,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Not",
     __parent = _parent_0
@@ -1721,9 +1658,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Add",
     __parent = _parent_0
@@ -1757,9 +1691,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Sub",
     __parent = _parent_0
@@ -1793,9 +1724,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Mul",
     __parent = _parent_0
@@ -1829,9 +1757,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Div",
     __parent = _parent_0
@@ -1865,9 +1790,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Mod",
     __parent = _parent_0
@@ -1901,9 +1823,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Append",
     __parent = _parent_0
@@ -1937,9 +1856,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Prepend",
     __parent = _parent_0
@@ -1973,9 +1889,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Difference",
     __parent = _parent_0
@@ -2009,9 +1922,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "SetInsert",
     __parent = _parent_0
@@ -2045,9 +1955,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "SetUnion",
     __parent = _parent_0
@@ -2081,9 +1988,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "SetIntersection",
     __parent = _parent_0
@@ -2117,9 +2021,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "SetDifference",
     __parent = _parent_0
@@ -2153,9 +2054,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Slice",
     __parent = _parent_0
@@ -2189,9 +2087,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Skip",
     __parent = _parent_0
@@ -2225,9 +2120,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Limit",
     __parent = _parent_0
@@ -2261,9 +2153,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "GetField",
     __parent = _parent_0
@@ -2305,9 +2194,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Bracket",
     __parent = _parent_0
@@ -2341,9 +2227,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Contains",
     __parent = _parent_0
@@ -2377,9 +2260,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "InsertAt",
     __parent = _parent_0
@@ -2413,9 +2293,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "SpliceAt",
     __parent = _parent_0
@@ -2449,9 +2326,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "DeleteAt",
     __parent = _parent_0
@@ -2485,9 +2359,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "ChangeAt",
     __parent = _parent_0
@@ -2521,9 +2392,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Contains",
     __parent = _parent_0
@@ -2557,9 +2425,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "HasFields",
     __parent = _parent_0
@@ -2593,9 +2458,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "WithFields",
     __parent = _parent_0
@@ -2629,9 +2491,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Keys",
     __parent = _parent_0
@@ -2665,9 +2524,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Changes",
     __parent = _parent_0
@@ -2701,9 +2557,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Object",
     __parent = _parent_0
@@ -2737,9 +2590,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Pluck",
     __parent = _parent_0
@@ -2773,9 +2623,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "IndexesOf",
     __parent = _parent_0
@@ -2809,9 +2656,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Without",
     __parent = _parent_0
@@ -2845,9 +2689,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Merge",
     __parent = _parent_0
@@ -2881,9 +2722,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Between",
     __parent = _parent_0
@@ -2917,9 +2755,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Reduce",
     __parent = _parent_0
@@ -2953,9 +2788,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Map",
     __parent = _parent_0
@@ -2989,9 +2821,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Filter",
     __parent = _parent_0
@@ -3025,9 +2854,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "ConcatMap",
     __parent = _parent_0
@@ -3061,9 +2887,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "OrderBy",
     __parent = _parent_0
@@ -3097,9 +2920,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Distinct",
     __parent = _parent_0
@@ -3133,9 +2953,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Count",
     __parent = _parent_0
@@ -3169,9 +2986,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Union",
     __parent = _parent_0
@@ -3205,9 +3019,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Nth",
     __parent = _parent_0
@@ -3241,9 +3052,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Match",
     __parent = _parent_0
@@ -3277,9 +3085,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Split",
     __parent = _parent_0
@@ -3313,9 +3118,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Upcase",
     __parent = _parent_0
@@ -3349,9 +3151,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Downcase",
     __parent = _parent_0
@@ -3385,9 +3184,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "IsEmpty",
     __parent = _parent_0
@@ -3421,9 +3217,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Group",
     __parent = _parent_0
@@ -3457,9 +3250,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Sum",
     __parent = _parent_0
@@ -3493,9 +3283,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Avg",
     __parent = _parent_0
@@ -3529,9 +3316,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Min",
     __parent = _parent_0
@@ -3565,9 +3349,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Max",
     __parent = _parent_0
@@ -3601,9 +3382,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "InnerJoin",
     __parent = _parent_0
@@ -3637,9 +3415,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "OuterJoin",
     __parent = _parent_0
@@ -3673,9 +3448,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "EqJoin",
     __parent = _parent_0
@@ -3709,9 +3481,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Zip",
     __parent = _parent_0
@@ -3745,9 +3514,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "CoerceTo",
     __parent = _parent_0
@@ -3781,9 +3547,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Ungroup",
     __parent = _parent_0
@@ -3817,9 +3580,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "TypeOf",
     __parent = _parent_0
@@ -3853,9 +3613,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Info",
     __parent = _parent_0
@@ -3889,9 +3646,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Sample",
     __parent = _parent_0
@@ -3925,9 +3679,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Update",
     __parent = _parent_0
@@ -3961,9 +3712,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Delete",
     __parent = _parent_0
@@ -3997,9 +3745,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Replace",
     __parent = _parent_0
@@ -4033,9 +3778,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Insert",
     __parent = _parent_0
@@ -4069,9 +3811,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "DbCreate",
     __parent = _parent_0
@@ -4105,9 +3844,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "DbDrop",
     __parent = _parent_0
@@ -4141,9 +3877,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "DbList",
     __parent = _parent_0
@@ -4177,9 +3910,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "TableCreate",
     __parent = _parent_0
@@ -4213,9 +3943,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "TableDrop",
     __parent = _parent_0
@@ -4249,9 +3976,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "TableList",
     __parent = _parent_0
@@ -4285,9 +4009,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "IndexCreate",
     __parent = _parent_0
@@ -4321,9 +4042,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "IndexDrop",
     __parent = _parent_0
@@ -4357,9 +4075,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "IndexRename",
     __parent = _parent_0
@@ -4393,9 +4108,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "IndexList",
     __parent = _parent_0
@@ -4429,9 +4141,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "IndexStatus",
     __parent = _parent_0
@@ -4465,9 +4174,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "IndexWait",
     __parent = _parent_0
@@ -4501,9 +4207,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Sync",
     __parent = _parent_0
@@ -4571,9 +4274,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "FunCall",
     __parent = _parent_0
@@ -4607,9 +4307,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Default",
     __parent = _parent_0
@@ -4643,9 +4340,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Branch",
     __parent = _parent_0
@@ -4679,9 +4373,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Any",
     __parent = _parent_0
@@ -4715,9 +4406,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "All",
     __parent = _parent_0
@@ -4751,9 +4439,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "ForEach",
     __parent = _parent_0
@@ -4859,9 +4544,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Asc",
     __parent = _parent_0
@@ -4895,9 +4577,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Desc",
     __parent = _parent_0
@@ -4931,9 +4610,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Literal",
     __parent = _parent_0
@@ -4967,9 +4643,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "ISO8601",
     __parent = _parent_0
@@ -5003,9 +4676,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "ToISO8601",
     __parent = _parent_0
@@ -5039,9 +4709,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "EpochTime",
     __parent = _parent_0
@@ -5075,9 +4742,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "ToEpochTime",
     __parent = _parent_0
@@ -5111,9 +4775,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Now",
     __parent = _parent_0
@@ -5147,9 +4808,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "InTimezone",
     __parent = _parent_0
@@ -5183,9 +4841,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "During",
     __parent = _parent_0
@@ -5219,9 +4874,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "ReQLDate",
     __parent = _parent_0
@@ -5255,9 +4907,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "TimeOfDay",
     __parent = _parent_0
@@ -5291,9 +4940,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Timezone",
     __parent = _parent_0
@@ -5327,9 +4973,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Year",
     __parent = _parent_0
@@ -5363,9 +5006,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Month",
     __parent = _parent_0
@@ -5399,9 +5039,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Day",
     __parent = _parent_0
@@ -5435,9 +5072,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "DayOfWeek",
     __parent = _parent_0
@@ -5471,9 +5105,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "DayOfYear",
     __parent = _parent_0
@@ -5507,9 +5138,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Hours",
     __parent = _parent_0
@@ -5543,9 +5171,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Minutes",
     __parent = _parent_0
@@ -5579,9 +5204,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Seconds",
     __parent = _parent_0
@@ -5615,9 +5237,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Time",
     __parent = _parent_0
@@ -5651,9 +5270,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "GeoJson",
     __parent = _parent_0
@@ -5687,9 +5303,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "ToGeoJson",
     __parent = _parent_0
@@ -5723,9 +5336,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Point",
     __parent = _parent_0
@@ -5759,9 +5369,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Line",
     __parent = _parent_0
@@ -5795,9 +5402,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Polygon",
     __parent = _parent_0
@@ -5831,9 +5435,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Distance",
     __parent = _parent_0
@@ -5867,9 +5468,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Intersects",
     __parent = _parent_0
@@ -5903,9 +5501,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Includes",
     __parent = _parent_0
@@ -5939,9 +5534,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Circle",
     __parent = _parent_0
@@ -5975,9 +5567,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "GetIntersecting",
     __parent = _parent_0
@@ -6011,9 +5600,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "GetNearest",
     __parent = _parent_0
@@ -6047,9 +5633,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Fill",
     __parent = _parent_0
@@ -6083,9 +5666,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "UUID",
     __parent = _parent_0
@@ -6287,9 +5867,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Monday",
     __parent = _parent_0
@@ -6322,9 +5899,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Tuesday",
     __parent = _parent_0
@@ -6357,9 +5931,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Wednesday",
     __parent = _parent_0
@@ -6392,9 +5963,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Thursday",
     __parent = _parent_0
@@ -6427,9 +5995,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Friday",
     __parent = _parent_0
@@ -6462,9 +6027,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Saturday",
     __parent = _parent_0
@@ -6497,9 +6059,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "Sunday",
     __parent = _parent_0
@@ -6539,9 +6098,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "January",
     __parent = _parent_0
@@ -6574,9 +6130,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "February",
     __parent = _parent_0
@@ -6609,9 +6162,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "March",
     __parent = _parent_0
@@ -6644,9 +6194,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "April",
     __parent = _parent_0
@@ -6679,9 +6226,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "May",
     __parent = _parent_0
@@ -6714,9 +6258,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "June",
     __parent = _parent_0
@@ -6749,9 +6290,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "July",
     __parent = _parent_0
@@ -6784,9 +6322,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "August",
     __parent = _parent_0
@@ -6819,9 +6354,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "September",
     __parent = _parent_0
@@ -6854,9 +6386,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "October",
     __parent = _parent_0
@@ -6889,9 +6418,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "November",
     __parent = _parent_0
@@ -6924,9 +6450,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "December",
     __parent = _parent_0

@@ -63,9 +63,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "ReQLRuntimeError",
     __parent = _parent_0
@@ -96,9 +93,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "ReQLCompileError",
     __parent = _parent_0
@@ -129,9 +123,6 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, ...)
-      return _parent_0.__init(self, ...)
-    end,
     __base = _base_0,
     __name = "ReQLClientError",
     __parent = _parent_0
