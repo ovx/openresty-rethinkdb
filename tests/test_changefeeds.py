@@ -9,10 +9,10 @@ class TestChangeFeeds(util.LuaTestCase):
         ])
 
     def test_all(self):
-        self.assertEqual(self.run_lua('test_changefeeds_all'), "7\n8\n9\n10\n")
+        self.assertEqual(self.run_lua('test_changefeeds_all'), "{7, 8, 9, 10}")
 
     def test_even(self):
-        self.assertEqual(self.run_lua('test_changefeeds_even'), "8\n10\n")
+        self.assertEqual(self.run_lua('test_changefeeds_even'), "{8, 10}")
 
 
 if __name__ == '__main__':

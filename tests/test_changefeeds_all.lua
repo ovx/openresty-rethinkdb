@@ -7,10 +7,19 @@ r.connect({timeout = 1}, function(err, c)
       r.db('changefeeds'):table('watched'):insert(
         {{id = 7}, {id = 8}, {id = 9}, {id = 10}}
       ):run(c)
+      res = {}
       cur:each(function(err, row)
-        if err then error(err.message) end
-        print(row.new_val.id)
+        if err then return end
+        table.insert(res, row.new_val.id)
       end)
+      table.sort(res)
+      local s = "{"
+      local sep = ""
+      for _, e in ipairs(res) do
+        s = s .. sep .. e
+        sep = ", "
+      end
+      print(s .. "}")
     end
   )
 end)
