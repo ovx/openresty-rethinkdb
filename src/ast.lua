@@ -1,3 +1,5 @@
+local json = require('json')
+
 local errors = require('./errors')
 local net = require('./net')
 local proto_term_type = require('./proto').TermType
@@ -6,7 +8,6 @@ local is_instance = errors.is_instance
 local is_array = errors.is_array
 
 -- rethinkdb is both the main export object for the module
--- and a function that shortcuts `r.expr`.
 local rethinkdb = { }
 
 local func_wrap, has_implicit, intsp, kved, intspallargs, should_wrap
@@ -615,6 +616,7 @@ do
           error(TypeError("Illegal non-finite number `" .. self.data:tostring() .. "`."))
         end
       end
+      if self.data == nil then return json.null end
       return self.data
     end
   }
@@ -6115,9 +6117,6 @@ end
 function rethinkdb.expr(val, nesting_depth)
   if nesting_depth == nil then
     nesting_depth = 20
-  end
-  if not (val) then
-    error(errors.ReQLDriverError("Cannot wrap nil with r.expr()."))
   end
   if nesting_depth <= 0 then
     error(errors.ReQLDriverError("Nesting depth limit exceeded"))
