@@ -892,9 +892,6 @@ do
       self = _parent_0.__init(self, { })
       self.optargs = { }
       for key, val in ipairs(obj) do
-        if not (val) then
-          error(errors.ReQLDriverError("Object field '" .. tostring(key) .. "' may not be nil"))
-        end
         self.optargs[key] = rethinkdb.expr(val, nesting_depth - 1)
       end
       return self
