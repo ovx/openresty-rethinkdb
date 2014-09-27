@@ -353,6 +353,7 @@ return {
   ReQLClientError = ReQLClientError,
   mk_atom = mk_atom,
   mk_seq = mk_seq,
+  recursively_convert_pseudotype = recursively_convert_pseudotype,
   is_array = is_array,
   is_instance = is_instance
 }
