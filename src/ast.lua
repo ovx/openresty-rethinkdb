@@ -4783,7 +4783,7 @@ do
   local _base_0 = {
     tt = proto_term_type.FUNC,
     compose = function(self, args)
-      if has_implicit(args[1]) == true then
+      if has_implicit(args[1]) then
         return {
           args[1]
         }
