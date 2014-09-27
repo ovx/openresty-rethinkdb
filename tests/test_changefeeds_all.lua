@@ -1,6 +1,6 @@
 r = require('rethinkdb')
 
-r.connect(function(err, c)
+r.connect({timeout = 1}, function(err, c)
   r.db('changefeeds'):table('watched'):changes():limit(4):run(
     c, function(err, cur)
       if err then error(err.message) end

@@ -1,6 +1,6 @@
 r = require('rethinkdb')
 
-r.connect(function(err, c)
+r.connect({timeout = 1}, function(err, c)
   r.db('changefeeds'):table('watched'):changes():filter(
     r.row:get_field('new_val'):get_field('id'):mod(2):eq(0)
   ):limit(2):run(
