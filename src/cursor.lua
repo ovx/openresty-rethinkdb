@@ -52,11 +52,11 @@ do
         end
         return cb(nil, row)
       elseif proto_response_type.COMPILE_ERROR == t then
-        return cb(errors.ReQLCompileError(response, self._root))
+        return cb(errors.ReQLCompileError(response.r[1], self._root, response.b))
       elseif proto_response_type.CLIENT_ERROR == t then
-        return cb(errors.ReQLClientError(response, self._root))
+        return cb(errors.ReQLClientError(response.r[1], self._root, response.b))
       elseif proto_response_type.RUNTIME_ERROR == t then
-        return cb(errors.ReQLRuntimeError(response, self._root))
+        return cb(errors.ReQLRuntimeError(response.r[1], self._root, response.b))
       end
       return cb(errors.ReQLDriverError("Unknown response type for cursor"))
     end,

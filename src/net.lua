@@ -96,13 +96,13 @@ do
             -- Behavior varies considerably based on response type
             local _exp_0 = response.t
             if proto_response_type.COMPILE_ERROR == _exp_0 then
-              cb(errors.ReQLCompileError(response, root))
+              cb(errors.ReQLCompileError(response.r[1], root, response.b))
               return self:_del_query(token)
             elseif proto_response_type.CLIENT_ERROR == _exp_0 then
-              cb(errors.ReQLClientError(response, root))
+              cb(errors.ReQLClientError(response.r[1], root, response.b))
               return self:_del_query(token)
             elseif proto_response_type.RUNTIME_ERROR == _exp_0 then
-              cb(errors.ReQLRuntimeError(response, root))
+              cb(errors.ReQLRuntimeError(response.r[1], root, response.b))
               return self:_del_query(token)
             elseif proto_response_type.SUCCESS_ATOM == _exp_0 then
               response = {mk_atom(response, opts)}
