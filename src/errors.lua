@@ -311,7 +311,7 @@ function recursively_convert_pseudotype(obj, opts)
 end
 
 function mk_atom(response, opts)
-  return recursively_convert_pseudotype(response.r[0], opts)
+  return recursively_convert_pseudotype(response.r[1], opts)
 end
 
 function mk_seq(response, opts)
