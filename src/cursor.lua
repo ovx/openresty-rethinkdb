@@ -39,6 +39,7 @@ do
         self:_prompt_cont()
       end
       local response = self._responses[1]
+      -- Behavior varies considerably based on response type
       -- Error responses are not discarded, and the error will be sent to all future callbacks
       local t = response.t
       if proto_response_type.SUCCESS_PARTIAL == t or proto_response_type.SUCCESS_FEED == t or proto_response_type.SUCCESS_SEQUENCE == t then
@@ -57,6 +58,10 @@ do
         return cb(errors.ReQLClientError(response.r[1], self._root, response.b))
       elseif proto_response_type.RUNTIME_ERROR == t then
         return cb(errors.ReQLRuntimeError(response.r[1], self._root, response.b))
+      elseif proto_response_type.SUCCESS_ATOM == t then
+        return cb(nil, {errors.recursively_convert_pseudotype(response.r[1], self._opts)})
+      elseif proto_response_type.WAIT_COMPLETE == t then
+        return cb(nil, nil)
       end
       return cb(errors.ReQLDriverError("Unknown response type " .. t))
     end,
