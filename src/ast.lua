@@ -744,7 +744,7 @@ do
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
     __init = function(self, optargs, ...)
-      self = _parent_0.__init(self)
+      _parent_0.__init(self)
       self.args = {}
       for i, a in ipairs(arg) do
         self.args[i] = rethinkdb.expr(func_wrap(optargs, a))
@@ -1082,10 +1082,10 @@ do
   local _class_0 = setmetatable({
     __init = function(self, data)
       if is_instance(TermBase, data) then
-        local self = _parent_0.__init(self, { }, data)
+        _parent_0.__init(self, { }, data)
       else
         if is_instance(Buffer, data) then
-          local self = _parent_0.__init(self)
+          _parent_0.__init(self)
           self.base64_data = data.tostring("base64")
         else
           error(TypeError("Parameter to `r.binary` must be a Buffer object or ReQL query."))
