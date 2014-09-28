@@ -58,7 +58,7 @@ do
       elseif proto_response_type.RUNTIME_ERROR == t then
         return cb(errors.ReQLRuntimeError(response.r[1], self._root, response.b))
       end
-      return cb(errors.ReQLDriverError("Unknown response type for cursor"))
+      return cb(errors.ReQLDriverError("Unknown response type " .. t))
     end,
     close = function(self, cb)
       if not self._end_flag then
