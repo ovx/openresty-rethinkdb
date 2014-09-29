@@ -39,15 +39,13 @@ end
 do
   local _base_0 = {
     _add_response = function(self, response)
-      if not self._type then self._type = response.t end
-      if response.t == self._type or response.t == proto_response_type.SUCCESS_SEQUENCE then
-        -- We insert a "ok" response only if it's not empty
-        if #response.r > 0 then
-          table.insert(self._responses, response)
-        end
-      else
+      local t = response.t
+      if not self._type then self._type = t end
+      if response.r[1] or proto_response_type.WAIT_COMPLETE == t then
         table.insert(self._responses, response)
-        -- We got an error or a SUCCESS_SEQUENCE
+      end
+      if proto_response_type.SUCCESS_PARTIAL ~= t and proto_response_type.SUCCESS_FEED ~= t then
+        -- We got an error, SUCCESS_SEQUENCE, WAIT_COMPLETE, or a SUCCESS_ATOM
         self._end_flag = true
       end
       self._cont_flag = false
@@ -74,7 +72,7 @@ do
       -- Behavior varies considerably based on response type
       -- Error responses are not discarded, and the error will be sent to all future callbacks
       local t = response.t
-      if proto_response_type.SUCCESS_PARTIAL == t or proto_response_type.SUCCESS_FEED == t or proto_response_type.SUCCESS_SEQUENCE == t then
+      if proto_response_type.SUCCESS_ATOM == t or proto_response_type.SUCCESS_PARTIAL == t or proto_response_type.SUCCESS_FEED == t or proto_response_type.SUCCESS_SEQUENCE == t then
         local row = recursively_convert_pseudotype(response.r[self._response_index], self._opts)
         self._response_index = self._response_index + 1
 
@@ -90,8 +88,6 @@ do
         return cb(errors.ReQLClientError(response.r[1], self._root, response.b))
       elseif proto_response_type.RUNTIME_ERROR == t then
         return cb(errors.ReQLRuntimeError(response.r[1], self._root, response.b))
-      elseif proto_response_type.SUCCESS_ATOM == t then
-        return cb(nil, {recursively_convert_pseudotype(response.r[1], self._opts)})
       elseif proto_response_type.WAIT_COMPLETE == t then
         return cb(nil, nil)
       end
