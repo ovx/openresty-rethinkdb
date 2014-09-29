@@ -1,7 +1,7 @@
 local ReQLDriverError, ReQLServerError, ReQLRuntimeError, ReQLCompileError
 local ReQLClientError, ReQLQueryPrinter
 
-local convert_pseudotype, recursively_convert_pseudotype, mk_atom, mk_seq
+local convert_pseudotype, recursively_convert_pseudotype
 local is_array, is_instance
 
 do
@@ -310,14 +310,6 @@ function recursively_convert_pseudotype(obj, opts)
   return obj
 end
 
-function mk_atom(response, opts)
-  return recursively_convert_pseudotype(response.r[1], opts)
-end
-
-function mk_seq(response, opts)
-  return recursively_convert_pseudotype(response.r, opts)
-end
-
 function is_array(obj)
   if type(obj) ~= 'table' or (obj[1] == nil) then return false end
   for k, v in pairs(obj) do
@@ -343,8 +335,6 @@ return {
   ReQLRuntimeError = ReQLRuntimeError,
   ReQLCompileError = ReQLCompileError,
   ReQLClientError = ReQLClientError,
-  mk_atom = mk_atom,
-  mk_seq = mk_seq,
   recursively_convert_pseudotype = recursively_convert_pseudotype,
   is_array = is_array,
   is_instance = is_instance
