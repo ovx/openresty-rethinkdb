@@ -2,19 +2,18 @@ local socket = require('socket')
 local json = require('json')
 
 local errors = require('./errors')
-local Cursor = require('./cursor')
 local protodef = require('./proto')
+
 local proto_version = protodef.Version.V0_3
 local proto_protocol = protodef.Protocol.JSON
 local proto_query_type = protodef.QueryType
 local proto_response_type = protodef.ResponseType
 
 -- Import some names to this namespace for convienience
-local mk_atom = errors.mk_atom
+local recursively_convert_pseudotype = errors.recursively_convert_pseudotype
 local is_instance = errors.is_instance
-local is_array = errors.is_array
 
-local Connection
+local Connection, Cursor
 local bytes_to_int, int_to_bytes
 
 function bytes_to_int(str)
@@ -35,6 +34,139 @@ function int_to_bytes(num, bytes)
         num = math.fmod(num, mul)
     end
     return string.char(unpack(res))
+end
+
+do
+  local _base_0 = {
+    _add_response = function(self, response)
+      if not self._type then self._type = response.t end
+      if response.t == self._type or response.t == proto_response_type.SUCCESS_SEQUENCE then
+        -- We insert a "ok" response only if it's not empty
+        if #response.r > 0 then
+          table.insert(self._responses, response)
+        end
+      else
+        table.insert(self._responses, response)
+        -- We got an error or a SUCCESS_SEQUENCE
+        self._end_flag = true
+      end
+      self._cont_flag = false
+    end,
+    _prompt_cont = function(self)
+      if self._end_flag then return end
+      -- Let's ask the server for more data if we haven't already
+      if not self._cont_flag then
+        self._cont_flag = true
+        self._conn:_continue_query(self._token)
+      end
+      self._conn:_get_response(self._token)
+    end,
+    -- Implement IterableResult
+    next = function(self, cb)
+      -- Try to get a row out of the responses
+      while not self._responses[1] do
+        if self._end_flag then
+          return cb(errors.ReQLDriverError("No more rows in the cursor."))
+        end
+        self:_prompt_cont()
+      end
+      local response = self._responses[1]
+      -- Behavior varies considerably based on response type
+      -- Error responses are not discarded, and the error will be sent to all future callbacks
+      local t = response.t
+      if proto_response_type.SUCCESS_PARTIAL == t or proto_response_type.SUCCESS_FEED == t or proto_response_type.SUCCESS_SEQUENCE == t then
+        local row = recursively_convert_pseudotype(response.r[self._response_index], self._opts)
+        self._response_index = self._response_index + 1
+
+        -- If we're done with this response, discard it
+        if not response.r[self._response_index] then
+          table.remove(self._responses, 1)
+          self._response_index = 1
+        end
+        return cb(nil, row)
+      elseif proto_response_type.COMPILE_ERROR == t then
+        return cb(errors.ReQLCompileError(response.r[1], self._root, response.b))
+      elseif proto_response_type.CLIENT_ERROR == t then
+        return cb(errors.ReQLClientError(response.r[1], self._root, response.b))
+      elseif proto_response_type.RUNTIME_ERROR == t then
+        return cb(errors.ReQLRuntimeError(response.r[1], self._root, response.b))
+      elseif proto_response_type.SUCCESS_ATOM == t then
+        return cb(nil, {recursively_convert_pseudotype(response.r[1], self._opts)})
+      elseif proto_response_type.WAIT_COMPLETE == t then
+        return cb(nil, nil)
+      end
+      return cb(errors.ReQLDriverError("Unknown response type " .. t))
+    end,
+    close = function(self, cb)
+      if not self._end_flag then
+        self._conn:_end_query(self._token)
+      end
+      if cb then return cb() end
+    end,
+    each = function(self, cb, on_finished)
+      if type(cb) ~= 'function' then
+        error(errors.ReQLDriverError("First argument to each must be a function."))
+      end
+      if on_finished and type(on_finished) ~= 'function' then
+        error(errors.ReQLDriverError("Optional second argument to each must be a function."))
+      end
+      function next_cb(err, data)
+        if err then
+          if errors.message ~= 'No more rows in the cursor.' then
+            return cb(err)
+          end
+          if on_finished then
+            return on_finished()
+          end
+        else
+          cb(nil, data)
+          return self:next(next_cb)
+        end
+      end
+      return self:next(next_cb)
+    end,
+    to_array = function(self, cb)
+      if not self._type then self:_prompt_cont() end
+      if self._type == proto_response_type.SUCCESS_FEED then
+        return cb(errors.ReQLDriverError("`to_array` is not available for feeds."))
+      end
+      local arr = {}
+      return self:each(
+        function(err, row)
+          if err then
+            return cb(err)
+          end
+          table.insert(arr, row)
+        end,
+        function()
+          return cb(nil, arr)
+        end
+      )
+    end,
+  }
+  _base_0.__index = _base_0
+  local _class_0 = setmetatable({
+    __init = function(self, conn, token, opts, root)
+      self._conn = conn
+      self._token = token
+      self._opts = opts
+      self._root = root -- current query
+      self._responses = { }
+      self._response_index = 1
+      self._cont_flag = true
+    end,
+    __base = _base_0,
+    __name = "Cursor"
+  }, {
+    __index = _base_0,
+    __call = function(cls, ...)
+      local _self_0 = setmetatable({}, _base_0)
+      cls.__init(_self_0, ...)
+      return _self_0
+    end
+  })
+  _base_0.__class = _class_0
+  Cursor = _class_0
 end
 
 do
