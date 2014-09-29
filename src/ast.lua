@@ -5705,9 +5705,6 @@ function rethinkdb.expr(val, nesting_depth, optargs)
     return val
   end
   if type(val) == 'table' then
-    if type(val.build) == 'function' then
-      return val
-    end
     if is_array(val) then
       for i, v in ipairs(val) do
         val[i] = rethinkdb.expr(v, nesting_depth - 1)
