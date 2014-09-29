@@ -676,13 +676,13 @@ do
         }
       else
         if self.args then
-        if should_wrap(self.args[1]) then
-          args[1] = {
-            'r.expr(',
-            args[1],
-            ')'
-          }
-        end
+          if should_wrap(self.args[1]) then
+            args[1] = {
+              'r.expr(',
+              args[1],
+              ')'
+            }
+          end
         end
         return {
           args[1],
