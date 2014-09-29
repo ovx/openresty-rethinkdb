@@ -686,7 +686,7 @@ do
         end
         return {
           args[1],
-          '.',
+          ':',
           self.mt,
           '(',
           intspallargs((function()
