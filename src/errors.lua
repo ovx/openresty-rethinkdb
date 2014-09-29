@@ -1,3 +1,5 @@
+local mime = require('mime')
+
 local ReQLDriverError, ReQLServerError, ReQLRuntimeError, ReQLCompileError
 local ReQLClientError, ReQLQueryPrinter
 
@@ -285,10 +287,10 @@ function convert_pseudotype(obj, opts)
   elseif 'BINARY' == _exp_0 then
     local _exp_1 = opts.binary_format
     if 'native' == _exp_1 or not _exp_1 then
-      if not (obj['data']) then
+      if not obj.data then
         error(err.ReQLDriverError("pseudo-type BINARY object missing expected field 'data'."))
       end
-      return (Buffer(obj['data'], 'base64'))
+      return (mime.unb64(obj.data))
     elseif 'raw' == _exp_1 then
       return obj
     else

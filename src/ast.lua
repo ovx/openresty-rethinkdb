@@ -1,4 +1,5 @@
 local json = require('json')
+local mime = require('mime')
 
 local errors = require('./errors')
 local net = require('./net')
@@ -1066,10 +1067,9 @@ do
     end,
     build = function(self)
       if #self.args == 0 then
-        local data = self.base64_data
         return {
           ['$reql_type$'] = 'BINARY',
-          data = data
+          data = self.base64_data
         }
       else
         return _parent_0
@@ -1083,14 +1083,13 @@ do
       if is_instance(TermBase, data) then
         _parent_0.__init(self, { }, data)
       else
-        if is_instance(Buffer, data) then
+        if type(data) == 'string' then
           _parent_0.__init(self)
-          self.base64_data = data.tostring("base64")
+          self.base64_data = mime.b64(data)
         else
-          error(TypeError("Parameter to `r.binary` must be a Buffer object or ReQL query."))
+          error("Parameter to `r.binary` must be a string or ReQL query.")
         end
       end
-      return self
     end,
     __base = _base_0,
     __name = "Binary",
