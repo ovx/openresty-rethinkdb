@@ -828,12 +828,12 @@ do
   local _parent_0 = RDBOp
   local _base_0 = {
     tt = proto_term_type.MAKE_ARRAY,
-    st = '[...]', -- This is only used by the `nil` argument checker
+    st = '{...}', -- This is only used by the `nil` argument checker
     compose = function(self, args)
       return {
-        '[',
+        '{',
         intsp(args),
-        ']'
+        '}'
       }
     end
   }
