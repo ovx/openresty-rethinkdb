@@ -18,7 +18,6 @@ build = {
   type = 'builtin',
   modules = {
     ast = 'src/ast.lua',
-    cursor = 'src/cursor.lua',
     errors = 'src/errors.lua',
     net = 'src/net.lua',
     proto = 'src/proto.lua',
