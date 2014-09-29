@@ -600,8 +600,7 @@ do
     args = { },
     optargs = { },
     compose = function(self)
-      local _exp_0 = type(self.data)
-      if 'string' == _exp_0 then
+      if type(self.data) == 'string' then
         return '"' .. self.data .. '"'
       else
         return '' .. self.data
