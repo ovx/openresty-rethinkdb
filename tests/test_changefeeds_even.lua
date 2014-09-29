@@ -11,7 +11,7 @@ r.connect({timeout = 1}, function(err, c)
       ):run(c)
       res = {}
       cur:each(function(err, row)
-        if err then return end
+        if err then error(err.message) end
         table.insert(res, row.new_val.id)
       end)
       table.sort(res)
