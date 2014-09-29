@@ -112,7 +112,7 @@ do
       end
       function next_cb(err, data)
         if err then
-          if err.message ~= 'No more rows in the cursor.' then
+          if err.message ~= 'ReQLDriverError No more rows in the cursor.' then
             return cb(err)
           end
           if on_finished then
