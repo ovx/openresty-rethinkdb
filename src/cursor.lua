@@ -32,8 +32,7 @@ do
     next = function(self, cb)
       -- Try to get a row out of the responses
       while not self._responses[1] do
-        -- We prefetch things here, set `is 0` to avoid prefectch
-        if self._end_flag == true then
+        if self._end_flag then
           return cb(errors.ReQLDriverError("No more rows in the cursor."))
         end
         self:_prompt_cont()
@@ -121,9 +120,7 @@ do
       self._root = root -- current query
       self._responses = { }
       self._response_index = 1
-      self._end_flag = false
       self._cont_flag = true
-      self._cont = nil
     end,
     __base = _base_0,
     __name = "Cursor"
