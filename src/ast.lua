@@ -622,7 +622,6 @@ do
   local _class_0 = setmetatable({
     __init = function(self, val)
       self.data = val
-      return self
     end,
     __base = _base_0,
     __name = "DatumTerm",
@@ -745,13 +744,12 @@ do
   local _class_0 = setmetatable({
     __init = function(self, optargs, ...)
       _parent_0.__init(self)
-      self.args = {}
-      for i, a in ipairs(arg) do
+      self.args = {...}
+      for i, a in ipairs(self.args) do
         self.args[i] = rethinkdb.expr(func_wrap(optargs, a))
       end
       if optargs == nil then optargs = {} end
       self.optargs = optargs
-      return self
     end,
     __base = _base_0,
     __name = "RDBOpWrap",
@@ -830,6 +828,17 @@ do
   local _base_0 = {
     tt = proto_term_type.MAKE_ARRAY,
     st = '{...}', -- This is only used by the `nil` argument checker
+    build = function(self)
+      local args = {}
+      for i, arg in ipairs(self.args) do
+        if type(arg) == 'table' then
+          args[i] = arg:build()
+        else
+          args[i] = arg
+        end
+      end
+      return {self.tt, args}
+    end,
     compose = function(self, args)
       return {
         '{',
@@ -841,6 +850,10 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
+    __init = function(self, arr)
+      self.args = arr
+      self.optargs = {}
+    end,
     __base = _base_0,
     __name = "MakeArray",
     __parent = _parent_0
@@ -884,12 +897,9 @@ do
   _base_0.__index = _base_0
   setmetatable(_base_0, _parent_0.__base)
   local _class_0 = setmetatable({
-    __init = function(self, obj, nesting_depth)
+    __init = function(self, obj)
       self.args = {}
-      self.optargs = { }
-      for key, val in pairs(obj) do
-        self.optargs[key] = rethinkdb.expr(val, nesting_depth - 1)
-      end
+      self.optargs = obj
     end,
     __base = _base_0,
     __name = "MakeObject",
@@ -4498,7 +4508,7 @@ do
         error(errors.ReQLDriverError("Anonymous function returned `nil`. Did you forget a `return`?"))
       end
       optargs.arity = nil
-      local args_arr = MakeArray({ }, unpack(arg_nums))
+      local args_arr = MakeArray(arg_nums)
       _parent_0.__init(self, optargs, args_arr, body)
     end,
     __base = _base_0,
@@ -5704,13 +5714,15 @@ function rethinkdb.expr(val, nesting_depth, optargs)
     return val
   end
   if type(val) == 'table' then
-    if is_array(val) then
-      for i, v in ipairs(val) do
-        val[i] = rethinkdb.expr(v, nesting_depth - 1)
-      end
-      return MakeArray(optargs, unpack(val))
+    local array = true
+    for k, v in pairs(val) do
+      if type(k) ~= 'number' then array = false end
+      val[k] = rethinkdb.expr(v, nesting_depth - 1)
     end
-    return MakeObject(val, nesting_depth)
+    if array then
+      return MakeArray(val)
+    end
+    return MakeObject(val)
   end
   return DatumTerm(val)
 end
