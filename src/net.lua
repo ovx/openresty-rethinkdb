@@ -14,26 +14,27 @@ local recursively_convert_pseudotype = errors.recursively_convert_pseudotype
 local is_instance = errors.is_instance
 
 local Connection, Cursor
-local bytes_to_int, int_to_bytes
 
 function bytes_to_int(str)
-    local t = {str:byte(1,-1)}
-    local n = 0
-    for k=1,#t do
-        n = n + t[k] * 2 ^ ((k - 1) * 8)
-    end
-    return n
+  local t = {str:byte(1,-1)}
+  local n = 0
+  for k=1,#t do
+    n = n + t[k] * 2 ^ ((k - 1) * 8)
+  end
+  return n
+end
+
+function div_mod(num, den)
+  return math.floor(num / den), math.fmod(num, den)
 end
 
 function int_to_bytes(num, bytes)
-    local res = {}
-    local mul = 0
-    for k=bytes,1,-1 do
-        mul = 2 ^ (8 * (k - 1))
-        res[k] = math.floor(num / mul)
-        num = math.fmod(num, mul)
-    end
-    return string.char(unpack(res))
+  local res = {}
+  local mul = 0
+  for k=bytes,1,-1 do
+    res[k], num = div_mod(num, 2 ^ (8 * (k - 1)))
+  end
+  return string.char(unpack(res))
 end
 
 do
