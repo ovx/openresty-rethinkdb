@@ -3,8 +3,7 @@ local mime = require('mime')
 local ReQLDriverError, ReQLServerError, ReQLRuntimeError, ReQLCompileError
 local ReQLClientError, ReQLQueryPrinter
 
-local convert_pseudotype, recursively_convert_pseudotype
-local is_array, is_instance
+local recursively_convert_pseudotype, is_instance, class
 
 do
   local _base_0 = { }
@@ -312,14 +311,6 @@ function recursively_convert_pseudotype(obj, opts)
   return obj
 end
 
-function is_array(obj)
-  if type(obj) ~= 'table' or (obj[1] == nil) then return false end
-  for k, v in pairs(obj) do
-    if type(k) ~= 'number' then return false end
-  end
-  return true
-end
-
 function is_instance(class, obj)
   if type(obj) ~= 'table' then return false end
   local obj_cls = obj.__class
@@ -338,6 +329,5 @@ return {
   ReQLCompileError = ReQLCompileError,
   ReQLClientError = ReQLClientError,
   recursively_convert_pseudotype = recursively_convert_pseudotype,
-  is_array = is_array,
   is_instance = is_instance
 }
