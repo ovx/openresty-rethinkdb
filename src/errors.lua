@@ -5,6 +5,53 @@ local ReQLClientError, ReQLQueryPrinter
 
 local recursively_convert_pseudotype, is_instance, class
 
+function class(name, parent, base)
+  local index, init
+  if base == nil then
+    base = parent
+    parent = nil
+  end
+  if type(base) == 'function' then
+    init = base
+    base = {}
+  else
+    base = base or {}
+    init = base.__init
+    base.__init = nil
+  end
+  if parent and parent.__base then
+    setmetatable(base, parent.__base)
+  else
+    index = base
+  end
+  base.__index = base
+  local _class_0 = setmetatable({
+    __name = name,
+    __init = init,
+    __base = base,
+    __parent = parent
+  }, {
+    __index = index or function(cls, name)
+      local val = rawget(base, name)
+      if val == nil then
+        return parent[name]
+      else
+        return val
+      end
+    end,
+    __call = function(cls, ...)
+      local self = setmetatable({}, base)
+      cls.__init(self, ...)
+      return self
+    end
+  })
+  base.__class = _class_0
+  if parent and parent.__inherited then
+    parent.__inherited(parent, _class_0)
+  end
+  return _class_0
+end
+
 do
   local _base_0 = { }
   _base_0.__index = _base_0
@@ -329,5 +376,6 @@ return {
   ReQLCompileError = ReQLCompileError,
   ReQLClientError = ReQLClientError,
   recursively_convert_pseudotype = recursively_convert_pseudotype,
+  class = class,
   is_instance = is_instance
 }
