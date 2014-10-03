@@ -526,8 +526,7 @@ RDBOp = class(
       for i, a in ipairs(self.args) do
         self.args[i] = rethinkdb.expr(a)
       end
-      if optargs == nil then optargs = {} end
-      self.optargs = optargs
+      self.optargs = optargs or {}
     end,
     build = function(self)
       local args = {}
@@ -725,11 +724,12 @@ Binary = class(
   'Binary', RDBOp,
   {
     __init = function(self, data)
+      self.args = {}
+      self.optargs = {}
       if is_instance(TermBase, data) then
-        _parent_0.__init(self, { }, data)
+        table.insert(self.args, data)
       else
         if type(data) == 'string' then
-          _parent_0.__init(self)
           self.base64_data = mime.b64(data)
         else
           error('Parameter to `r.binary` must be a string or ReQL query.')
@@ -738,21 +738,29 @@ Binary = class(
     end,
     tt = --[[Term.BINARY]],
     st = 'binary',
-    compose = function(self)
-      if #self.args == 0 then
-        return 'r.binary(<data>)'
+    compose = function(self, args, optargs)
+      if self.args[1] then
+        return {
+          'r.binary(',
+          intspallargs(args, optargs),
+          ')'
+        }
       else
-        return _parent_0
+        return 'r.binary(<data>)'
       end
     end,
     build = function(self)
-      if #self.args == 0 then
+      if self.args[1] then
+        local args = {}
+        for i, arg in ipairs(self.args) do
+          args[i] = arg:build()
+        end
+        return {self.tt, args}
+      else
         return {
           ['$reql_type$'] = 'BINARY',
           data = self.base64_data
         }
-      else
-        return _parent_0
       end
     end
   }
@@ -1677,8 +1685,8 @@ Func = class(
         error(errors.ReQLDriverError('Anonymous function returned `nil`. Did you forget a `return`?'))
       end
       optargs.arity = nil
-      local args_arr = MakeArray(arg_nums)
-      _parent_0.__init(self, optargs, args_arr, body)
+      self.args = {MakeArray(arg_nums), body}
+      self.optargs = optargs
     end,
     next_var_id = 0,
     tt = --[[Term.FUNC]],
