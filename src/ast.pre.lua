@@ -1252,7 +1252,7 @@ Nth = class(
   }
 )
 
-ToJson class(
+ToJson = class(
   'ToJson', RDBOp,
   {
     tt = --[[Term.TO_JSON_STRING]],
