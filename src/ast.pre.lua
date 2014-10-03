@@ -14,7 +14,7 @@ local rethinkdb = { }
 
 local has_implicit, intsp, kved, intspallargs, should_wrap
 
-local DatumTerm, RDBOp, RDBOp, MakeArray, MakeObject, Var
+local DatumTerm, RDBOp, RDBOp, MakeArray, MakeObject, Var, PolygonSub
 local JavaScript, Http, Json, Binary, Args, UserError, Random, ImplicitVar, Db
 local Table, Get, GetAll, Eq, Ne, Lt, Le, Gt, Ge, Not, Add, Sub, Mul, Div, Mod
 local Append, Prepend, Difference, SetInsert, SetUnion, SetIntersection
@@ -33,7 +33,7 @@ local DayOfWeek, DayOfYear, Hours, Minutes, Seconds, Time, GeoJson, ToGeoJson
 local Point, Line, Polygon, Distance, Intersects, Includes, Circle
 local GetIntersecting, GetNearest, Fill, UUID, Monday, Tuesday, Wednesday
 local Thursday, Friday, Saturday, Sunday, January, February, March, April, May
-local June, July, August, September, October, November, December
+local June, July, August, September, October, November, December, ToJson
 
 -- AST classes
 
@@ -277,6 +277,9 @@ RDBOp = class(
     nth = function(...)
       return Nth({ }, ...)
     end,
+    to_json = function(...):
+      return ToJson({}, ...)
+    end,
     bracket = function(...)
       return Bracket({ }, ...)
     end,
@@ -415,6 +418,9 @@ RDBOp = class(
     end,
     fill = function(...)
       return Fill({ }, ...)
+    end,
+    polygon_sub = function(...):
+      return PolygonSub({}, ...)
     end,
 
     -- Database operations
@@ -1244,6 +1250,14 @@ Nth = class(
   }
 )
 
+ToJson class(
+  'ToJson', RDBOp,
+  {
+    tt = --[[Term.TO_JSON_STRING]],
+    st = 'to_json_string'
+  }
+)
+
 Match = class(
   'Match', RDBOp,
   {
@@ -1972,6 +1986,14 @@ Fill = class(
   {
     tt = --[[Term.FILL]],
     mt = 'fill'
+  }
+)
+
+PolygonSub = class(
+  'PolygonSub', RDBOp,
+  {
+    tt = --[[Term.POLYGON_SUB]],
+    st = 'polygon_sub'
   }
 )
 

@@ -154,6 +154,7 @@ class Term:
         SAMPLE = 81
         DEFAULT = 92
         JSON = 98
+        TO_JSON_STRING = 172
         ISO8601 = 99
         TO_ISO8601 = 100
         EPOCH_TIME = 101
