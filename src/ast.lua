@@ -40,12 +40,6 @@ local June, July, August, September, October, November, December
 TermBase = class(
   'TermBase',
   {
-    __init = function(self)
-      self = function(self, field)
-        return self.bracket(field)
-      end
-      return self
-    end,
     run = function(self, connection, options, callback)
       -- Valid syntaxes are
       -- connection, callback
@@ -81,7 +75,7 @@ TermBase = class(
 )
 
 RDBVal = class(
-  'RDBVal',
+  'RDBVal', TermBase,
   {
     eq = function(...)
       return Eq({ }, ...)
