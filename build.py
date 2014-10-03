@@ -113,7 +113,7 @@ def install(args):
 def main():
     parser = argparse.ArgumentParser(description='Process some integers.')
 
-    parser.add_argument('action', nargs='?', default='build')
+    parser.add_argument('action', nargs='?', default='test')
     parser.add_argument('-f', type=bool)
 
     args = parser.parse_args()
