@@ -52,6 +52,7 @@ def lint(args):
 
 
 def build(args):
+    print('building templates:')
     import ReQLprotodef as protodef
     import re
     class BuildFormat(string.Formatter):
@@ -80,6 +81,7 @@ def build(args):
             if unused:
                 raise ValueError('Found {} unused terms.'.format(unused))
 
+    print('building ast.lua')
     with open('src/ast.pre.lua') as io:
         s = io.read()
     s = ASTChecker().vformat(s, (), {
@@ -87,6 +89,7 @@ def build(args):
     })
     with open('src/ast.lua', 'w') as io:
         io.write(s)
+    print('building net.lua')
     with open('src/net.pre.lua') as io:
         s = io.read()
     s = BuildFormat().vformat(s, (), {
@@ -98,6 +101,7 @@ def build(args):
     })
     with open('src/net.lua', 'w') as io:
         io.write(s)
+    print('build successful')
 
 
 
