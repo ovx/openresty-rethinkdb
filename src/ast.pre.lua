@@ -337,14 +337,8 @@ RDBOp = class(
     default = function(...)
       return Default({ }, ...)
     end,
-    or_ = function(...)
-      return Any({ }, ...)
-    end,
     any = function(...)
       return Any({ }, ...)
-    end,
-    and_ = function(...)
-      return All({ }, ...)
     end,
     all = function(...)
       return All({ }, ...)
@@ -364,7 +358,9 @@ RDBOp = class(
     max = function(...)
       return Max({ }, ...)
     end,
-    info = Info,
+    info = function(...)
+      return Info({}, ...)
+    end,
     sample = function(...)
       return Sample({ }, ...)
     end,
@@ -408,7 +404,9 @@ RDBOp = class(
     end,
 
     -- Geo operations
-    to_geojson = ToGeoJson,
+    to_geojson = function(...)
+      return ToGeoJson({}, ...)
+    end,
     distance = function(self, g, opts)
       return Distance(opts, self, g)
     end,
@@ -498,7 +496,9 @@ RDBOp = class(
     to_iso8601 = function(...)
       return ToISO8601({ }, ...)
     end,
-    to_epoch_time = ToEpochTime,
+    to_epoch_time = function(...)
+      return ToEpochTime({}, ...)
+    end,
     in_timezone = function(...)
       return InTimezone({ }, ...)
     end,
@@ -538,7 +538,9 @@ RDBOp = class(
     seconds = function(...)
       return Seconds({ }, ...)
     end,
-    uuid = UUID,
+    uuid = function(...)
+      return UUID({}, ...)
+    end,
     get_intersecting = function(self, g, opts)
       return GetIntersecting(opts, self, g)
     end,
