@@ -435,7 +435,6 @@ Connection = class(
       return self:_send_query(query)
     end,
     _write_query = function(self, token, data)
-      --print(data)
       self.raw_socket:send(
         int_to_bytes(token, 8) ..
         int_to_bytes(#data, 4) ..

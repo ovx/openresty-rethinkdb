@@ -663,7 +663,6 @@ MakeArray = class(
         if type(arg) == 'table' then
           args[i] = arg:build()
         else
-          --print(arg)
           args[i] = arg
         end
       end
