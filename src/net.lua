@@ -471,7 +471,7 @@ Connection = class(
               host = self.host,
               port = self.port,
               db = self.db,
-              auth_key = self.auth_key
+              auth_key = self.auth_key,
               timeout = self.timeout
             }, cb)
           end
