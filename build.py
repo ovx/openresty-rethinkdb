@@ -5,6 +5,8 @@ import string
 
 
 def test(args):
+    if not args.f:
+        lint(args)
     import unittest
     res = unittest.TestResult()
     io = subprocess.Popen(['rethinkdb'], cwd='tests')
@@ -36,6 +38,8 @@ def clean(args):
 
 
 def lint(args):
+    if not args.f:
+        build(args)
     print('linting src:')
     returncode = subprocess.call([
         'luac', 'ast.lua', 'errors.lua', 'net.lua', 'rethinkdb.lua', 'util.lua'
@@ -98,6 +102,8 @@ def build(args):
 
 
 def install(args):
+    if not args.f:
+        lint(args)
     returncode = subprocess.call(['luarocks', 'make'])
     if returncode:
         print('`luarocks make` returned:', returncode)
@@ -108,7 +114,7 @@ def main():
     parser = argparse.ArgumentParser(description='Process some integers.')
 
     parser.add_argument('action', nargs='?', default='build')
-    parser.add_argument('-j', type=int)
+    parser.add_argument('-f', type=bool)
 
     args = parser.parse_args()
 
