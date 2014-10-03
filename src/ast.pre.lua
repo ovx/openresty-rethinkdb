@@ -277,7 +277,7 @@ RDBOp = class(
     nth = function(...)
       return Nth({ }, ...)
     end,
-    to_json = function(...):
+    to_json = function(...)
       return ToJson({}, ...)
     end,
     bracket = function(...)
@@ -417,7 +417,7 @@ RDBOp = class(
     fill = function(...)
       return Fill({ }, ...)
     end,
-    polygon_sub = function(...):
+    polygon_sub = function(...)
       return PolygonSub({}, ...)
     end,
 
