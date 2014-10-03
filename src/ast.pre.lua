@@ -410,7 +410,7 @@ RDBVal = class(
       else
         if defun_or_opts then
           -- FIXME?
-          if (type(defun_or_opts) == 'table') and not is_instance(Function, defun_or_opts) and not is_instance(TermBase, defun_or_opts) then
+          if (type(defun_or_opts) == 'table') and not is_instance(TermBase, defun_or_opts) then
             return IndexCreate(defun_or_opts, self, name)
           else
             return IndexCreate({ }, self, name, rethinkdb.expr(defun_or_opts))
