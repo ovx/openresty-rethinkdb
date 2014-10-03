@@ -1,65 +1,37 @@
-'''
-desc: Tests array limit variations
-table_variable_name: tbl
-tests:
+import util
 
-  # test simplistic array limits
-  - cd: r.expr([1,2,3,4]).union([5, 6, 7, 8])
-    runopts:
-      array_limit: '8'
-    ot: [1,2,3,4,5,6,7,8]
-  - cd: r.expr([1,2,3,4]).union([5, 6, 7, 8])
-    runopts:
-      array_limit: '4'
-    ot: err("RqlRuntimeError", "Array over size limit `4`.", [0])
 
-  # test array limits on query creation
-  - cd: r.expr([1,2,3,4,5,6,7,8])
-    runopts:
-      array_limit: '4'
-    ot: err("RqlRuntimeError", "Array over size limit `4`.", [0])
+class TestArrayLimits(util.LuaTestCase):
+    def setUp(self):
+        self.create_table('array.limits')
 
-  # test bizarre array limits
-  - cd: r.expr([1,2,3,4,5,6,7,8])
-    runopts:
-      array_limit: '-1'
-    ot: err("RqlCompileError", "Illegal array size limit `-1`.", [])
+    def test_create(self):
+        self.assertEqual(self.run_lua('test_arraylimits_create'), "err(RqlRuntimeError, Array over size limit `4`., [0])")
 
-  - cd: r.expr([1,2,3,4,5,6,7,8])
-    runopts:
-      array_limit: '0'
-    ot: err("RqlCompileError", "Illegal array size limit `0`.", [])
+    def test_equal(self):
+        self.assertEqual(self.run_lua('test_arraylimits_equal'), "{1, 2, 3, 4, 5, 6, 7, 8}")
 
-  # make enormous > 100,000 element array
-  - def: ten_l = r.expr([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
-  - def:
-      js: ten_f = function(l) { return ten_l }
-      py: ten_f = lambda l:list(range(1,11))
-  - def:
-      js: huge_l = r.expr(ten_l).concatMap(ten_f).concatMap(ten_f).concatMap(ten_f).concatMap(ten_f)
-      py: huge_l = r.expr(ten_l).concat_map(ten_f).concat_map(ten_f).concat_map(ten_f).concat_map(ten_f)
-      rb: huge_l = r.expr(ten_l).concat_map {|l| ten_l}.concat_map {|l| ten_l}.concat_map {|l| ten_l}.concat_map {|l| ten_l}
-  - cd: huge_l.append(1).count()
-    runopts:
-      array_limit: '100001'
-    ot: 100001
+    def test_huge(self):
+        self.assertEqual(self.run_lua('test_arraylimits_huge'), "100001")
 
-  # attempt to insert enormous array
-  - cd: tbl.insert({'id':0, 'array':huge_l.append(1)})
-    runopts:
-      array_limit: '100001'
-    ot: ({'deleted':0.0,'replaced':0.0,'unchanged':0.0,'errors':1.0,'skipped':0.0,'inserted':1,'first_error':"Array too large for disk writes (limit 100,000 elements)"})
+    def test_huge_read(self):
+        self.assertEqual(self.run_lua('test_arraylimits_huge_read'), "{'deleted':0.0,'replaced':0.0,'unchanged':0.0,'errors':1.0,'skipped':0.0,'inserted':1,'first_error':Array too large for disk writes (limit 100,000 elements)}")
 
-  - cd: tbl.get(0)
-    runopts:
-      array_limit: '100001'
-    ot: (null)
+    def test_huge_table(self):
+        self.assertEqual(self.run_lua('test_arraylimits_huge_table'), "{'deleted':0.0,'replaced':0.0,'unchanged':0.0,'errors':1.0,'skipped':0.0,'inserted':1,'first_error':Array too large for disk writes (limit 100,000 elements)}")
 
-  # attempt to read array that violates limit from disk
-  - cd: tbl.insert({'id':1, 'array':ten_l})
-    ot: ({'deleted':0.0,'replaced':0.0,'unchanged':0.0,'errors':0.0,'skipped':0.0,'inserted':1})
-  - cd: tbl.get(1)
-    runopts:
-      array_limit: '4'
-    ot: ({'array':[1,2,3,4,5,6,7,8,9,10],'id':1})
-'''
+    def test_lessthan(self):
+        self.assertEqual(self.run_lua('test_arraylimits_lessthan'), "err(RqlRuntimeError, Array over size limit `4`., [0])")
+
+    def test_lessthan_read(self):
+        self.assertEqual(self.run_lua('test_arraylimits_lessthan_read'), "{'array':[1,2,3,4,5,6,7,8,9,10],'id':1}")
+
+    def test_negative(self):
+        self.assertEqual(self.run_lua('test_arraylimits_negative'), "err(RqlCompileError, Illegal array size limit `-1`., [])")
+
+    def test_zero(self):
+        self.assertEqual(self.run_lua('test_arraylimits_zero'), "err(RqlCompileError, Illegal array size limit `0`., [])")
+
+
+if __name__ == '__main__':
+    unittest.main()
