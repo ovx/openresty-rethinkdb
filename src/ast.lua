@@ -4,8 +4,11 @@ local mime = require('mime')
 local errors = require('./errors')
 local net = require('./net')
 local proto_term_type = require('./proto').TermType
+local util = require('./util')
 
-local is_instance = errors.is_instance
+-- Import some names to this namespace for convienience
+local is_instance = util.is_instance
+local class = util.class
 
 -- rethinkdb is both the main export object for the module
 local rethinkdb = { }

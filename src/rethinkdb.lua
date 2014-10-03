@@ -5,5 +5,8 @@ return (function(rethinkdb)
   -- Export ReQL Errors
   rethinkdb.error = require('./errors')
 
+  -- Export class introspection
+  rethinkdb.is_instance = require('./util').is_instance
+
   return rethinkdb
 end)(require('./ast'))

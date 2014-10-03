@@ -1,8 +1,10 @@
-local socket = require('socket')
 local json = require('json')
+local mime = require('mime')
+local socket = require('socket')
 
 local errors = require('./errors')
 local protodef = require('./proto')
+local util = require('./util')
 
 local proto_version = protodef.Version.V0_3
 local proto_protocol = protodef.Protocol.JSON
@@ -10,8 +12,8 @@ local proto_query_type = protodef.QueryType
 local proto_response_type = protodef.ResponseType
 
 -- Import some names to this namespace for convienience
-local recursively_convert_pseudotype = errors.recursively_convert_pseudotype
-local is_instance = errors.is_instance
+local is_instance = util.is_instance
+local class = util.class
 
 local Connection, Cursor
 
@@ -35,6 +37,77 @@ function int_to_bytes(num, bytes)
     res[k], num = div_mod(num, 2 ^ (8 * (k - 1)))
   end
   return string.char(unpack(res))
+end
+
+function convert_pseudotype(obj, opts)
+  -- An R_OBJECT may be a regular object or a 'pseudo-type' so we need a
+  -- second layer of type switching here on the obfuscated field '$reql_type$'
+  local _exp_0 = obj['$reql_type$']
+  if 'TIME' == _exp_0 then
+    local _exp_1 = opts.time_format
+    if 'native' == _exp_1 or not _exp_1 then
+      if not (obj['epoch_time']) then
+        error(errors.ReQLDriverError('pseudo-type TIME ' .. tostring(obj) .. ' object missing expected field `epoch_time`.'))
+      end
+
+      -- We ignore the timezone field of the pseudo-type TIME object. JS dates do not support timezones.
+      -- By converting to a native date object we are intentionally throwing out timezone information.
+
+      -- field 'epoch_time' is in seconds but the Date constructor expects milliseconds
+      return (Date(obj['epoch_time'] * 1000))
+    elseif 'raw' == _exp_1 then
+      -- Just return the raw (`{'$reql_type$'...}`) object
+      return obj
+    else
+      error(errors.ReQLDriverError('Unknown time_format run option ' .. tostring(opts.time_format) .. '.'))
+    end
+  elseif 'GROUPED_DATA' == _exp_0 then
+    local _exp_1 = opts.group_format
+    if 'native' == _exp_1 or not _exp_1 then
+      -- Don't convert the data into a map, because the keys could be objects which doesn't work in JS
+      -- Instead, we have the following format:
+      -- [ { 'group': <group>, 'reduction': <value(s)> } }, ... ]
+      res = {}
+      j = 1
+      for i, v in ipairs(obj['data']) do
+        res[j] = {
+          group = i,
+          reduction = v
+        }
+        j = j + 1
+      end
+      obj = res
+    elseif 'raw' == _exp_1 then
+      return obj
+    else
+      error(errors.ReQLDriverError('Unknown group_format run option ' .. tostring(opts.group_format) .. '.'))
+    end
+  elseif 'BINARY' == _exp_0 then
+    local _exp_1 = opts.binary_format
+    if 'native' == _exp_1 or not _exp_1 then
+      if not obj.data then
+        error(errors.ReQLDriverError('pseudo-type BINARY object missing expected field `data`.'))
+      end
+      return (mime.unb64(obj.data))
+    elseif 'raw' == _exp_1 then
+      return obj
+    else
+      error(errors.ReQLDriverError('Unknown binary_format run option ' .. tostring(opts.binary_format) .. '.'))
+    end
+  else
+    -- Regular object or unknown pseudo type
+    return obj
+  end
+end
+
+function recursively_convert_pseudotype(obj, opts)
+  if type(obj) == 'table' then
+    for key, value in pairs(obj) do
+      obj[key] = recursively_convert_pseudotype(value, opts)
+    end
+    obj = convert_pseudotype(obj, opts)
+  end
+  return obj
 end
 
 do
