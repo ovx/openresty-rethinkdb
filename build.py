@@ -47,7 +47,7 @@ def build(args):
 def install(args):
     returncode = subprocess.call(['luarocks', 'make'])
     if returncode:
-        print('luarocks', 'make', "returned:", returncode)
+        print('`luarocks make` returned:', returncode)
         exit(returncode)
 
 
