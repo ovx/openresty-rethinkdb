@@ -1,9 +1,7 @@
 import argparse
-import os
-import shutil
 import subprocess
-import sys
 import time
+import string
 
 
 def test(args):
@@ -31,6 +29,7 @@ skipped: {}'''.format(
 
 
 def clean(args):
+    import shutil
     shutil.rmtree('build', ignore_errors=True)
     shutil.rmtree('tests/__pycache__', ignore_errors=True)
     shutil.rmtree('tests/rethinkdb_data', ignore_errors=True)
@@ -41,7 +40,34 @@ def lint(args):
 
 
 def build(args):
-    pass
+    import ReQLprotodef as protodef
+    import re
+    class BuildFormat(string.Formatter):
+        def parse(self, format_string):
+            last_end = 0
+            for match in re.finditer('--\[\[(.+?)\]\]', format_string):
+                yield format_string[last_end:match.start()], match.group(1), '', 's'
+                last_end = match.end()
+            yield format_string[last_end:], None, None, None
+    with open('src/ast.pre.lua') as io:
+        s = io.read()
+    s = BuildFormat().vformat(s, (), {
+        'Term': protodef.Term.TermType
+    })
+    with open('src/ast.lua', 'w') as io:
+        io.write(s)
+    with open('src/net.pre.lua') as io:
+        s = io.read()
+    s = BuildFormat().vformat(s, (), {
+        'Protocol': protodef.VersionDummy.Protocol,
+        'Query': protodef.Query.QueryType,
+        'Response': protodef.Response.ResponseType,
+        'Term': protodef.Term.TermType,
+        'Version': protodef.VersionDummy.Version
+    })
+    with open('src/net.lua', 'w') as io:
+        io.write(s)
+
 
 
 def install(args):

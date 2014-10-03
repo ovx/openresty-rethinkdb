@@ -7,153 +7,38 @@ local class = util.class
 local ReQLDriverError, ReQLServerError, ReQLRuntimeError, ReQLCompileError
 local ReQLClientError, ReQLQueryPrinter
 
+ReQLDriverError = class(
+  'ReQLDriverError',
+  function(self, msg)
+    self.msg = msg
+    self.message = self.__class.__name .. ' ' .. msg
   end
+)
 
-do
-  local _base_0 = { }
-  _base_0.__index = _base_0
-  local _class_0 = setmetatable({
-    __init = function(self, msg)
-      self.msg = msg
+ReQLServerError = class(
+  'ReQLServerError',
+  function(self, msg, term, frames)
+    self.msg = msg
+    if term then
+      local printer = ReQLQueryPrinter(term, frames)
+      self.message = self.__class.__name .. ' ' .. msg .. ' in:\n' .. printer:print_query() .. '\n' .. printer:print_carrots()
+    else
       self.message = self.__class.__name .. ' ' .. msg
-    end,
-    __base = _base_0,
-    __name = "ReQLDriverError"
-  }, {
-    __index = _base_0,
-    __call = function(cls, ...)
-      local _self_0 = setmetatable({}, _base_0)
-      cls.__init(_self_0, ...)
-      return _self_0
     end
-  })
-  _base_0.__class = _class_0
-  ReQLDriverError = _class_0
-end
-do
-  local _base_0 = { }
-  _base_0.__index = _base_0
-  local _class_0 = setmetatable({
-    __init = function(self, msg, term, frames)
-      self.msg = msg
+  end
+)
+
+ReQLRuntimeError = class('ReQLRuntimeError', ReQLServerError, {})
+ReQLCompileError = class('ReQLCompileError', ReQLServerError, {})
+ReQLClientError = class('ReQLClientError', ReQLServerError, {})
+
+ReQLQueryPrinter = class(
+  'ReQLQueryPrinter',
+  {
+    __init = function(self, term, frames)
+      self.term = term
       self.frames = frames
-      self.printer = ReQLQueryPrinter(term, frames)
-      if term then
-        self.message = " in:\n" .. self.printer:print_query() .. "\n" .. self.printer:print_carrots()
-        if msg[-1] == '.' then
-          self.message = self.__class.__name .. ' ' .. msg:sub(1, -2) .. self.message
-        else
-          self.message = self.__class.__name .. ' ' .. msg .. self.message
-        end
-      else
-        self.message = self.__class.__name .. ' ' .. msg
-      end
     end,
-    __base = _base_0,
-    __name = "ReQLServerError"
-  }, {
-    __index = _base_0,
-    __call = function(cls, ...)
-      local _self_0 = setmetatable({}, _base_0)
-      cls.__init(_self_0, ...)
-      return _self_0
-    end
-  })
-  _base_0.__class = _class_0
-  ReQLServerError = _class_0
-end
-do
-  local _parent_0 = ReQLServerError
-  local _base_0 = { }
-  _base_0.__index = _base_0
-  setmetatable(_base_0, _parent_0.__base)
-  local _class_0 = setmetatable({
-    __base = _base_0,
-    __name = "ReQLRuntimeError",
-    __parent = _parent_0
-  }, {
-    __index = function(cls, name)
-      local val = rawget(_base_0, name)
-      if val == nil then
-        return _parent_0[name]
-      else
-        return val
-      end
-    end,
-    __call = function(cls, ...)
-      local _self_0 = setmetatable({}, _base_0)
-      cls.__init(_self_0, ...)
-      return _self_0
-    end
-  })
-  _base_0.__class = _class_0
-  if _parent_0.__inherited then
-    _parent_0.__inherited(_parent_0, _class_0)
-  end
-  ReQLRuntimeError = _class_0
-end
-do
-  local _parent_0 = ReQLServerError
-  local _base_0 = { }
-  _base_0.__index = _base_0
-  setmetatable(_base_0, _parent_0.__base)
-  local _class_0 = setmetatable({
-    __base = _base_0,
-    __name = "ReQLCompileError",
-    __parent = _parent_0
-  }, {
-    __index = function(cls, name)
-      local val = rawget(_base_0, name)
-      if val == nil then
-        return _parent_0[name]
-      else
-        return val
-      end
-    end,
-    __call = function(cls, ...)
-      local _self_0 = setmetatable({}, _base_0)
-      cls.__init(_self_0, ...)
-      return _self_0
-    end
-  })
-  _base_0.__class = _class_0
-  if _parent_0.__inherited then
-    _parent_0.__inherited(_parent_0, _class_0)
-  end
-  ReQLCompileError = _class_0
-end
-do
-  local _parent_0 = ReQLServerError
-  local _base_0 = { }
-  _base_0.__index = _base_0
-  setmetatable(_base_0, _parent_0.__base)
-  local _class_0 = setmetatable({
-    __base = _base_0,
-    __name = "ReQLClientError",
-    __parent = _parent_0
-  }, {
-    __index = function(cls, name)
-      local val = rawget(_base_0, name)
-      if val == nil then
-        return _parent_0[name]
-      else
-        return val
-      end
-    end,
-    __call = function(cls, ...)
-      local _self_0 = setmetatable({}, _base_0)
-      cls.__init(_self_0, ...)
-      return _self_0
-    end
-  })
-  _base_0.__class = _class_0
-  if _parent_0.__inherited then
-    _parent_0.__inherited(_parent_0, _class_0)
-  end
-  ReQLClientError = _class_0
-end
-do
-  local _base_0 = {
     print_query = function(self)
       return self:join_tree(self:compose_term(self.term))
     end,
@@ -223,26 +108,7 @@ do
       return str
     end
   }
-  _base_0.__index = _base_0
-  local _class_0 = setmetatable({
-    __init = function(self, term, frames)
-      self.term = term
-      self.frames = frames
-    end,
-    __base = _base_0,
-    __name = "ReQLQueryPrinter"
-  }, {
-    __index = _base_0,
-    __call = function(cls, ...)
-      local _self_0 = setmetatable({}, _base_0)
-      cls.__init(_self_0, ...)
-      return _self_0
-    end
-  })
-  _base_0.__class = _class_0
-  local self = _class_0
-  ReQLQueryPrinter = _class_0
-end
+)
 
 return {
   ReQLDriverError = ReQLDriverError,

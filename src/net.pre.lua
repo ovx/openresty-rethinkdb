@@ -119,10 +119,10 @@ Cursor = class(
     _add_response = function(self, response)
       local t = response.t
       if not self._type then self._type = t end
-      if response.r[1] or 4 == t then
+      if response.r[1] or --[[Response.WAIT_COMPLETE]] == t then
         table.insert(self._responses, response)
       end
-      if 3 ~= t and 5 ~= t then
+      if --[[Response.SUCCESS_PARTIAL]] ~= t and --[[Response.SUCCESS_FEED]] ~= t then
         -- We got an error, SUCCESS_SEQUENCE, WAIT_COMPLETE, or a SUCCESS_ATOM
         self._end_flag = true
       end
@@ -150,7 +150,7 @@ Cursor = class(
       -- Behavior varies considerably based on response type
       -- Error responses are not discarded, and the error will be sent to all future callbacks
       local t = response.t
-      if 1 == t or 3 == t or 5 == t or 2 == t then
+      if --[[Response.SUCCESS_ATOM]] == t or --[[Response.SUCCESS_PARTIAL]] == t or --[[Response.SUCCESS_FEED]] == t or --[[Response.SUCCESS_SEQUENCE]] == t then
         local row = recursively_convert_pseudotype(response.r[self._response_index], self._opts)
         self._response_index = self._response_index + 1
 
@@ -160,13 +160,13 @@ Cursor = class(
           self._response_index = 1
         end
         return cb(nil, row)
-      elseif 17 == t then
+      elseif --[[Response.COMPILE_ERROR]] == t then
         return cb(errors.ReQLCompileError(response.r[1], self._root, response.b))
-      elseif 16 == t then
+      elseif --[[Response.CLIENT_ERROR]] == t then
         return cb(errors.ReQLClientError(response.r[1], self._root, response.b))
-      elseif 18 == t then
+      elseif --[[Response.RUNTIME_ERROR]] == t then
         return cb(errors.ReQLRuntimeError(response.r[1], self._root, response.b))
-      elseif 4 == t then
+      elseif --[[Response.WAIT_COMPLETE]] == t then
         return cb(nil, nil)
       end
       return cb(errors.ReQLDriverError('Unknown response type ' .. t))
@@ -201,7 +201,7 @@ Cursor = class(
     end,
     to_array = function(self, cb)
       if not self._type then self:_prompt_cont() end
-      if self._type == 5 then
+      if self._type == --[[Response.SUCCESS_FEED]] then
         return cb(errors.ReQLDriverError('`to_array` is not available for feeds.'))
       end
       local arr = {}
@@ -262,10 +262,10 @@ Connection = class(
       if status then
         -- Initialize connection with magic number to validate version
         self.raw_socket:send(
-          int_to_bytes(1601562686, 4) ..
+          int_to_bytes(--[[Version.V0_3]], 4) ..
           int_to_bytes(self.auth_key:len(), 4) ..
           self.auth_key ..
-          int_to_bytes(2120839367, 4)
+          int_to_bytes(--[[Protocol.JSON]], 4)
         )
 
         -- Now we have to wait for a response from the server
@@ -407,7 +407,7 @@ Connection = class(
 
       -- Construct query
       local query = { }
-      query.type = 4
+      query.type = --[[Query.NOREPLY_WAIT]]
       query.token = token
 
       -- Save callback
@@ -496,12 +496,12 @@ Connection = class(
       -- Construct query
       local query = { }
       query.global_optargs = opts
-      query.type = 1
+      query.type = --[[Query.START]]
       query.query = term:build()
       query.token = token
       -- Set global options
       if self.db then
-        query.global_optargs.db = {14, {self.db}}
+        query.global_optargs.db = {--[[Term.DB]], {self.db}}
       end
 
       local cursor = Cursor(self, token, query.global_optargs, term)
@@ -520,10 +520,10 @@ Connection = class(
       end
     end,
     _continue_query = function(self, token)
-      return self:_write_query(token, json.encode({2}))
+      return self:_write_query(token, json.encode({--[[Query.CONTINUE]]}))
     end,
     _end_query = function(self, token)
-      return self:_write_query(token, json.encode({3}))
+      return self:_write_query(token, json.encode({--[[Query.STOP]]}))
     end,
     _send_query = function(self, query)
       -- Serialize query to JSON

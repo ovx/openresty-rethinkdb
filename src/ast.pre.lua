@@ -655,7 +655,7 @@ MakeArray = class(
       self.args = arr
       self.optargs = {}
     end,
-    tt = 2,
+    tt = --[[Term.MAKE_ARRAY]],
     st = '{...}', -- This is only used by the `nil` argument checker
     build = function(self)
       local args = {}
@@ -686,7 +686,7 @@ MakeObject = class(
       self.args = {}
       self.optargs = obj
     end,
-    tt = 3,
+    tt = --[[Term.MAKE_OBJ]],
     st = '{...}', -- This is only used by the `nil` argument checker
     compose = function(self, args, optargs)
       return kved(optargs)
@@ -704,7 +704,7 @@ MakeObject = class(
 Var = class(
   'Var', RDBOp,
   {
-    tt = 10,
+    tt = --[[Term.VAR]],
     compose = function(self, args)
       if not args then return {} end
       for i, v in ipairs(args) do
@@ -718,7 +718,7 @@ Var = class(
 JavaScript = class(
   'JavaScript', RDBOp,
   {
-    tt = 11,
+    tt = --[[Term.JAVASCRIPT]],
     st = 'js'
   }
 )
@@ -726,7 +726,7 @@ JavaScript = class(
 Http = class(
   'Http', RDBOp,
   {
-    tt = 153,
+    tt = --[[Term.HTTP]],
     st = 'http'
   }
 )
@@ -734,7 +734,7 @@ Http = class(
 Json = class(
   'Json', RDBOp,
   {
-    tt = 98,
+    tt = --[[Term.JSON]],
     st = 'json'
   }
 )
@@ -754,7 +754,7 @@ Binary = class(
         end
       end
     end,
-    tt = 155,
+    tt = --[[Term.BINARY]],
     st = 'binary',
     compose = function(self)
       if #self.args == 0 then
@@ -779,7 +779,7 @@ Binary = class(
 Args = class(
   'Args', RDBOp,
   {
-    tt = 154,
+    tt = --[[Term.ARGS]],
     st = 'args'
   }
 )
@@ -787,7 +787,7 @@ Args = class(
 UserError = class(
   'UserError', RDBOp,
   {
-    tt = 12,
+    tt = --[[Term.ERROR]],
     st = 'error'
   }
 )
@@ -795,7 +795,7 @@ UserError = class(
 Random = class(
   'Random', RDBOp,
   {
-    tt = 151,
+    tt = --[[Term.RANDOM]],
     st = 'random'
   }
 )
@@ -803,7 +803,7 @@ Random = class(
 ImplicitVar = class(
   'ImplicitVar', RDBOp,
   {
-    tt = 13,
+    tt = --[[Term.IMPLICIT_VAR]],
     compose = function(self)
       return {
         'r.row'
@@ -815,7 +815,7 @@ ImplicitVar = class(
 Db = class(
   'Db', RDBOp,
   {
-    tt = 14,
+    tt = --[[Term.DB]],
     st = 'db'
   }
 )
@@ -823,7 +823,7 @@ Db = class(
 Table = class(
   'Table', RDBOp,
   {
-    tt = 15,
+    tt = --[[Term.TABLE]],
     st = 'table',
     compose = function(self, args, optargs)
       if is_instance(Db, self.args[1]) then
@@ -853,7 +853,7 @@ Table = class(
 Get = class(
   'Get', RDBOp,
   {
-    tt = 16,
+    tt = --[[Term.GET]],
     mt = 'get'
   }
 )
@@ -861,7 +861,7 @@ Get = class(
 GetAll = class(
   'GetAll', RDBOp,
   {
-    tt = 78,
+    tt = --[[Term.GET_ALL]],
     mt = 'get_all'
   }
 )
@@ -869,7 +869,7 @@ GetAll = class(
 Eq = class(
   'Eq', RDBOp,
   {
-    tt = 17,
+    tt = --[[Term.EQ]],
     mt = 'eq'
   }
 )
@@ -877,7 +877,7 @@ Eq = class(
 Ne = class(
   'Ne', RDBOp,
   {
-    tt = 18,
+    tt = --[[Term.NE]],
     mt = 'ne'
   }
 )
@@ -885,7 +885,7 @@ Ne = class(
 Lt = class(
   'Lt', RDBOp,
   {
-    tt = 19,
+    tt = --[[Term.LT]],
     mt = 'lt'
   }
 )
@@ -893,7 +893,7 @@ Lt = class(
 Le = class(
   'Le', RDBOp,
   {
-    tt = 20,
+    tt = --[[Term.LE]],
     mt = 'le'
   }
 )
@@ -901,7 +901,7 @@ Le = class(
 Gt = class(
   'Gt', RDBOp,
   {
-    tt = 21,
+    tt = --[[Term.GT]],
     mt = 'gt'
   }
 )
@@ -909,7 +909,7 @@ Gt = class(
 Ge = class(
   'Ge', RDBOp,
   {
-    tt = 22,
+    tt = --[[Term.GE]],
     mt = 'ge'
   }
 )
@@ -917,7 +917,7 @@ Ge = class(
 Not = class(
   'Not', RDBOp,
   {
-    tt = 23,
+    tt = --[[Term.NOT]],
     mt = 'not_'
   }
 )
@@ -925,7 +925,7 @@ Not = class(
 Add = class(
   'Add', RDBOp,
   {
-    tt = 24,
+    tt = --[[Term.ADD]],
     mt = 'add'
   }
 )
@@ -933,7 +933,7 @@ Add = class(
 Sub = class(
   'Sub', RDBOp,
   {
-    tt = 25,
+    tt = --[[Term.SUB]],
     mt = 'sub'
   }
 )
@@ -941,7 +941,7 @@ Sub = class(
 Mul = class(
   'Mul', RDBOp,
   {
-    tt = 26,
+    tt = --[[Term.MUL]],
     mt = 'mul'
   }
 )
@@ -949,7 +949,7 @@ Mul = class(
 Div = class(
   'Div', RDBOp,
   {
-    tt = 27,
+    tt = --[[Term.DIV]],
     mt = 'div'
   }
 )
@@ -957,7 +957,7 @@ Div = class(
 Mod = class(
   'Mod', RDBOp,
   {
-    tt = 28,
+    tt = --[[Term.MOD]],
     mt = 'mod'
   }
 )
@@ -965,7 +965,7 @@ Mod = class(
 Append = class(
   'Append', RDBOp,
   {
-    tt = 29,
+    tt = --[[Term.APPEND]],
     mt = 'append'
   }
 )
@@ -973,7 +973,7 @@ Append = class(
 Prepend = class(
   'Prepend', RDBOp,
   {
-    tt = 80,
+    tt = --[[Term.PREPEND]],
     mt = 'prepend'
   }
 )
@@ -981,7 +981,7 @@ Prepend = class(
 Difference = class(
   'Difference', RDBOp,
   {
-    tt = 95,
+    tt = --[[Term.DIFFERENCE]],
     mt = 'difference'
   }
 )
@@ -989,7 +989,7 @@ Difference = class(
 SetInsert = class(
   'SetInsert', RDBOp,
   {
-    tt = 88,
+    tt = --[[Term.SET_INSERT]],
     mt = 'set_insert'
   }
 )
@@ -997,7 +997,7 @@ SetInsert = class(
 SetUnion = class(
   'SetUnion', RDBOp,
   {
-    tt = 90,
+    tt = --[[Term.SET_UNION]],
     mt = 'set_union'
   }
 )
@@ -1005,7 +1005,7 @@ SetUnion = class(
 SetIntersection = class(
   'SetIntersection', RDBOp,
   {
-    tt = 89,
+    tt = --[[Term.SET_INTERSECTION]],
     mt = 'set_intersection'
   }
 )
@@ -1013,7 +1013,7 @@ SetIntersection = class(
 SetDifference = class(
   'SetDifference', RDBOp,
   {
-    tt = 91,
+    tt = --[[Term.SET_DIFFERENCE]],
     mt = 'set_difference'
   }
 )
@@ -1021,7 +1021,7 @@ SetDifference = class(
 Slice = class(
   'Slice', RDBOp,
   {
-    tt = 30,
+    tt = --[[Term.SLICE]],
     mt = 'slice'
   }
 )
@@ -1029,7 +1029,7 @@ Slice = class(
 Skip = class(
   'Skip', RDBOp,
   {
-    tt = 70,
+    tt = --[[Term.SKIP]],
     mt = 'skip'
   }
 )
@@ -1037,7 +1037,7 @@ Skip = class(
 Limit = class(
   'Limit', RDBOp,
   {
-    tt = 71,
+    tt = --[[Term.LIMIT]],
     mt = 'limit'
   }
 )
@@ -1045,7 +1045,7 @@ Limit = class(
 GetField = class(
   'GetField', RDBOp,
   {
-    tt = 31,
+    tt = --[[Term.GET_FIELD]],
     mt = 'get_field'
   }
 )
@@ -1053,7 +1053,7 @@ GetField = class(
 Bracket = class(
   'Bracket', RDBOp,
   {
-    tt = 170,
+    tt = --[[Term.BRACKET]],
     st = '[...]', -- This is only used by the `nil` argument checker
     compose = function(self, args)
       return {
@@ -1069,7 +1069,7 @@ Bracket = class(
 Contains = class(
   'Contains', RDBOp,
   {
-    tt = 93,
+    tt = --[[Term.CONTAINS]],
     mt = 'contains'
   }
 )
@@ -1077,7 +1077,7 @@ Contains = class(
 InsertAt = class(
   'InsertAt', RDBOp,
   {
-    tt = 82,
+    tt = --[[Term.INSERT_AT]],
     mt = 'insert_at'
   }
 )
@@ -1085,7 +1085,7 @@ InsertAt = class(
 SpliceAt = class(
   'SpliceAt', RDBOp,
   {
-    tt = 85,
+    tt = --[[Term.SPLICE_AT]],
     mt = 'splice_at'
   }
 )
@@ -1093,7 +1093,7 @@ SpliceAt = class(
 DeleteAt = class(
   'DeleteAt', RDBOp,
   {
-    tt = 83,
+    tt = --[[Term.DELETE_AT]],
     mt = 'delete_at'
   }
 )
@@ -1101,7 +1101,7 @@ DeleteAt = class(
 ChangeAt = class(
   'ChangeAt', RDBOp,
   {
-    tt = 84,
+    tt = --[[Term.CHANGE_AT]],
     mt = 'change_at'
   }
 )
@@ -1109,7 +1109,7 @@ ChangeAt = class(
 Contains = class(
   'Contains', RDBOp,
   {
-    tt = 93,
+    tt = --[[Term.CONTAINS]],
     mt = 'contains'
   }
 )
@@ -1117,7 +1117,7 @@ Contains = class(
 HasFields = class(
   'HasFields', RDBOp,
   {
-    tt = 32,
+    tt = --[[Term.HAS_FIELDS]],
     mt = 'has_fields'
   }
 )
@@ -1125,7 +1125,7 @@ HasFields = class(
 WithFields = class(
   'WithFields', RDBOp,
   {
-    tt = 96,
+    tt = --[[Term.WITH_FIELDS]],
     mt = 'with_fields'
   }
 )
@@ -1133,7 +1133,7 @@ WithFields = class(
 Keys = class(
   'Keys', RDBOp,
   {
-    tt = 94,
+    tt = --[[Term.KEYS]],
     mt = 'keys'
   }
 )
@@ -1141,7 +1141,7 @@ Keys = class(
 Changes = class(
   'Changes', RDBOp,
   {
-    tt = 152,
+    tt = --[[Term.CHANGES]],
     mt = 'changes'
   }
 )
@@ -1149,7 +1149,7 @@ Changes = class(
 Object = class(
   'Object', RDBOp,
   {
-    tt = 143,
+    tt = --[[Term.OBJECT]],
     mt = 'object'
   }
 )
@@ -1157,7 +1157,7 @@ Object = class(
 Pluck = class(
   'Pluck', RDBOp,
   {
-    tt = 33,
+    tt = --[[Term.PLUCK]],
     mt = 'pluck'
   }
 )
@@ -1165,7 +1165,7 @@ Pluck = class(
 IndexesOf = class(
   'IndexesOf', RDBOpWrap,
   {
-    tt = 87,
+    tt = --[[Term.INDEXES_OF]],
     mt = 'indexes_of'
   }
 )
@@ -1173,7 +1173,7 @@ IndexesOf = class(
 Without = class(
   'Without', RDBOp,
   {
-    tt = 34,
+    tt = --[[Term.WITHOUT]],
     mt = 'without'
   }
 )
@@ -1181,7 +1181,7 @@ Without = class(
 Merge = class(
   'Merge', RDBOpWrap,
   {
-    tt = 35,
+    tt = --[[Term.MERGE]],
     mt = 'merge'
   }
 )
@@ -1189,7 +1189,7 @@ Merge = class(
 Between = class(
   'Between', RDBOp,
   {
-    tt = 36,
+    tt = --[[Term.BETWEEN]],
     mt = 'between'
   }
 )
@@ -1197,7 +1197,7 @@ Between = class(
 Reduce = class(
   'Reduce', RDBOpWrap,
   {
-    tt = 37,
+    tt = --[[Term.REDUCE]],
     mt = 'reduce'
   }
 )
@@ -1205,7 +1205,7 @@ Reduce = class(
 Map = class(
   'Map', RDBOpWrap,
   {
-    tt = 38,
+    tt = --[[Term.MAP]],
     mt = 'map'
   }
 )
@@ -1213,7 +1213,7 @@ Map = class(
 Filter = class(
   'Filter', RDBOp,
   {
-    tt = 39,
+    tt = --[[Term.FILTER]],
     mt = 'filter'
   }
 )
@@ -1221,7 +1221,7 @@ Filter = class(
 ConcatMap = class(
   'ConcatMap', RDBOpWrap,
   {
-    tt = 40,
+    tt = --[[Term.CONCATMAP]],
     mt = 'concat_map'
   }
 )
@@ -1229,7 +1229,7 @@ ConcatMap = class(
 OrderBy = class(
   'OrderBy', RDBOp,
   {
-    tt = 41,
+    tt = --[[Term.ORDERBY]],
     mt = 'order_by'
   }
 )
@@ -1237,7 +1237,7 @@ OrderBy = class(
 Distinct = class(
   'Distinct', RDBOp,
   {
-    tt = 42,
+    tt = --[[Term.DISTINCT]],
     mt = 'distinct'
   }
 )
@@ -1245,7 +1245,7 @@ Distinct = class(
 Count = class(
   'Count', RDBOpWrap,
   {
-    tt = 43,
+    tt = --[[Term.COUNT]],
     mt = 'count'
   }
 )
@@ -1253,7 +1253,7 @@ Count = class(
 Union = class(
   'Union', RDBOp,
   {
-    tt = 44,
+    tt = --[[Term.UNION]],
     mt = 'union'
   }
 )
@@ -1261,7 +1261,7 @@ Union = class(
 Nth = class(
   'Nth', RDBOp,
   {
-    tt = 45,
+    tt = --[[Term.NTH]],
     mt = 'nth'
   }
 )
@@ -1269,7 +1269,7 @@ Nth = class(
 Match = class(
   'Match', RDBOp,
   {
-    tt = 97,
+    tt = --[[Term.MATCH]],
     mt = 'match'
   }
 )
@@ -1277,7 +1277,7 @@ Match = class(
 Split = class(
   'Split', RDBOpWrap,
   {
-    tt = 149,
+    tt = --[[Term.SPLIT]],
     mt = 'split'
   }
 )
@@ -1285,7 +1285,7 @@ Split = class(
 Upcase = class(
   'Upcase', RDBOp,
   {
-    tt = 141,
+    tt = --[[Term.UPCASE]],
     mt = 'upcase'
   }
 )
@@ -1293,7 +1293,7 @@ Upcase = class(
 Downcase = class(
   'Downcase', RDBOp,
   {
-    tt = 142,
+    tt = --[[Term.DOWNCASE]],
     mt = 'downcase'
   }
 )
@@ -1301,7 +1301,7 @@ Downcase = class(
 IsEmpty = class(
   'IsEmpty', RDBOp,
   {
-    tt = 86,
+    tt = --[[Term.IS_EMPTY]],
     mt = 'is_empty'
   }
 )
@@ -1309,7 +1309,7 @@ IsEmpty = class(
 Group = class(
   'Group', RDBOp,
   {
-    tt = 144,
+    tt = --[[Term.GROUP]],
     mt = 'group'
   }
 )
@@ -1317,7 +1317,7 @@ Group = class(
 Sum = class(
   'Sum', RDBOpWrap,
   {
-    tt = 145,
+    tt = --[[Term.SUM]],
     mt = 'sum'
   }
 )
@@ -1325,7 +1325,7 @@ Sum = class(
 Avg = class(
   'Avg', RDBOpWrap,
   {
-    tt = 146,
+    tt = --[[Term.AVG]],
     mt = 'avg'
   }
 )
@@ -1333,7 +1333,7 @@ Avg = class(
 Min = class(
   'Min', RDBOpWrap,
   {
-    tt = 147,
+    tt = --[[Term.MIN]],
     mt = 'min'
   }
 )
@@ -1341,7 +1341,7 @@ Min = class(
 Max = class(
   'Max', RDBOpWrap,
   {
-    tt = 148,
+    tt = --[[Term.MAX]],
     mt = 'max'
   }
 )
@@ -1349,7 +1349,7 @@ Max = class(
 InnerJoin = class(
   'InnerJoin', RDBOp,
   {
-    tt = 48,
+    tt = --[[Term.INNER_JOIN]],
     mt = 'inner_join'
   }
 )
@@ -1357,7 +1357,7 @@ InnerJoin = class(
 OuterJoin = class(
   'OuterJoin', RDBOp,
   {
-    tt = 49,
+    tt = --[[Term.OUTER_JOIN]],
     mt = 'outer_join'
   }
 )
@@ -1365,7 +1365,7 @@ OuterJoin = class(
 EqJoin = class(
   'EqJoin', RDBOp,
   {
-    tt = 50,
+    tt = --[[Term.EQ_JOIN]],
     mt = 'eq_join'
   }
 )
@@ -1373,7 +1373,7 @@ EqJoin = class(
 Zip = class(
   'Zip', RDBOp,
   {
-    tt = 72,
+    tt = --[[Term.ZIP]],
     mt = 'zip'
   }
 )
@@ -1381,7 +1381,7 @@ Zip = class(
 CoerceTo = class(
   'CoerceTo', RDBOp,
   {
-    tt = 51,
+    tt = --[[Term.COERCE_TO]],
     mt = 'coerce_to'
   }
 )
@@ -1389,7 +1389,7 @@ CoerceTo = class(
 Ungroup = class(
   'Ungroup', RDBOp,
   {
-    tt = 150,
+    tt = --[[Term.UNGROUP]],
     mt = 'ungroup'
   }
 )
@@ -1397,7 +1397,7 @@ Ungroup = class(
 TypeOf = class(
   'TypeOf', RDBOp,
   {
-    tt = 52,
+    tt = --[[Term.TYPEOF]],
     mt = 'type_of'
   }
 )
@@ -1405,7 +1405,7 @@ TypeOf = class(
 Info = class(
   'Info', RDBOp,
   {
-    tt = 79,
+    tt = --[[Term.INFO]],
     mt = 'info'
   }
 )
@@ -1413,7 +1413,7 @@ Info = class(
 Sample = class(
   'Sample', RDBOp,
   {
-    tt = 81,
+    tt = --[[Term.SAMPLE]],
     mt = 'sample'
   }
 )
@@ -1421,7 +1421,7 @@ Sample = class(
 Update = class(
   'Update', RDBOp,
   {
-    tt = 53,
+    tt = --[[Term.UPDATE]],
     mt = 'update'
   }
 )
@@ -1429,7 +1429,7 @@ Update = class(
 Delete = class(
   'Delete', RDBOp,
   {
-    tt = 54,
+    tt = --[[Term.DELETE]],
     mt = 'delete'
   }
 )
@@ -1437,7 +1437,7 @@ Delete = class(
 Replace = class(
   'Replace', RDBOp,
   {
-    tt = 55,
+    tt = --[[Term.REPLACE]],
     mt = 'replace'
   }
 )
@@ -1445,7 +1445,7 @@ Replace = class(
 Insert = class(
   'Insert', RDBOp,
   {
-    tt = 56,
+    tt = --[[Term.INSERT]],
     mt = 'insert'
   }
 )
@@ -1453,7 +1453,7 @@ Insert = class(
 DbCreate = class(
   'DbCreate', RDBOp,
   {
-    tt = 57,
+    tt = --[[Term.DB_CREATE]],
     st = 'db_create'
   }
 )
@@ -1461,7 +1461,7 @@ DbCreate = class(
 DbDrop = class(
   'DbDrop', RDBOp,
   {
-    tt = 58,
+    tt = --[[Term.DB_DROP]],
     st = 'db_drop'
   }
 )
@@ -1469,7 +1469,7 @@ DbDrop = class(
 DbList = class(
   'DbList', RDBOp,
   {
-    tt = 59,
+    tt = --[[Term.DB_LIST]],
     st = 'db_list'
   }
 )
@@ -1477,7 +1477,7 @@ DbList = class(
 TableCreate = class(
   'TableCreate', RDBOp,
   {
-    tt = 60,
+    tt = --[[Term.TABLE_CREATE]],
     mt = 'table_create'
   }
 )
@@ -1485,7 +1485,7 @@ TableCreate = class(
 TableDrop = class(
   'TableDrop', RDBOp,
   {
-    tt = 61,
+    tt = --[[Term.TABLE_DROP]],
     mt = 'table_drop'
   }
 )
@@ -1493,7 +1493,7 @@ TableDrop = class(
 TableList = class(
   'TableList', RDBOp,
   {
-    tt = 62,
+    tt = --[[Term.TABLE_LIST]],
     mt = 'table_list'
   }
 )
@@ -1501,7 +1501,7 @@ TableList = class(
 IndexCreate = class(
   'IndexCreate', RDBOp,
   {
-    tt = 75,
+    tt = --[[Term.INDEX_CREATE]],
     mt = 'index_create'
   }
 )
@@ -1509,7 +1509,7 @@ IndexCreate = class(
 IndexDrop = class(
   'IndexDrop', RDBOp,
   {
-    tt = 76,
+    tt = --[[Term.INDEX_DROP]],
     mt = 'index_drop'
   }
 )
@@ -1517,7 +1517,7 @@ IndexDrop = class(
 IndexRename = class(
   'IndexRename', RDBOp,
   {
-    tt = 156,
+    tt = --[[Term.INDEX_RENAME]],
     mt = 'index_rename'
   }
 )
@@ -1525,7 +1525,7 @@ IndexRename = class(
 IndexList = class(
   'IndexList', RDBOp,
   {
-    tt = 77,
+    tt = --[[Term.INDEX_LIST]],
     mt = 'index_list'
   }
 )
@@ -1533,7 +1533,7 @@ IndexList = class(
 IndexStatus = class(
   'IndexStatus', RDBOp,
   {
-    tt = 139,
+    tt = --[[Term.INDEX_STATUS]],
     mt = 'index_status'
   }
 )
@@ -1541,7 +1541,7 @@ IndexStatus = class(
 IndexWait = class(
   'IndexWait', RDBOp,
   {
-    tt = 140,
+    tt = --[[Term.INDEX_WAIT]],
     mt = 'index_wait'
   }
 )
@@ -1549,7 +1549,7 @@ IndexWait = class(
 Sync = class(
   'Sync', RDBOp,
   {
-    tt = 138,
+    tt = --[[Term.SYNC]],
     mt = 'sync'
   }
 )
@@ -1557,7 +1557,7 @@ Sync = class(
 FunCall = class(
   'FunCall', RDBOp,
   {
-    tt = 64,
+    tt = --[[Term.FUNCALL]],
     st = 'do_', -- This is only used by the `nil` argument checker
     compose = function(self, args)
       if #args > 2 then
@@ -1599,7 +1599,7 @@ FunCall = class(
 Default = class(
   'Default', RDBOp,
   {
-    tt = 92,
+    tt = --[[Term.DEFAULT]],
     mt = 'default'
   }
 )
@@ -1607,7 +1607,7 @@ Default = class(
 Branch = class(
   'Branch', RDBOp,
   {
-    tt = 65,
+    tt = --[[Term.BRANCH]],
     st = 'branch'
   }
 )
@@ -1615,7 +1615,7 @@ Branch = class(
 Any = class(
   'Any', RDBOp,
   {
-    tt = 66,
+    tt = --[[Term.ANY]],
     mt = 'or_'
   }
 )
@@ -1623,7 +1623,7 @@ Any = class(
 All = class(
   'All', RDBOp,
   {
-    tt = 67,
+    tt = --[[Term.ALL]],
     mt = 'and_'
   }
 )
@@ -1631,7 +1631,7 @@ All = class(
 ForEach = class(
   'ForEach', RDBOpWrap,
   {
-    tt = 68,
+    tt = --[[Term.FOREACH]],
     mt = 'for_each'
   }
 )
@@ -1718,7 +1718,7 @@ Func = class(
       _parent_0.__init(self, optargs, args_arr, body)
     end,
     next_var_id = 0,
-    tt = 69,
+    tt = --[[Term.FUNC]],
     compose = function(self, args)
       if has_implicit(args[1]) then
         return {
@@ -1747,7 +1747,7 @@ Func = class(
 Asc = class(
   'Asc', RDBOpWrap,
   {
-    tt = 73,
+    tt = --[[Term.ASC]],
     st = 'asc'
   }
 )
@@ -1755,7 +1755,7 @@ Asc = class(
 Desc = class(
   'Desc', RDBOpWrap,
   {
-    tt = 74,
+    tt = --[[Term.DESC]],
     st = 'desc'
   }
 )
@@ -1763,7 +1763,7 @@ Desc = class(
 Literal = class(
   'Literal', RDBOp,
   {
-    tt = 137,
+    tt = --[[Term.LITERAL]],
     st = 'literal'
   }
 )
@@ -1771,7 +1771,7 @@ Literal = class(
 ISO8601 = class(
   'ISO8601', RDBOp,
   {
-    tt = 99,
+    tt = --[[Term.ISO8601]],
     st = 'iso8601'
   }
 )
@@ -1779,7 +1779,7 @@ ISO8601 = class(
 ToISO8601 = class(
   'ToISO8601', RDBOp,
   {
-    tt = 100,
+    tt = --[[Term.TO_ISO8601]],
     mt = 'to_iso8601'
   }
 )
@@ -1787,7 +1787,7 @@ ToISO8601 = class(
 EpochTime = class(
   'EpochTime', RDBOp,
   {
-    tt = 101,
+    tt = --[[Term.EPOCH_TIME]],
     st = 'epoch_time'
   }
 )
@@ -1795,7 +1795,7 @@ EpochTime = class(
 ToEpochTime = class(
   'ToEpochTime', RDBOp,
   {
-    tt = 102,
+    tt = --[[Term.TO_EPOCH_TIME]],
     mt = 'to_epoch_time'
   }
 )
@@ -1803,7 +1803,7 @@ ToEpochTime = class(
 Now = class(
   'Now', RDBOp,
   {
-    tt = 103,
+    tt = --[[Term.NOW]],
     st = 'now'
   }
 )
@@ -1811,7 +1811,7 @@ Now = class(
 InTimezone = class(
   'InTimezone', RDBOp,
   {
-    tt = 104,
+    tt = --[[Term.IN_TIMEZONE]],
     mt = 'in_timezone'
   }
 )
@@ -1819,7 +1819,7 @@ InTimezone = class(
 During = class(
   'During', RDBOp,
   {
-    tt = 105,
+    tt = --[[Term.DURING]],
     mt = 'during'
   }
 )
@@ -1827,7 +1827,7 @@ During = class(
 ReQLDate = class(
   'ReQLDate', RDBOp,
   {
-    tt = 106,
+    tt = --[[Term.DATE]],
     mt = 'date'
   }
 )
@@ -1835,7 +1835,7 @@ ReQLDate = class(
 TimeOfDay = class(
   'TimeOfDay', RDBOp,
   {
-    tt = 126,
+    tt = --[[Term.TIME_OF_DAY]],
     mt = 'time_of_day'
   }
 )
@@ -1843,7 +1843,7 @@ TimeOfDay = class(
 Timezone = class(
   'Timezone', RDBOp,
   {
-    tt = 127,
+    tt = --[[Term.TIMEZONE]],
     mt = 'timezone'
   }
 )
@@ -1851,7 +1851,7 @@ Timezone = class(
 Year = class(
   'Year', RDBOp,
   {
-    tt = 128,
+    tt = --[[Term.YEAR]],
     mt = 'year'
   }
 )
@@ -1859,7 +1859,7 @@ Year = class(
 Month = class(
   'Month', RDBOp,
   {
-    tt = 129,
+    tt = --[[Term.MONTH]],
     mt = 'month'
   }
 )
@@ -1867,7 +1867,7 @@ Month = class(
 Day = class(
   'Day', RDBOp,
   {
-    tt = 130,
+    tt = --[[Term.DAY]],
     mt = 'day'
   }
 )
@@ -1875,7 +1875,7 @@ Day = class(
 DayOfWeek = class(
   'DayOfWeek', RDBOp,
   {
-    tt = 131,
+    tt = --[[Term.DAY_OF_WEEK]],
     mt = 'day_of_week'
   }
 )
@@ -1883,7 +1883,7 @@ DayOfWeek = class(
 DayOfYear = class(
   'DayOfYear', RDBOp,
   {
-    tt = 132,
+    tt = --[[Term.DAY_OF_YEAR]],
     mt = 'day_of_year'
   }
 )
@@ -1891,7 +1891,7 @@ DayOfYear = class(
 Hours = class(
   'Hours', RDBOp,
   {
-    tt = 133,
+    tt = --[[Term.HOURS]],
     mt = 'hours'
   }
 )
@@ -1899,7 +1899,7 @@ Hours = class(
 Minutes = class(
   'Minutes', RDBOp,
   {
-    tt = 134,
+    tt = --[[Term.MINUTES]],
     mt = 'minutes'
   }
 )
@@ -1907,7 +1907,7 @@ Minutes = class(
 Seconds = class(
   'Seconds', RDBOp,
   {
-    tt = 135,
+    tt = --[[Term.SECONDS]],
     mt = 'seconds'
   }
 )
@@ -1915,7 +1915,7 @@ Seconds = class(
 Time = class(
   'Time', RDBOp,
   {
-    tt = 136,
+    tt = --[[Term.TIME]],
     st = 'time'
   }
 )
@@ -1923,7 +1923,7 @@ Time = class(
 GeoJson = class(
   'GeoJson', RDBOp,
   {
-    tt = 157,
+    tt = --[[Term.GEOJSON]],
     mt = 'geojson'
   }
 )
@@ -1931,7 +1931,7 @@ GeoJson = class(
 ToGeoJson = class(
   'ToGeoJson', RDBOp,
   {
-    tt = 158,
+    tt = --[[Term.TO_GEOJSON]],
     mt = 'to_geojson'
   }
 )
@@ -1939,7 +1939,7 @@ ToGeoJson = class(
 Point = class(
   'Point', RDBOp,
   {
-    tt = 159,
+    tt = --[[Term.POINT]],
     mt = 'point'
   }
 )
@@ -1947,7 +1947,7 @@ Point = class(
 Line = class(
   'Line', RDBOp,
   {
-    tt = 160,
+    tt = --[[Term.LINE]],
     mt = 'line'
   }
 )
@@ -1955,7 +1955,7 @@ Line = class(
 Polygon = class(
   'Polygon', RDBOp,
   {
-    tt = 161,
+    tt = --[[Term.POLYGON]],
     mt = 'polygon'
   }
 )
@@ -1963,7 +1963,7 @@ Polygon = class(
 Distance = class(
   'Distance', RDBOp,
   {
-    tt = 162,
+    tt = --[[Term.DISTANCE]],
     mt = 'distance'
   }
 )
@@ -1971,7 +1971,7 @@ Distance = class(
 Intersects = class(
   'Intersects', RDBOp,
   {
-    tt = 163,
+    tt = --[[Term.INTERSECTS]],
     mt = 'intersects'
   }
 )
@@ -1979,7 +1979,7 @@ Intersects = class(
 Includes = class(
   'Includes', RDBOp,
   {
-    tt = 164,
+    tt = --[[Term.INCLUDES]],
     mt = 'includes'
   }
 )
@@ -1987,7 +1987,7 @@ Includes = class(
 Circle = class(
   'Circle', RDBOp,
   {
-    tt = 165,
+    tt = --[[Term.CIRCLE]],
     mt = 'circle'
   }
 )
@@ -1995,7 +1995,7 @@ Circle = class(
 GetIntersecting = class(
   'GetIntersecting', RDBOp,
   {
-    tt = 166,
+    tt = --[[Term.GET_INTERSECTING]],
     mt = 'get_intersecting'
   }
 )
@@ -2003,7 +2003,7 @@ GetIntersecting = class(
 GetNearest = class(
   'GetNearest', RDBOp,
   {
-    tt = 168,
+    tt = --[[Term.GET_NEAREST]],
     mt = 'get_nearest'
   }
 )
@@ -2011,7 +2011,7 @@ GetNearest = class(
 Fill = class(
   'Fill', RDBOp,
   {
-    tt = 167,
+    tt = --[[Term.FILL]],
     mt = 'fill'
   }
 )
@@ -2019,7 +2019,7 @@ Fill = class(
 UUID = class(
   'UUID', RDBOp,
   {
-    tt = 169,
+    tt = --[[Term.UUID]],
     st = 'uuid'
   }
 )
@@ -2194,26 +2194,26 @@ function rethinkdb.time(...)
   return Time({ }, ...)
 end
 
-rethinkdb.monday = class('Monday', RDBOp, {tt = 107})()
-rethinkdb.tuesday = class('Tuesday', RDBOp, {tt = 108})()
-rethinkdb.wednesday = class('Wednesday', RDBOp, {tt = 109})()
-rethinkdb.thursday = class('Thursday', RDBOp, {tt = 110})()
-rethinkdb.friday = class('Friday', RDBOp, {tt = 111})()
-rethinkdb.saturday = class('Saturday', RDBOp, {tt = 112})()
-rethinkdb.sunday = class('Sunday', RDBOp, {tt = 113})()
+rethinkdb.monday = class('Monday', RDBOp, {tt = --[[Term.MONDAY]]})()
+rethinkdb.tuesday = class('Tuesday', RDBOp, {tt = --[[Term.TUESDAY]]})()
+rethinkdb.wednesday = class('Wednesday', RDBOp, {tt = --[[Term.WEDNESDAY]]})()
+rethinkdb.thursday = class('Thursday', RDBOp, {tt = --[[Term.THURSDAY]]})()
+rethinkdb.friday = class('Friday', RDBOp, {tt = --[[Term.FRIDAY]]})()
+rethinkdb.saturday = class('Saturday', RDBOp, {tt = --[[Term.SATURDAY]]})()
+rethinkdb.sunday = class('Sunday', RDBOp, {tt = --[[Term.SUNDAY]]})()
 
-rethinkdb.january = class('January', RDBOp, {tt = 114})()
-rethinkdb.february = class('February', RDBOp, {tt = 115})()
-rethinkdb.march = class('March', RDBOp, {tt = 116})()
-rethinkdb.april = class('April', RDBOp, {tt = 117})()
-rethinkdb.may = class('May', RDBOp, {tt = 118})()
-rethinkdb.june = class('June', RDBOp, {tt = 119})()
-rethinkdb.july = class('July', RDBOp, {tt = 120})()
-rethinkdb.august = class('August', RDBOp, {tt = 121})()
-rethinkdb.september = class('September', RDBOp, {tt = 122})()
-rethinkdb.october = class('October', RDBOp, {tt = 123})()
-rethinkdb.november = class('November', RDBOp, {tt = 124})()
-rethinkdb.december = class('December', RDBOp, {tt = 125})()
+rethinkdb.january = class('January', RDBOp, {tt = --[[Term.JANUARY]]})()
+rethinkdb.february = class('February', RDBOp, {tt = --[[Term.FEBRUARY]]})()
+rethinkdb.march = class('March', RDBOp, {tt = --[[Term.MARCH]]})()
+rethinkdb.april = class('April', RDBOp, {tt = --[[Term.APRIL]]})()
+rethinkdb.may = class('May', RDBOp, {tt = --[[Term.MAY]]})()
+rethinkdb.june = class('June', RDBOp, {tt = --[[Term.JUNE]]})()
+rethinkdb.july = class('July', RDBOp, {tt = --[[Term.JULY]]})()
+rethinkdb.august = class('August', RDBOp, {tt = --[[Term.AUGUST]]})()
+rethinkdb.september = class('September', RDBOp, {tt = --[[Term.SEPTEMBER]]})()
+rethinkdb.october = class('October', RDBOp, {tt = --[[Term.OCTOBER]]})()
+rethinkdb.november = class('November', RDBOp, {tt = --[[Term.NOVEMBER]]})()
+rethinkdb.december = class('December', RDBOp, {tt = --[[Term.DECEMBER]]})()
 
 function rethinkdb.object(...)
   return Object({ }, ...)

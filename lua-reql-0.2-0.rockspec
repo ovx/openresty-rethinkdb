@@ -20,8 +20,7 @@ build = {
     ast = 'src/ast.lua',
     errors = 'src/errors.lua',
     net = 'src/net.lua',
-    proto = 'src/proto.lua',
     rethinkdb = 'src/rethinkdb.lua',
-	util = 'src/util.lua'
+    util = 'src/util.lua'
   }
 }
