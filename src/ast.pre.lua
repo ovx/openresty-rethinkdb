@@ -12,9 +12,9 @@ local class = util.class
 -- rethinkdb is both the main export object for the module
 local rethinkdb = { }
 
-local func_wrap, has_implicit, intsp, kved, intspallargs, should_wrap
+local has_implicit, intsp, kved, intspallargs, should_wrap
 
-local TermBase, RDBVal, DatumTerm, RDBOp, RDBOpWrap, MakeArray, MakeObject, Var
+local TermBase, RDBVal, DatumTerm, RDBOp, RDBOp, MakeArray, MakeObject, Var
 local JavaScript, Http, Json, Binary, Args, UserError, Random, ImplicitVar, Db
 local Table, Get, GetAll, Eq, Ne, Lt, Le, Gt, Ge, Not, Add, Sub, Mul, Div, Mod
 local Append, Prepend, Difference, SetInsert, SetUnion, SetIntersection
@@ -215,7 +215,7 @@ RDBVal = class(
       return Map({ }, ...)
     end,
     filter = function(self, predicate, opts)
-      return Filter(opts, self, func_wrap(predicate))
+      return Filter(opts, self, rethinkdb.expr(predicate))
     end,
     concat_map = function(...)
       return ConcatMap({ }, ...)
@@ -257,7 +257,7 @@ RDBVal = class(
       return OuterJoin({ }, ...)
     end,
     eq_join = function(self, left_attr, right, opts)
-      return EqJoin(opts, self, func_wrap(left_attr), right)
+      return EqJoin(opts, self, rethinkdb.expr(left_attr), right)
     end,
     zip = function(...)
       return Zip({ }, ...)
@@ -272,17 +272,17 @@ RDBVal = class(
       return TypeOf({ }, ...)
     end,
     update = function(self, func, opts)
-      return Update(opts, self, func_wrap(func))
+      return Update(opts, self, Func({}, func))
     end,
     delete = function(self, opts)
       return Delete(opts, self)
     end,
     replace = function(self, func, opts)
-      return Replace(opts, self, func_wrap(func))
+      return Replace(opts, self, Func({}, func))
     end,
     do_ = function(self, ...)
       local args = {...}
-      local func = func_wrap(args[args.n])
+      local func = Func({arity = args.n - 1}, args[args.n])
       args[args.n] = nil
       return FunCall({ }, func, self, unpack(args))
     end,
@@ -335,7 +335,7 @@ RDBVal = class(
         end
       end
       for i=1, fields.n do
-        fields[i] = func_wrap(fields[i])
+        fields[i] = rethinkdb.expr(fields[i])
       end
       return Group(opts, self, unpack(fields))
     end,
@@ -353,7 +353,7 @@ RDBVal = class(
       end
       for i, attr in ipairs(attrs) do
         if not (is_instance(Asc, attr) or is_instance(Desc, attr)) then
-          attrs[i] = func_wrap(attr)
+          attrs[i] = rethinkdb.expr(attr)
         end
       end
       return OrderBy(opts, self, unpack(attrs))
@@ -412,14 +412,14 @@ RDBVal = class(
     end,
     index_create = function(self, name, defun_or_opts, opts)
       if opts then
-        return IndexCreate(opts, self, name, func_wrap(defun_or_opts))
+        return IndexCreate(opts, self, name, rethinkdb.expr(defun_or_opts))
       else
         if defun_or_opts then
           -- FIXME?
           if (type(defun_or_opts) == 'table') and not is_instance(Function, defun_or_opts) and not is_instance(TermBase, defun_or_opts) then
             return IndexCreate(defun_or_opts, self, name)
           else
-            return IndexCreate({ }, self, name, func_wrap(defun_or_opts))
+            return IndexCreate({ }, self, name, rethinkdb.expr(defun_or_opts))
           end
         else
           return IndexCreate({ }, self, name)
@@ -586,17 +586,6 @@ RDBOp = class(
       end
     end
   }
-)
-
-RDBOpWrap = class(
-  'RDBOpWrap', RDBOp,
-  function(self, optargs, ...)
-    self.args = {...}
-    for i, a in ipairs(self.args) do
-      self.args[i] = Func(optargs, rethinkdb.expr(a))
-    end
-    self.optargs = optargs or {}
-  end
 )
 
 function intsp(seq)
@@ -1162,7 +1151,7 @@ Pluck = class(
 )
 
 IndexesOf = class(
-  'IndexesOf', RDBOpWrap,
+  'IndexesOf', RDBOp,
   {
     tt = --[[Term.INDEXES_OF]],
     mt = 'indexes_of'
@@ -1178,7 +1167,7 @@ Without = class(
 )
 
 Merge = class(
-  'Merge', RDBOpWrap,
+  'Merge', RDBOp,
   {
     tt = --[[Term.MERGE]],
     mt = 'merge'
@@ -1194,7 +1183,7 @@ Between = class(
 )
 
 Reduce = class(
-  'Reduce', RDBOpWrap,
+  'Reduce', RDBOp,
   {
     tt = --[[Term.REDUCE]],
     mt = 'reduce'
@@ -1202,7 +1191,7 @@ Reduce = class(
 )
 
 Map = class(
-  'Map', RDBOpWrap,
+  'Map', RDBOp,
   {
     tt = --[[Term.MAP]],
     mt = 'map'
@@ -1218,7 +1207,7 @@ Filter = class(
 )
 
 ConcatMap = class(
-  'ConcatMap', RDBOpWrap,
+  'ConcatMap', RDBOp,
   {
     tt = --[[Term.CONCATMAP]],
     mt = 'concat_map'
@@ -1242,7 +1231,7 @@ Distinct = class(
 )
 
 Count = class(
-  'Count', RDBOpWrap,
+  'Count', RDBOp,
   {
     tt = --[[Term.COUNT]],
     mt = 'count'
@@ -1274,7 +1263,7 @@ Match = class(
 )
 
 Split = class(
-  'Split', RDBOpWrap,
+  'Split', RDBOp,
   {
     tt = --[[Term.SPLIT]],
     mt = 'split'
@@ -1314,7 +1303,7 @@ Group = class(
 )
 
 Sum = class(
-  'Sum', RDBOpWrap,
+  'Sum', RDBOp,
   {
     tt = --[[Term.SUM]],
     mt = 'sum'
@@ -1322,7 +1311,7 @@ Sum = class(
 )
 
 Avg = class(
-  'Avg', RDBOpWrap,
+  'Avg', RDBOp,
   {
     tt = --[[Term.AVG]],
     mt = 'avg'
@@ -1330,7 +1319,7 @@ Avg = class(
 )
 
 Min = class(
-  'Min', RDBOpWrap,
+  'Min', RDBOp,
   {
     tt = --[[Term.MIN]],
     mt = 'min'
@@ -1338,7 +1327,7 @@ Min = class(
 )
 
 Max = class(
-  'Max', RDBOpWrap,
+  'Max', RDBOp,
   {
     tt = --[[Term.MAX]],
     mt = 'max'
@@ -1628,7 +1617,7 @@ All = class(
 )
 
 ForEach = class(
-  'ForEach', RDBOpWrap,
+  'ForEach', RDBOp,
   {
     tt = --[[Term.FOREACH]],
     mt = 'for_each'
@@ -1656,25 +1645,6 @@ function ivar_scan(node)
 end
 
 function has_implicit(args)
---[[
-  if not is_instance(TermBase, node) then
-    return false
-  end
-  if is_instance(ImplicitVar, node) then
-    return true
-  end
-  for _, v in ipairs(node.args) do
-    if ivar_scan(v) then
-      return true
-    end
-  end
-  for _, v in pairs(node.optargs) do
-    if ivar_scan(v) then
-      return true
-    end
-  end
-  do return false end
---]]
   -- args is an array of (strings and arrays)
   -- We recurse to look for `r.row` which is an implicit var
   if type(args) == 'table' then
@@ -1744,7 +1714,7 @@ Func = class(
 )
 
 Asc = class(
-  'Asc', RDBOpWrap,
+  'Asc', RDBOp,
   {
     tt = --[[Term.ASC]],
     st = 'asc'
@@ -1752,7 +1722,7 @@ Asc = class(
 )
 
 Desc = class(
-  'Desc', RDBOpWrap,
+  'Desc', RDBOp,
   {
     tt = --[[Term.DESC]],
     st = 'desc'
@@ -2036,7 +2006,7 @@ function rethinkdb.expr(val, nesting_depth)
   if type(nesting_depth) ~= 'number' then
     error(errors.ReQLDriverError('Second argument to `r.expr` must be a number or nil.'))
   end
-  if type(val) == 'function' then
+  if type(val) == 'function' or ivar_scan(val) then
     return Func({}, val)
   end
   if is_instance(TermBase, val) then
@@ -2110,7 +2080,7 @@ function rethinkdb.table_list(...)
 end
 function rethinkdb.do_(...)
   args = {...}
-  func = Func(rethinkdb.expr(args[args.n]))
+  func = Func({}, args[args.n])
   args[args.n] = nil
   return FunCall({ }, func, unpack(args))
 end
