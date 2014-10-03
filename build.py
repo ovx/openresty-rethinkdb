@@ -36,7 +36,15 @@ def clean(args):
 
 
 def lint(args):
-    pass
+    print('linting src:')
+    returncode = subprocess.call([
+        'luac', 'ast.lua', 'errors.lua', 'net.lua', 'rethinkdb.lua', 'util.lua'
+    ], cwd='src')
+    if returncode:
+        print('`luac ast.lua errors.lua net.lua rethinkdb.lua util.lua` '
+              'returned:', returncode)
+        exit(returncode)
+    print('linting successful')
 
 
 def build(args):
