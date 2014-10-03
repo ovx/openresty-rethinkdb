@@ -30,7 +30,7 @@ skipped: {}'''.format(
 
 def clean(args):
     import shutil
-    shutil.rmtree('build', ignore_errors=True)
+    shutil.rmtree('__pycache__', ignore_errors=True)
     shutil.rmtree('tests/__pycache__', ignore_errors=True)
     shutil.rmtree('tests/rethinkdb_data', ignore_errors=True)
 
@@ -43,15 +43,34 @@ def build(args):
     import ReQLprotodef as protodef
     import re
     class BuildFormat(string.Formatter):
-        def parse(self, format_string):
-            last_end = 0
-            for match in re.finditer('--\[\[(.+?)\]\]', format_string):
-                yield format_string[last_end:match.start()], match.group(1), '', 's'
-                last_end = match.end()
-            yield format_string[last_end:], None, None, None
+        fspec = re.compile('--\[\[(.+?)\]\]')
+
+        def parse(self, string):
+            last = 0
+            for match in self.fspec.finditer(string):
+                yield string[last:match.start()], match.group(1), '', 's'
+                last = match.end()
+            yield string[last:], None, None, None
+
+    class ASTChecker(BuildFormat):
+        terms_found = set()
+        def get_field(self, name, args, kwargs):
+            if name.startswith('Term.'):
+                self.terms_found.add(name[5:])
+            return super().get_field(name, args, kwargs)
+
+        def check_unused_args(self, used, args, kwargs):
+            expected = {
+                term for term in dir(kwargs['Term'])
+                if not term.startswith('__')
+            } - {'DATUM'}
+            unused = expected - self.terms_found
+            if unused:
+                raise ValueError('Found {} unused terms.'.format(unused))
+
     with open('src/ast.pre.lua') as io:
         s = io.read()
-    s = BuildFormat().vformat(s, (), {
+    s = ASTChecker().vformat(s, (), {
         'Term': protodef.Term.TermType
     })
     with open('src/ast.lua', 'w') as io:
