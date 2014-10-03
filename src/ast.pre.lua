@@ -14,7 +14,7 @@ local rethinkdb = { }
 
 local has_implicit, intsp, kved, intspallargs, should_wrap
 
-local TermBase, RDBVal, DatumTerm, RDBOp, RDBOp, MakeArray, MakeObject, Var
+local DatumTerm, RDBOp, RDBOp, MakeArray, MakeObject, Var
 local JavaScript, Http, Json, Binary, Args, UserError, Random, ImplicitVar, Db
 local Table, Get, GetAll, Eq, Ne, Lt, Le, Gt, Ge, Not, Add, Sub, Mul, Div, Mod
 local Append, Prepend, Difference, SetInsert, SetUnion, SetIntersection
@@ -37,9 +37,66 @@ local June, July, August, September, October, November, December
 
 -- AST classes
 
-TermBase = class(
-  'TermBase',
+RDBOp = class(
+  'RDBOp',
   {
+    __init = function(self, optargs, ...)
+      self.args = {...}
+      for i, a in ipairs(self.args) do
+        self.args[i] = rethinkdb.expr(a)
+      end
+      self.optargs = optargs or {}
+    end,
+    build = function(self)
+      local args = {}
+      for i, arg in ipairs(self.args) do
+        args[i] = arg:build()
+      end
+      res = {self.tt, args}
+      if #self.optargs > 0 then
+        local opts = { }
+        for key, val in pairs(self.optargs) do
+          opts[key] = val:build()
+        end
+        table.insert(res, opts)
+      end
+      return res
+    end,
+    compose = function(self, args, optargs)
+      if self.st then
+        return {
+          'r.',
+          self.st,
+          '(',
+          intspallargs(args, optargs),
+          ')'
+        }
+      else
+        if self.args then
+          if should_wrap(self.args[1]) then
+            args[1] = {
+              'r(',
+              args[1],
+              ')'
+            }
+          end
+        end
+        return {
+          args[1],
+          ':',
+          self.mt,
+          '(',
+          intspallargs((function()
+            local _accum_0 = { }
+            for _index_0 = 2, #args do
+              _accum_0[_index_0 - 1] = args[_index_0]
+            end
+            return _accum_0
+          end)(), optargs),
+          ')'
+        }
+      end
+    end,
     run = function(self, connection, options, callback)
       -- Valid syntaxes are
       -- connection, callback
@@ -71,12 +128,6 @@ TermBase = class(
 
       return connection:_start(self, callback, options)
     end,
-  }
-)
-
-RDBVal = class(
-  'RDBVal', TermBase,
-  {
     eq = function(...)
       return Eq({ }, ...)
     end,
@@ -139,7 +190,7 @@ RDBVal = class(
         return Slice(opts, self, left, right_or_opts)
       else
         if right_or_opts then
-          if (type(right_or_opts) == 'table') and (not is_instance(TermBase, right_or_opts)) then
+          if (type(right_or_opts) == 'table') and (not is_instance(RDBOp, right_or_opts)) then
             return Slice(right_or_opts, self, left)
           else
             return Slice({ }, self, left, right_or_opts)
@@ -322,7 +373,7 @@ RDBVal = class(
       -- Look for opts dict
       if fields.n > 0 then
         local perhaps_opt_dict = fields[fields.n]
-        if perhaps_opt_dict and (type(perhaps_opt_dict) == 'table') and not (is_instance(TermBase, perhaps_opt_dict)) then
+        if perhaps_opt_dict and (type(perhaps_opt_dict) == 'table') and not (is_instance(RDBOp, perhaps_opt_dict)) then
           opts = perhaps_opt_dict
           fields[fields.n] = nil
           fields.n = fields.n - 1
@@ -340,7 +391,7 @@ RDBVal = class(
 
       -- Look for opts dict
       local perhaps_opt_dict = attrs[attrs.n]
-      if perhaps_opt_dict and (type(perhaps_opt_dict) == 'table') and not is_instance(TermBase, perhaps_opt_dict) then
+      if perhaps_opt_dict and (type(perhaps_opt_dict) == 'table') and not is_instance(RDBOp, perhaps_opt_dict) then
         opts = perhaps_opt_dict
         attrs[attrs.n] = nil
         attrs.n = attrs.n - 1
@@ -394,7 +445,7 @@ RDBVal = class(
       -- Look for opts dict
       if keys.n > 1 then
         local perhaps_opt_dict = keys[keys.n]
-        if perhaps_opt_dict and ((type(perhaps_opt_dict) == 'table') and not (is_instance(TermBase, perhaps_opt_dict))) then
+        if perhaps_opt_dict and ((type(perhaps_opt_dict) == 'table') and not (is_instance(RDBOp, perhaps_opt_dict))) then
           opts = perhaps_opt_dict
           keys[keys.n] = nil
         end
@@ -410,7 +461,7 @@ RDBVal = class(
       else
         if defun_or_opts then
           -- FIXME?
-          if (type(defun_or_opts) == 'table') and not is_instance(TermBase, defun_or_opts) then
+          if (type(defun_or_opts) == 'table') and not is_instance(RDBOp, defun_or_opts) then
             return IndexCreate(defun_or_opts, self, name)
           else
             return IndexCreate({ }, self, name, rethinkdb.expr(defun_or_opts))
@@ -492,7 +543,7 @@ RDBVal = class(
 )
 
 DatumTerm = class(
-  'DatumTerm', RDBVal,
+  'DatumTerm', RDBOp,
   {
     __init = function(self, val)
       self.data = val
@@ -514,69 +565,6 @@ DatumTerm = class(
       end
       if self.data == nil then return json.null end
       return self.data
-    end
-  }
-)
-
-RDBOp = class(
-  'RDBOp', RDBVal,
-  {
-    __init = function(self, optargs, ...)
-      self.args = {...}
-      for i, a in ipairs(self.args) do
-        self.args[i] = rethinkdb.expr(a)
-      end
-      self.optargs = optargs or {}
-    end,
-    build = function(self)
-      local args = {}
-      for i, arg in ipairs(self.args) do
-        args[i] = arg:build()
-      end
-      res = {self.tt, args}
-      if #self.optargs > 0 then
-        local opts = { }
-        for key, val in pairs(self.optargs) do
-          opts[key] = val:build()
-        end
-        table.insert(res, opts)
-      end
-      return res
-    end,
-    compose = function(self, args, optargs)
-      if self.st then
-        return {
-          'r.',
-          self.st,
-          '(',
-          intspallargs(args, optargs),
-          ')'
-        }
-      else
-        if self.args then
-          if should_wrap(self.args[1]) then
-            args[1] = {
-              'r(',
-              args[1],
-              ')'
-            }
-          end
-        end
-        return {
-          args[1],
-          ':',
-          self.mt,
-          '(',
-          intspallargs((function()
-            local _accum_0 = { }
-            for _index_0 = 2, #args do
-              _accum_0[_index_0 - 1] = args[_index_0]
-            end
-            return _accum_0
-          end)(), optargs),
-          ')'
-        }
-      end
     end
   }
 )
@@ -726,7 +714,7 @@ Binary = class(
     __init = function(self, data)
       self.args = {}
       self.optargs = {}
-      if is_instance(TermBase, data) then
+      if is_instance(RDBOp, data) then
         table.insert(self.args, data)
       else
         if type(data) == 'string' then
@@ -1627,7 +1615,7 @@ ForEach = class(
 )
 
 function ivar_scan(node)
-  if not is_instance(TermBase, node) then
+  if not is_instance(RDBOp, node) then
     return false
   end
   if is_instance(ImplicitVar, node) then
@@ -2011,7 +1999,7 @@ function rethinkdb.expr(val, nesting_depth)
   if type(val) == 'function' or ivar_scan(val) then
     return Func({}, val)
   end
-  if is_instance(TermBase, val) then
+  if is_instance(RDBOp, val) then
     return val
   end
   if type(val) == 'table' then
@@ -2046,7 +2034,7 @@ function rethinkdb.random(...)
 
   -- Look for opts dict
   local perhaps_opt_dict = limits[limits.n]
-  if perhaps_opt_dict and ((type(perhaps_opt_dict) == 'table') and not (is_instance(TermBase, perhaps_opt_dict))) then
+  if perhaps_opt_dict and ((type(perhaps_opt_dict) == 'table') and not (is_instance(RDBOp, perhaps_opt_dict))) then
     opts = perhaps_opt_dict
     limits[limits.n] = nil
   end
