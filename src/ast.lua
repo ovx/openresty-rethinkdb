@@ -7,11 +7,12 @@ local util = require('./util')
 -- Import some names to this namespace for convienience
 local is_instance = util.is_instance
 
--- rethinkdb is both the main export object for the module
-local rethinkdb = {}
-setmetatable(rethinkdb, {
+-- r is both the main export object for the module
+-- and a function that shortcuts `r.expr`.
+local r = {}
+setmetatable(r, {
   __call = function(cls, ...)
-    return rethinkdb.expr(...)
+    return r.expr(...)
   end
 })
 
@@ -137,7 +138,7 @@ RDBOp = class(
           error(errors.ReQLDriverError('Anonymous function returned `nil`. Did you forget a `return`?'))
         end
         optargs.arity = nil
-        self.args = {MakeArray({}, arg_nums), rethinkdb.expr(first)}
+        self.args = {MakeArray({}, arg_nums), r.expr(first)}
       elseif self.tt == 155 then
         if is_instance(RDBOp, first) then
         elseif type(first) == 'string' then
@@ -150,7 +151,7 @@ RDBOp = class(
       elseif self.tt == 3 then
       else
         for i, a in ipairs(self.args) do
-          self.args[i] = rethinkdb.expr(a)
+          self.args[i] = r.expr(a)
         end
       end
       self.optargs = optargs
@@ -547,7 +548,7 @@ RDBOp = class(
       return OuterJoin({}, ...)
     end,
     eq_join = function(self, left_attr, right, opts)
-      return EqJoin(opts, self, rethinkdb.expr(left_attr), right)
+      return EqJoin(opts, self, r.expr(left_attr), right)
     end,
     zip = function(...)
       return Zip({}, ...)
@@ -621,7 +622,7 @@ RDBOp = class(
         end
       end
       for i=1, fields.n do
-        fields[i] = rethinkdb.expr(fields[i])
+        fields[i] = r.expr(fields[i])
       end
       return Group(opts, self, unpack(fields))
     end,
@@ -639,7 +640,7 @@ RDBOp = class(
       end
       for i, attr in ipairs(attrs) do
         if not (is_instance(Asc, attr) or is_instance(Desc, attr)) then
-          attrs[i] = rethinkdb.expr(attr)
+          attrs[i] = r.expr(attr)
         end
       end
       return OrderBy(opts, self, unpack(attrs))
@@ -701,17 +702,17 @@ RDBOp = class(
       return GetAll(opts, self, unpack(keys))
     end,
     insert = function(self, doc, opts)
-      return Insert(opts, self, rethinkdb.expr(doc))
+      return Insert(opts, self, r.expr(doc))
     end,
     index_create = function(self, name, defun_or_opts, opts)
       if opts then
-        return IndexCreate(opts, self, name, rethinkdb.expr(defun_or_opts))
+        return IndexCreate(opts, self, name, r.expr(defun_or_opts))
       end
       if defun_or_opts then
         if (type(defun_or_opts) == 'table') and (not is_instance(RDBOp, defun_or_opts)) then
           return IndexCreate(defun_or_opts, self, name)
         end
-        return IndexCreate({}, self, name, rethinkdb.expr(defun_or_opts))
+        return IndexCreate({}, self, name, r.expr(defun_or_opts))
       end
       return IndexCreate({}, self, name)
     end,
@@ -1965,7 +1966,7 @@ UUID = class(
 -- All top level exported functions
 
 -- Wrap a native Lua value in an ReQL datum
-function rethinkdb.expr(val, nesting_depth)
+function r.expr(val, nesting_depth)
   if nesting_depth == nil then
     nesting_depth = 20
   end
@@ -1985,7 +1986,7 @@ function rethinkdb.expr(val, nesting_depth)
     local array = true
     for k, v in pairs(val) do
       if type(k) ~= 'number' then array = false end
-      val[k] = rethinkdb.expr(v, nesting_depth - 1)
+      val[k] = r.expr(v, nesting_depth - 1)
     end
     if array then
       return MakeArray({}, val)
@@ -1994,19 +1995,19 @@ function rethinkdb.expr(val, nesting_depth)
   end
   return DatumTerm(val)
 end
-function rethinkdb.js(jssrc, opts)
+function r.js(jssrc, opts)
   return JavaScript(opts, jssrc)
 end
-function rethinkdb.http(url, opts)
+function r.http(url, opts)
   return Http(opts, url)
 end
-function rethinkdb.json(...)
+function r.json(...)
   return Json({}, ...)
 end
-function rethinkdb.error(...)
+function r.error(...)
   return UserError({}, ...)
 end
-function rethinkdb.random(...)
+function r.random(...)
   -- Default if no opts dict provided
   local opts = {}
   local limits = {...}
@@ -2019,169 +2020,169 @@ function rethinkdb.random(...)
   end
   return Random(opts, unpack(limits))
 end
-function rethinkdb.binary(data)
+function r.binary(data)
   return Binary(data)
 end
-function rethinkdb.table(tbl_name, opts)
+function r.table(tbl_name, opts)
   return Table(opts, tbl_name)
 end
-function rethinkdb.db(...)
+function r.db(...)
   return Db({}, ...)
 end
-function rethinkdb.db_create(...)
+function r.db_create(...)
   return DbCreate({}, ...)
 end
-function rethinkdb.db_drop(...)
+function r.db_drop(...)
   return DbDrop({}, ...)
 end
-function rethinkdb.db_list(...)
+function r.db_list(...)
   return DbList({}, ...)
 end
-function rethinkdb.table_create(tbl_name, opts)
+function r.table_create(tbl_name, opts)
   return TableCreate(opts, tbl_name)
 end
-function rethinkdb.table_drop(...)
+function r.table_drop(...)
   return TableDrop({}, ...)
 end
-function rethinkdb.table_list(...)
+function r.table_list(...)
   return TableList({}, ...)
 end
-function rethinkdb.do_(...)
+function r.do_(...)
   args = {...}
   func = Func({arity = args.n - 1}, args[args.n])
   args[args.n] = nil
   return FunCall({}, func, unpack(args))
 end
-function rethinkdb.branch(...)
+function r.branch(...)
   return Branch({}, ...)
 end
-function rethinkdb.asc(...)
+function r.asc(...)
   return Asc({}, ...)
 end
-function rethinkdb.desc(...)
+function r.desc(...)
   return Desc({}, ...)
 end
-function rethinkdb.eq(...)
+function r.eq(...)
   return Eq({}, ...)
 end
-function rethinkdb.ne(...)
+function r.ne(...)
   return Ne({}, ...)
 end
-function rethinkdb.lt(...)
+function r.lt(...)
   return Lt({}, ...)
 end
-function rethinkdb.le(...)
+function r.le(...)
   return Le({}, ...)
 end
-function rethinkdb.gt(...)
+function r.gt(...)
   return Gt({}, ...)
 end
-function rethinkdb.ge(...)
+function r.ge(...)
   return Ge({}, ...)
 end
-function rethinkdb.or_(...)
+function r.or_(...)
   return Any({}, ...)
 end
-function rethinkdb.any(...)
+function r.any(...)
   return Any({}, ...)
 end
-function rethinkdb.and_(...)
+function r.and_(...)
   return All({}, ...)
 end
-function rethinkdb.all(...)
+function r.all(...)
   return All({}, ...)
 end
-function rethinkdb.not_(...)
+function r.not_(...)
   return Not({}, ...)
 end
-function rethinkdb.add(...)
+function r.add(...)
   return Add({}, ...)
 end
-function rethinkdb.sub(...)
+function r.sub(...)
   return Sub({}, ...)
 end
-function rethinkdb.div(...)
+function r.div(...)
   return Div({}, ...)
 end
-function rethinkdb.mul(...)
+function r.mul(...)
   return Mul({}, ...)
 end
-function rethinkdb.mod(...)
+function r.mod(...)
   return Mod({}, ...)
 end
-function rethinkdb.type_of(...)
+function r.type_of(...)
   return TypeOf({}, ...)
 end
-function rethinkdb.info(...)
+function r.info(...)
   return Info({}, ...)
 end
-function rethinkdb.literal(...)
+function r.literal(...)
   return Literal({}, ...)
 end
-function rethinkdb.iso8601(str, opts)
+function r.iso8601(str, opts)
   return ISO8601(opts, str)
 end
-function rethinkdb.epoch_time(...)
+function r.epoch_time(...)
   return EpochTime({}, ...)
 end
-function rethinkdb.now(...)
+function r.now(...)
   return Now({}, ...)
 end
-function rethinkdb.time(...)
+function r.time(...)
   return Time({}, ...)
 end
 
-rethinkdb.monday = class('Monday', RDBOp, {tt = 107})()
-rethinkdb.tuesday = class('Tuesday', RDBOp, {tt = 108})()
-rethinkdb.wednesday = class('Wednesday', RDBOp, {tt = 109})()
-rethinkdb.thursday = class('Thursday', RDBOp, {tt = 110})()
-rethinkdb.friday = class('Friday', RDBOp, {tt = 111})()
-rethinkdb.saturday = class('Saturday', RDBOp, {tt = 112})()
-rethinkdb.sunday = class('Sunday', RDBOp, {tt = 113})()
+r.monday = class('Monday', RDBOp, {tt = 107})()
+r.tuesday = class('Tuesday', RDBOp, {tt = 108})()
+r.wednesday = class('Wednesday', RDBOp, {tt = 109})()
+r.thursday = class('Thursday', RDBOp, {tt = 110})()
+r.friday = class('Friday', RDBOp, {tt = 111})()
+r.saturday = class('Saturday', RDBOp, {tt = 112})()
+r.sunday = class('Sunday', RDBOp, {tt = 113})()
 
-rethinkdb.january = class('January', RDBOp, {tt = 114})()
-rethinkdb.february = class('February', RDBOp, {tt = 115})()
-rethinkdb.march = class('March', RDBOp, {tt = 116})()
-rethinkdb.april = class('April', RDBOp, {tt = 117})()
-rethinkdb.may = class('May', RDBOp, {tt = 118})()
-rethinkdb.june = class('June', RDBOp, {tt = 119})()
-rethinkdb.july = class('July', RDBOp, {tt = 120})()
-rethinkdb.august = class('August', RDBOp, {tt = 121})()
-rethinkdb.september = class('September', RDBOp, {tt = 122})()
-rethinkdb.october = class('October', RDBOp, {tt = 123})()
-rethinkdb.november = class('November', RDBOp, {tt = 124})()
-rethinkdb.december = class('December', RDBOp, {tt = 125})()
+r.january = class('January', RDBOp, {tt = 114})()
+r.february = class('February', RDBOp, {tt = 115})()
+r.march = class('March', RDBOp, {tt = 116})()
+r.april = class('April', RDBOp, {tt = 117})()
+r.may = class('May', RDBOp, {tt = 118})()
+r.june = class('June', RDBOp, {tt = 119})()
+r.july = class('July', RDBOp, {tt = 120})()
+r.august = class('August', RDBOp, {tt = 121})()
+r.september = class('September', RDBOp, {tt = 122})()
+r.october = class('October', RDBOp, {tt = 123})()
+r.november = class('November', RDBOp, {tt = 124})()
+r.december = class('December', RDBOp, {tt = 125})()
 
-function rethinkdb.object(...)
+function r.object(...)
   return Object({}, ...)
 end
-function rethinkdb.args(...)
+function r.args(...)
   return Args({}, ...)
 end
-function rethinkdb.geojson(...)
+function r.geojson(...)
   return GeoJson({}, ...)
 end
-function rethinkdb.point(...)
+function r.point(...)
   return Point({}, ...)
 end
-function rethinkdb.line(...)
+function r.line(...)
   return Line({}, ...)
 end
-function rethinkdb.polygon(...)
+function r.polygon(...)
   return Polygon({}, ...)
 end
-function rethinkdb.intersects(...)
+function r.intersects(...)
   return Intersects({}, ...)
 end
-function rethinkdb.distance(g1, g2, opts)
+function r.distance(g1, g2, opts)
   return Distance(opts, g1, g2)
 end
-function rethinkdb.circle(cen, rad, opts)
+function r.circle(cen, rad, opts)
   return Circle(opts, cen, rad)
 end
-function rethinkdb.uuid(...)
+function r.uuid(...)
   return UUID({}, ...)
 end
 
--- Export all names defined on rethinkdb
-return rethinkdb
+-- Export all names defined on r
+return r
