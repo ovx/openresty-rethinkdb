@@ -253,10 +253,10 @@ ReQLOp = class(
       end
       if self.tt == --[[Term.BRACKET]] then
         return {
-          args[0],
-          '[',
           args[1],
-          ']'
+          '(',
+          args[2],
+          ')'
         }
       end
       if self.tt == --[[Term.FUNC]] then
@@ -287,33 +287,29 @@ ReQLOp = class(
             'r.do_(',
             intsp((function()
               local _accum_0 = {}
-              local _len_0 = 1
               for _index_0 = 2, #args do
-                local a = args[_index_0]
-                _accum_0[_len_0] = a
-                _len_0 = _len_0 + 1
+                _accum_0[_index_0 - 1] = args[_index_0]
               end
               return _accum_0
             end)()),
             ', ',
-            args[0],
-            ')'
-          }
-        else
-          if should_wrap(self.args[1]) then
-            args[1] = {
-              'r(',
-              args[1],
-              ')'
-            }
-          end
-          return {
             args[1],
-            '.do_(',
-            args[0],
             ')'
           }
         end
+        if should_wrap(self.args[1]) then
+          args[1] = {
+            'r(',
+            args[1],
+            ')'
+          }
+        end
+        return {
+          args[2],
+          '.do_(',
+          args[1],
+          ')'
+        }
       end
       if self.st then
         return {
@@ -323,31 +319,28 @@ ReQLOp = class(
           intspallargs(args, optargs),
           ')'
         }
-      else
-        if self.args then
-          if should_wrap(self.args[1]) then
-            args[1] = {
-              'r(',
-              args[1],
-              ')'
-            }
-          end
-        end
-        return {
+      end
+      if should_wrap(self.args[1]) then
+        args[1] = {
+          'r(',
           args[1],
-          ':',
-          self.mt,
-          '(',
-          intspallargs((function()
-            local _accum_0 = {}
-            for _index_0 = 2, #args do
-              _accum_0[_index_0 - 1] = args[_index_0]
-            end
-            return _accum_0
-          end)(), optargs),
           ')'
         }
       end
+      return {
+        args[1],
+        ':',
+        self.mt,
+        '(',
+        intspallargs((function()
+          local _accum_0 = {}
+          for _index_0 = 2, #args do
+            _accum_0[_index_0 - 1] = args[_index_0]
+          end
+          return _accum_0
+        end)(), optargs),
+        ')'
+      }
     end,
     run = function(self, connection, options, callback)
       -- Valid syntaxes are
