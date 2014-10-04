@@ -127,6 +127,7 @@ Cursor = class(
       if t ~= --[[Response.SUCCESS_PARTIAL]] and t ~= --[[Response.SUCCESS_FEED]] then
         -- We got an error, SUCCESS_SEQUENCE, WAIT_COMPLETE, or a SUCCESS_ATOM
         self._end_flag = true
+        self._conn:_del_query(self.token)
       end
       self._cont_flag = false
     end,
@@ -329,17 +330,13 @@ Connection = class(
     end,
     _process_response = function(self, response, token)
       local cursor = self.outstanding_callbacks[token]
-      if cursor then
-        cursor = cursor.cursor
-        if cursor then
-          cursor:_add_response(response)
-          if cursor._end_flag and cursor._outstanding_requests == 0 then
-            return self:_del_query(token)
-          end
-        end
-      else
+      if not cursor then
         -- Unexpected token
         error(errors.ReQLDriverError('Unexpected token ' .. token .. '.'))
+      end
+      cursor = cursor.cursor
+      if cursor then
+        return cursor:_add_response(response)
       end
     end,
     close = function(self, opts_or_callback, callback)
