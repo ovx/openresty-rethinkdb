@@ -2,7 +2,9 @@ r = require('rethinkdb')
 
 r.connect({timeout = 1}, function(err, c)
   r.db('changefeeds'):table('watched'):changes():filter(
-    r.row:get_field('new_val'):get_field('id'):mod(2):eq(0)
+    function(row)
+      return row:get_field('new_val'):get_field('id'):mod(2):eq(0)
+    end
   ):limit(2):run(
     c, function(err, cur)
       if err then error(err.message) end

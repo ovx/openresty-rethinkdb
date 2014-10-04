@@ -84,7 +84,7 @@ def build(args):
             expected = {
                 term for term in dir(protodef.Term.TermType)
                 if not term.startswith('__')
-            } - {'DATUM'}
+            } - {'DATUM', 'IMPLICIT_VAR'}
             unused = expected - self.terms_found
             if unused:
                 raise ValueError('Found {} unused terms.'.format(unused))

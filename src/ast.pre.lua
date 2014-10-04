@@ -17,7 +17,7 @@ setmetatable(rethinkdb, {
 })
 
 local DatumTerm, RDBOp, RDBOp, MakeArray, MakeObject, Var, PolygonSub
-local JavaScript, Http, Json, Binary, Args, UserError, Random, ImplicitVar, Db
+local JavaScript, Http, Json, Binary, Args, UserError, Random, Db
 local Table, Get, GetAll, Eq, Ne, Lt, Le, Gt, Ge, Not, Add, Sub, Mul, Div, Mod
 local Append, Prepend, Difference, SetInsert, SetUnion, SetIntersection
 local SetDifference, Slice, Skip, Limit, GetField, Bracket, Contains, InsertAt
@@ -37,21 +37,6 @@ local GetIntersecting, GetNearest, Fill, UUID, Monday, Tuesday, Wednesday
 local Thursday, Friday, Saturday, Sunday, January, February, March, April, May
 local June, July, August, September, October, November, December, ToJson
 
-function ivar_scan(node)
-  if not is_instance(RDBOp, node) then
-    return false
-  end
-  if is_instance(ImplicitVar, node) then
-    return true
-  end
-  for _, v in ipairs(node.args) do
-    if ivar_scan(v) then return true end
-  end
-  for _, v in pairs(node.optargs) do
-    if ivar_scan(v) then return true end
-  end
-  return false
-end
 function intsp(seq)
   if seq[1] == nil then
     return {}
@@ -112,9 +97,7 @@ RDBOp = class(
           table.insert(args, Var({}, RDBOp.next_var_id))
           RDBOp.next_var_id = RDBOp.next_var_id + 1
         end
-        if not ivar_scan(first) then
-          first = first(unpack(args))
-        end
+        first = first(unpack(args))
         if first == nil then
           error(errors.ReQLDriverError('Anonymous function returned `nil`. Did you forget a `return`?'))
         end
@@ -491,7 +474,7 @@ RDBOp = class(
       return Map({}, ...)
     end,
     filter = function(self, predicate, opts)
-      return Filter(opts, self, rethinkdb.expr(predicate))
+      return Filter(opts, self, predicate)
     end,
     concat_map = function(...)
       return ConcatMap({}, ...)
@@ -881,13 +864,6 @@ Random = class(
   {
     tt = --[[Term.RANDOM]],
     st = 'random'
-  }
-)
-
-ImplicitVar = class(
-  'ImplicitVar', RDBOp,
-  {
-    tt = --[[Term.IMPLICIT_VAR]],
   }
 )
 
@@ -1968,11 +1944,11 @@ function rethinkdb.expr(val, nesting_depth)
   if type(nesting_depth) ~= 'number' then
     error(errors.ReQLDriverError('Second argument to `r.expr` must be a number or nil.'))
   end
-  if type(val) == 'function' or ivar_scan(val) then
-    return Func({}, val)
-  end
   if is_instance(RDBOp, val) then
     return val
+  end
+  if type(val) == 'function' then
+    return Func({}, val)
   end
   if type(val) == 'table' then
     local array = true
@@ -2006,7 +1982,7 @@ function rethinkdb.random(...)
 
   -- Look for opts dict
   local perhaps_opt_dict = limits[limits.n]
-  if perhaps_opt_dict and ((type(perhaps_opt_dict) == 'table') and not (is_instance(RDBOp, perhaps_opt_dict))) then
+  if (type(perhaps_opt_dict) == 'table') and (not is_instance(RDBOp, perhaps_opt_dict)) then
     opts = perhaps_opt_dict
     limits[limits.n] = nil
   end
@@ -2015,7 +1991,6 @@ end
 function rethinkdb.binary(data)
   return Binary(data)
 end
-rethinkdb.row = ImplicitVar()
 function rethinkdb.table(tbl_name, opts)
   return Table(opts, tbl_name)
 end
