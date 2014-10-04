@@ -187,7 +187,7 @@ RDBOp = class(
       if self.tt == --[[Term.MAKE_OBJ]] then
         return kved(optargs)
       end
-      if self.tt == 'Var' then
+      if self.tt == --[[Term.VAR]] then
         if not args then return {} end
         for i, v in ipairs(args) do
           args[i] = 'var_' .. v
