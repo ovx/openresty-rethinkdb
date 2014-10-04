@@ -799,7 +799,7 @@ DatumTerm = class(
           error('Illegal non-finite number `' .. self.data .. '`.')
         end
       end
-      if self.data == nil then return json.null end
+      if self.data == nil then return json.util.null end
       return self.data
     end
   }
