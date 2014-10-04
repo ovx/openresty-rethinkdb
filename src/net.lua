@@ -113,17 +113,17 @@ Cursor = class(
       self._token = token
       self._opts = opts
       self._root = root -- current query
-      self._responses = { }
+      self._responses = {}
       self._response_index = 1
       self._cont_flag = true
     end,
     _add_response = function(self, response)
       local t = response.t
       if not self._type then self._type = t end
-      if response.r[1] or 4 == t then
+      if response.r[1] or t == 4 then
         table.insert(self._responses, response)
       end
-      if 3 ~= t and 5 ~= t then
+      if t ~= 3 and t ~= 5 then
         -- We got an error, SUCCESS_SEQUENCE, WAIT_COMPLETE, or a SUCCESS_ATOM
         self._end_flag = true
       end
@@ -151,7 +151,7 @@ Cursor = class(
       -- Behavior varies considerably based on response type
       -- Error responses are not discarded, and the error will be sent to all future callbacks
       local t = response.t
-      if 1 == t or 3 == t or 5 == t or 2 == t then
+      if t == 1 or t == 3 or t == 5 or t == 2 then
         local row = recursively_convert_pseudotype(response.r[self._response_index], self._opts)
         self._response_index = self._response_index + 1
 
@@ -161,13 +161,13 @@ Cursor = class(
           self._response_index = 1
         end
         return cb(nil, row)
-      elseif 17 == t then
+      elseif t == 17 then
         return cb(errors.ReQLCompileError(response.r[1], self._root, response.b))
-      elseif 16 == t then
+      elseif t == 16 then
         return cb(errors.ReQLClientError(response.r[1], self._root, response.b))
-      elseif 18 == t then
+      elseif t == 18 then
         return cb(errors.ReQLRuntimeError(response.r[1], self._root, response.b))
-      elseif 4 == t then
+      elseif t == 4 then
         return cb(nil, nil)
       end
       return cb(errors.ReQLDriverError('Unknown response type ' .. t))
@@ -225,8 +225,8 @@ Connection = class(
   'Connection',
   {
     __init = function(self, host, callback)
-      if not (host) then
-        host = { }
+      if not host then
+        host = {}
       else
         if type(host) == 'string' then
           host = {
@@ -239,19 +239,11 @@ Connection = class(
       self.db = host.db -- left nil if this is not set
       self.auth_key = host.auth_key or self.DEFAULT_AUTH_KEY
       self.timeout = host.timeout or self.DEFAULT_TIMEOUT
-      self.outstanding_callbacks = { }
+      self.outstanding_callbacks = {}
       self.next_token = 1
       self.open = false
       self.buffer = ''
-      self._events = self._events or { }
-      local err_callback = function(self, e)
-        self:remove_listener('connect', con_callback)
-        if is_instance(errors.ReQLDriverError, e) then
-          return callback(e)
-        else
-          return callback(errors.ReQLDriverError('Could not connect to ' .. tostring(self.host) .. ':' .. tostring(self.port) .. '.\n' .. tostring(e.message)))
-        end
-      end
+      self._events = self._events or {}
       if self.raw_socket then
         self:close({
           noreply_wait = false
@@ -274,11 +266,10 @@ Connection = class(
         while 1 do
           buf, err, partial = self.raw_socket:receive(8)
           buf = buf or partial
-          if buf then
-            self.buffer = self.buffer .. buf
-          else
-            return callback(errors.ReQLDriverError('Could not connect to ' .. tostring(self.host) .. ':' .. tostring(self.port) .. '.\n' .. tostring(e)))
+          if not buf then
+            return callback(errors.ReQLDriverError('Server dropped connection with message: ' .. err))
           end
+          self.buffer = self.buffer .. buf
           i, j = buf:find('\0')
           if i then
             local status_str = self.buffer:sub(1, i - 1)
@@ -290,10 +281,12 @@ Connection = class(
               self:close({noreply_wait = false})
               return res
             else
-              return callback(errors.ReQLDriverError('Server dropped connection with message: \'' + status_str + '\''))
+              return callback(errors.ReQLDriverError('Server dropped connection with message: \'' .. status_str .. '\''))
             end
           end
         end
+      else
+        return callback(errors.ReQLDriverError('Could not connect to ' .. self.host .. ':' .. self.port .. '.\n' .. err))
       end
     end,
     DEFAULT_HOST = 'localhost',
@@ -331,16 +324,12 @@ Connection = class(
     end,
     _del_query = function(self, token)
       -- This query is done, delete this cursor
-      self.outstanding_callbacks[token] = {}
+      self.outstanding_callbacks[token].cursor = nil
     end,
     _process_response = function(self, response, token)
-      local profile = response.p
-      if self.outstanding_callbacks[token] then
-        local root, cursor, opts
-        do
-          local _obj_0 = self.outstanding_callbacks[token]
-          root, cursor, opts = _obj_0.root, _obj_0.cursor, _obj_0.opts
-        end
+      local cursor = self.outstanding_callbacks[token]
+      if cursor then
+        cursor = cursor.cursor
         if cursor then
           cursor:_add_response(response)
           if cursor._end_flag and cursor._outstanding_requests == 0 then
@@ -349,7 +338,7 @@ Connection = class(
         end
       else
         -- Unexpected token
-        return error(errors.ReQLDriverError('Unexpected token ' .. token .. '.'))
+        error(errors.ReQLDriverError('Unexpected token ' .. token .. '.'))
       end
     end,
     close = function(self, opts_or_callback, callback)
@@ -392,11 +381,16 @@ Connection = class(
       return wrapped_cb()
     end,
     noreply_wait = function(self, cb)
+      if type(cb) ~= 'function' then
+        cb = function() end
+      end
       function callback(err, cur)
         if cur then
-          return cur.next(function(err) return cb(err) end)
+          local res = cur.next(function(err) return cb(err) end)
+          cur:close()
+          return res
         end
-        if type(cb) == 'function' then return cb(err) end
+        return cb(err)
       end
       if not self.open then
         return callback(errors.ReQLDriverError('Connection is closed.'))
@@ -415,17 +409,7 @@ Connection = class(
       -- Construct query
       self:_write_query(token, '[' .. 4 .. ']')
 
-      if type(cb) == 'function' then
-        local res = cb(nil, cursor)
-        cursor:close()
-        return res
-      end
-      self.outstanding_callbacks[token] = {
-        cb = callback,
-        root = nil,
-        opts = nil
-      }
-      return self:_send_query(query)
+      return callback(nil, cursor)
     end,
     _write_query = function(self, token, data)
       self.raw_socket:send(
@@ -436,40 +420,31 @@ Connection = class(
     end,
     cancel = function(self)
       self.raw_socket.destroy()
-      self.outstanding_callbacks = { }
+      self.outstanding_callbacks = {}
     end,
     reconnect = function(self, opts_or_callback, callback)
+      local opts, cb
       if callback then
-        local opts = opts_or_callback
-        local cb = callback
+        opts = opts_or_callback
+        cb = callback
       else
         if type(opts_or_callback) == 'function' then
-          local opts = { }
-          local cb = opts_or_callback
+          opts = {}
+          cb = opts_or_callback
         else
           if opts_or_callback then
-            local opts = opts_or_callback
+            opts = opts_or_callback
           else
-            local opts = { }
+            opts = {}
           end
-          local cb = callback
+          cb = callback
         end
       end
-      local close_cb = function(self, err)
+      local close_cb = function(err)
         if err then
           return cb(err)
-        else
-          local construct_cb = function(self)
-            return Connection({
-              host = self.host,
-              port = self.port,
-              db = self.db,
-              auth_key = self.auth_key,
-              timeout = self.timeout
-            }, cb)
-          end
-          return set_timeout(construct_cb, 0)
         end
+        return Connection(self, cb)
       end
       return self:close(opts, close_cb)
     end,
