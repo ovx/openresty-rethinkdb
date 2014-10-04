@@ -75,9 +75,13 @@ def build(args):
 
     class ASTChecker(BuildFormat):
         terms_found = set()
+
+
         def get_field(self, name, args, kwargs):
             if name.startswith('Term.'):
                 self.terms_found.add(name[5:])
+            if name.startswith('Class.'):
+                self.terms_found.add(name[6:])
             return super(ASTChecker, self).get_field(name, args, kwargs)
 
         def check_unused_args(self, used, args, kwargs):
@@ -89,11 +93,43 @@ def build(args):
             if unused:
                 raise ValueError('Found {} unused terms.'.format(unused))
 
+    class LuaClassBuilder:
+        names = re.compile('^\w|_\w')
+
+        def __getattr__(self, name):
+            st = name.lower()
+            st = {
+                'bracket': '(...)', 'concatmap': 'concat_map',
+                'foreach': 'for_each', 'funcall': 'do_', 'javascript': 'js',
+                'make_array': '{...}', 'not': 'not_', 'orderby': 'order_by',
+                'typeof': 'type_of'
+            }.get(st, st)
+            return '\'{}\', ReQLOp, {{tt = {}, st = \'{}\'}}'.format(
+                self.get_class_name(name),
+                getattr(protodef.Term.TermType, name),
+                st
+            )
+
+        def get_class_name(self, name):
+            cls = {
+                'CONCATMAP': 'ConcatMap', 'FOREACH': 'ForEach',
+                'FUNCALL': 'FunCall', 'GEOJSON': 'GeoJson',
+                'ISO8601': 'ISO8601', 'JAVASCRIPT': 'JavaScript',
+                'ORDERBY': 'OrderBy', 'TO_GEOJSON': 'ToGeoJson',
+                'TO_ISO8601': 'ToISO8601', 'TYPEOF': 'TypeOf', 'UUID': 'UUID'
+            }.get(name)
+            if cls:
+                return cls
+            return self.names.sub(
+                lambda m: m.group(0).replace('_', '').upper(), name.lower()
+            )
+
     print('building ast.lua')
 
     with open('src/ast.pre.lua') as io:
         s = io.read()
     s = ASTChecker().vformat(s, (), {
+        'Class': LuaClassBuilder(),
         'Term': protodef.Term.TermType
     })
     with open('src/ast.lua', 'w') as io:

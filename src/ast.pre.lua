@@ -16,8 +16,8 @@ setmetatable(r, {
   end
 })
 
-local DatumTerm, ReQLOp, MakeArray, MakeObject, Var, PolygonSub
-local JavaScript, Http, Json, Binary, Args, UserError, Random, Db
+local DatumTerm, ReQLOp, MakeArray, MakeObj, Var, PolygonSub
+local JavaScript, Http, Json, Binary, Args, Error, Random, Db
 local Table, Get, GetAll, Eq, Ne, Lt, Le, Gt, Ge, Not, Add, Sub, Mul, Div, Mod
 local Append, Prepend, Difference, SetInsert, SetUnion, SetIntersection
 local SetDifference, Slice, Skip, Limit, GetField, Bracket, Contains, InsertAt
@@ -30,12 +30,12 @@ local Replace, Insert, DbCreate, DbDrop, DbList, TableCreate, TableDrop
 local TableList, IndexCreate, IndexDrop, IndexRename, IndexList, IndexStatus
 local IndexWait, Sync, FunCall, Default, Branch, Any, All, ForEach, Func, Asc
 local Desc, Literal, ISO8601, ToISO8601, EpochTime, ToEpochTime, Now
-local InTimezone, During, ReQLDate, TimeOfDay, Timezone, Year, Month, Day
+local InTimezone, During, Date, TimeOfDay, Timezone, Year, Month, Day
 local DayOfWeek, DayOfYear, Hours, Minutes, Seconds, Time, GeoJson, ToGeoJson
 local Point, Line, Polygon, Distance, Intersects, Includes, Circle
 local GetIntersecting, GetNearest, Fill, UUID, Monday, Tuesday, Wednesday
 local Thursday, Friday, Saturday, Sunday, January, February, March, April, May
-local June, July, August, September, October, November, December, ToJson
+local June, July, August, September, October, November, December, ToJsonString
 
 function intsp(seq)
   if seq[1] == nil then
@@ -77,7 +77,7 @@ function intspallargs(args, optargs)
   return argrepr
 end
 function should_wrap(arg)
-  return is_instance(DatumTerm, arg) or is_instance(MakeArray, arg) or is_instance(MakeObject, arg)
+  return is_instance(DatumTerm, arg) or is_instance(MakeArray, arg) or is_instance(MakeObj, arg)
 end
 
 local meta = {
@@ -311,15 +311,6 @@ ReQLOp = class(
           ')'
         }
       end
-      if self.st then
-        return {
-          'r.',
-          self.st,
-          '(',
-          intspallargs(args, optargs),
-          ')'
-        }
-      end
       if should_wrap(self.args[1]) then
         args[1] = {
           'r(',
@@ -330,7 +321,7 @@ ReQLOp = class(
       return {
         args[1],
         ':',
-        self.mt,
+        self.st,
         '(',
         intspallargs((function()
           local _accum_0 = {}
@@ -517,7 +508,7 @@ ReQLOp = class(
       return Nth({}, ...)
     end,
     to_json = function(...)
-      return ToJson({}, ...)
+      return ToJsonString({}, ...)
     end,
     match = function(...)
       return Match({}, ...)
@@ -740,7 +731,7 @@ ReQLOp = class(
       return During(opts, self, t2, t3)
     end,
     date = function(...)
-      return ReQLDate({}, ...)
+      return Date({}, ...)
     end,
     time_of_day = function(...)
       return TimeOfDay({}, ...)
@@ -813,1148 +804,149 @@ DatumTerm = class(
   }
 )
 
-MakeArray = class(
-  'MakeArray', ReQLOp,
-  {
-    tt = --[[Term.MAKE_ARRAY]],
-    st = '{...}' -- This is only used by the `nil` argument checker
-  }
-)
-
-MakeObject = class(
-  'MakeObject', ReQLOp,
-  {
-    tt = --[[Term.MAKE_OBJ]],
-    st = '{...}' -- This is only used by the `nil` argument checker
-  }
-)
-
-Var = class(
-  'Var', ReQLOp,
-  {
-    tt = --[[Term.VAR]],
-  }
-)
-
-JavaScript = class(
-  'JavaScript', ReQLOp,
-  {
-    tt = --[[Term.JAVASCRIPT]],
-    st = 'js'
-  }
-)
-
-Http = class(
-  'Http', ReQLOp,
-  {
-    tt = --[[Term.HTTP]],
-    st = 'http'
-  }
-)
-
-Json = class(
-  'Json', ReQLOp,
-  {
-    tt = --[[Term.JSON]],
-    st = 'json'
-  }
-)
-
-Binary = class(
-  'Binary', ReQLOp,
-  {
-    tt = --[[Term.BINARY]],
-    st = 'binary'
-  }
-)
-
-Args = class(
-  'Args', ReQLOp,
-  {
-    tt = --[[Term.ARGS]],
-    st = 'args'
-  }
-)
-
-UserError = class(
-  'UserError', ReQLOp,
-  {
-    tt = --[[Term.ERROR]],
-    st = 'error'
-  }
-)
-
-Random = class(
-  'Random', ReQLOp,
-  {
-    tt = --[[Term.RANDOM]],
-    st = 'random'
-  }
-)
-
-Db = class(
-  'Db', ReQLOp,
-  {
-    tt = --[[Term.DB]],
-    st = 'db'
-  }
-)
-
-Table = class(
-  'Table', ReQLOp,
-  {
-    tt = --[[Term.TABLE]],
-    st = 'table'
-  }
-)
-
-Get = class(
-  'Get', ReQLOp,
-  {
-    tt = --[[Term.GET]],
-    mt = 'get'
-  }
-)
-
-GetAll = class(
-  'GetAll', ReQLOp,
-  {
-    tt = --[[Term.GET_ALL]],
-    mt = 'get_all'
-  }
-)
-
-Eq = class(
-  'Eq', ReQLOp,
-  {
-    tt = --[[Term.EQ]],
-    mt = 'eq'
-  }
-)
-
-Ne = class(
-  'Ne', ReQLOp,
-  {
-    tt = --[[Term.NE]],
-    mt = 'ne'
-  }
-)
-
-Lt = class(
-  'Lt', ReQLOp,
-  {
-    tt = --[[Term.LT]],
-    mt = 'lt'
-  }
-)
-
-Le = class(
-  'Le', ReQLOp,
-  {
-    tt = --[[Term.LE]],
-    mt = 'le'
-  }
-)
-
-Gt = class(
-  'Gt', ReQLOp,
-  {
-    tt = --[[Term.GT]],
-    mt = 'gt'
-  }
-)
-
-Ge = class(
-  'Ge', ReQLOp,
-  {
-    tt = --[[Term.GE]],
-    mt = 'ge'
-  }
-)
-
-Not = class(
-  'Not', ReQLOp,
-  {
-    tt = --[[Term.NOT]],
-    mt = 'not_'
-  }
-)
-
-Add = class(
-  'Add', ReQLOp,
-  {
-    tt = --[[Term.ADD]],
-    mt = 'add'
-  }
-)
-
-Sub = class(
-  'Sub', ReQLOp,
-  {
-    tt = --[[Term.SUB]],
-    mt = 'sub'
-  }
-)
-
-Mul = class(
-  'Mul', ReQLOp,
-  {
-    tt = --[[Term.MUL]],
-    mt = 'mul'
-  }
-)
-
-Div = class(
-  'Div', ReQLOp,
-  {
-    tt = --[[Term.DIV]],
-    mt = 'div'
-  }
-)
-
-Mod = class(
-  'Mod', ReQLOp,
-  {
-    tt = --[[Term.MOD]],
-    mt = 'mod'
-  }
-)
-
-Append = class(
-  'Append', ReQLOp,
-  {
-    tt = --[[Term.APPEND]],
-    mt = 'append'
-  }
-)
-
-Prepend = class(
-  'Prepend', ReQLOp,
-  {
-    tt = --[[Term.PREPEND]],
-    mt = 'prepend'
-  }
-)
-
-Difference = class(
-  'Difference', ReQLOp,
-  {
-    tt = --[[Term.DIFFERENCE]],
-    mt = 'difference'
-  }
-)
-
-SetInsert = class(
-  'SetInsert', ReQLOp,
-  {
-    tt = --[[Term.SET_INSERT]],
-    mt = 'set_insert'
-  }
-)
-
-SetUnion = class(
-  'SetUnion', ReQLOp,
-  {
-    tt = --[[Term.SET_UNION]],
-    mt = 'set_union'
-  }
-)
-
-SetIntersection = class(
-  'SetIntersection', ReQLOp,
-  {
-    tt = --[[Term.SET_INTERSECTION]],
-    mt = 'set_intersection'
-  }
-)
-
-SetDifference = class(
-  'SetDifference', ReQLOp,
-  {
-    tt = --[[Term.SET_DIFFERENCE]],
-    mt = 'set_difference'
-  }
-)
-
-Slice = class(
-  'Slice', ReQLOp,
-  {
-    tt = --[[Term.SLICE]],
-    mt = 'slice'
-  }
-)
-
-Skip = class(
-  'Skip', ReQLOp,
-  {
-    tt = --[[Term.SKIP]],
-    mt = 'skip'
-  }
-)
-
-Limit = class(
-  'Limit', ReQLOp,
-  {
-    tt = --[[Term.LIMIT]],
-    mt = 'limit'
-  }
-)
-
-GetField = class(
-  'GetField', ReQLOp,
-  {
-    tt = --[[Term.GET_FIELD]],
-    mt = 'get_field'
-  }
-)
-
-Bracket = class(
-  'Bracket', ReQLOp,
-  {
-    tt = --[[Term.BRACKET]],
-    st = '[...]', -- This is only used by the `nil` argument checker
-  }
-)
-
-Contains = class(
-  'Contains', ReQLOp,
-  {
-    tt = --[[Term.CONTAINS]],
-    mt = 'contains'
-  }
-)
-
-InsertAt = class(
-  'InsertAt', ReQLOp,
-  {
-    tt = --[[Term.INSERT_AT]],
-    mt = 'insert_at'
-  }
-)
-
-SpliceAt = class(
-  'SpliceAt', ReQLOp,
-  {
-    tt = --[[Term.SPLICE_AT]],
-    mt = 'splice_at'
-  }
-)
-
-DeleteAt = class(
-  'DeleteAt', ReQLOp,
-  {
-    tt = --[[Term.DELETE_AT]],
-    mt = 'delete_at'
-  }
-)
-
-ChangeAt = class(
-  'ChangeAt', ReQLOp,
-  {
-    tt = --[[Term.CHANGE_AT]],
-    mt = 'change_at'
-  }
-)
-
-Contains = class(
-  'Contains', ReQLOp,
-  {
-    tt = --[[Term.CONTAINS]],
-    mt = 'contains'
-  }
-)
-
-HasFields = class(
-  'HasFields', ReQLOp,
-  {
-    tt = --[[Term.HAS_FIELDS]],
-    mt = 'has_fields'
-  }
-)
-
-WithFields = class(
-  'WithFields', ReQLOp,
-  {
-    tt = --[[Term.WITH_FIELDS]],
-    mt = 'with_fields'
-  }
-)
-
-Keys = class(
-  'Keys', ReQLOp,
-  {
-    tt = --[[Term.KEYS]],
-    mt = 'keys'
-  }
-)
-
-Changes = class(
-  'Changes', ReQLOp,
-  {
-    tt = --[[Term.CHANGES]],
-    mt = 'changes'
-  }
-)
-
-Object = class(
-  'Object', ReQLOp,
-  {
-    tt = --[[Term.OBJECT]],
-    mt = 'object'
-  }
-)
-
-Pluck = class(
-  'Pluck', ReQLOp,
-  {
-    tt = --[[Term.PLUCK]],
-    mt = 'pluck'
-  }
-)
-
-IndexesOf = class(
-  'IndexesOf', ReQLOp,
-  {
-    tt = --[[Term.INDEXES_OF]],
-    mt = 'indexes_of'
-  }
-)
-
-Without = class(
-  'Without', ReQLOp,
-  {
-    tt = --[[Term.WITHOUT]],
-    mt = 'without'
-  }
-)
-
-Merge = class(
-  'Merge', ReQLOp,
-  {
-    tt = --[[Term.MERGE]],
-    mt = 'merge'
-  }
-)
-
-Between = class(
-  'Between', ReQLOp,
-  {
-    tt = --[[Term.BETWEEN]],
-    mt = 'between'
-  }
-)
-
-Reduce = class(
-  'Reduce', ReQLOp,
-  {
-    tt = --[[Term.REDUCE]],
-    mt = 'reduce'
-  }
-)
-
-Map = class(
-  'Map', ReQLOp,
-  {
-    tt = --[[Term.MAP]],
-    mt = 'map'
-  }
-)
-
-Filter = class(
-  'Filter', ReQLOp,
-  {
-    tt = --[[Term.FILTER]],
-    mt = 'filter'
-  }
-)
-
-ConcatMap = class(
-  'ConcatMap', ReQLOp,
-  {
-    tt = --[[Term.CONCATMAP]],
-    mt = 'concat_map'
-  }
-)
-
-OrderBy = class(
-  'OrderBy', ReQLOp,
-  {
-    tt = --[[Term.ORDERBY]],
-    mt = 'order_by'
-  }
-)
-
-Distinct = class(
-  'Distinct', ReQLOp,
-  {
-    tt = --[[Term.DISTINCT]],
-    mt = 'distinct'
-  }
-)
-
-Count = class(
-  'Count', ReQLOp,
-  {
-    tt = --[[Term.COUNT]],
-    mt = 'count'
-  }
-)
-
-Union = class(
-  'Union', ReQLOp,
-  {
-    tt = --[[Term.UNION]],
-    mt = 'union'
-  }
-)
-
-Nth = class(
-  'Nth', ReQLOp,
-  {
-    tt = --[[Term.NTH]],
-    mt = 'nth'
-  }
-)
-
-ToJson = class(
-  'ToJson', ReQLOp,
-  {
-    tt = --[[Term.TO_JSON_STRING]],
-    st = 'to_json_string'
-  }
-)
-
-Match = class(
-  'Match', ReQLOp,
-  {
-    tt = --[[Term.MATCH]],
-    mt = 'match'
-  }
-)
-
-Split = class(
-  'Split', ReQLOp,
-  {
-    tt = --[[Term.SPLIT]],
-    mt = 'split'
-  }
-)
-
-Upcase = class(
-  'Upcase', ReQLOp,
-  {
-    tt = --[[Term.UPCASE]],
-    mt = 'upcase'
-  }
-)
-
-Downcase = class(
-  'Downcase', ReQLOp,
-  {
-    tt = --[[Term.DOWNCASE]],
-    mt = 'downcase'
-  }
-)
-
-IsEmpty = class(
-  'IsEmpty', ReQLOp,
-  {
-    tt = --[[Term.IS_EMPTY]],
-    mt = 'is_empty'
-  }
-)
-
-Group = class(
-  'Group', ReQLOp,
-  {
-    tt = --[[Term.GROUP]],
-    mt = 'group'
-  }
-)
-
-Sum = class(
-  'Sum', ReQLOp,
-  {
-    tt = --[[Term.SUM]],
-    mt = 'sum'
-  }
-)
-
-Avg = class(
-  'Avg', ReQLOp,
-  {
-    tt = --[[Term.AVG]],
-    mt = 'avg'
-  }
-)
-
-Min = class(
-  'Min', ReQLOp,
-  {
-    tt = --[[Term.MIN]],
-    mt = 'min'
-  }
-)
-
-Max = class(
-  'Max', ReQLOp,
-  {
-    tt = --[[Term.MAX]],
-    mt = 'max'
-  }
-)
-
-InnerJoin = class(
-  'InnerJoin', ReQLOp,
-  {
-    tt = --[[Term.INNER_JOIN]],
-    mt = 'inner_join'
-  }
-)
-
-OuterJoin = class(
-  'OuterJoin', ReQLOp,
-  {
-    tt = --[[Term.OUTER_JOIN]],
-    mt = 'outer_join'
-  }
-)
-
-EqJoin = class(
-  'EqJoin', ReQLOp,
-  {
-    tt = --[[Term.EQ_JOIN]],
-    mt = 'eq_join'
-  }
-)
-
-Zip = class(
-  'Zip', ReQLOp,
-  {
-    tt = --[[Term.ZIP]],
-    mt = 'zip'
-  }
-)
-
-CoerceTo = class(
-  'CoerceTo', ReQLOp,
-  {
-    tt = --[[Term.COERCE_TO]],
-    mt = 'coerce_to'
-  }
-)
-
-Ungroup = class(
-  'Ungroup', ReQLOp,
-  {
-    tt = --[[Term.UNGROUP]],
-    mt = 'ungroup'
-  }
-)
-
-TypeOf = class(
-  'TypeOf', ReQLOp,
-  {
-    tt = --[[Term.TYPEOF]],
-    mt = 'type_of'
-  }
-)
-
-Info = class(
-  'Info', ReQLOp,
-  {
-    tt = --[[Term.INFO]],
-    mt = 'info'
-  }
-)
-
-Sample = class(
-  'Sample', ReQLOp,
-  {
-    tt = --[[Term.SAMPLE]],
-    mt = 'sample'
-  }
-)
-
-Update = class(
-  'Update', ReQLOp,
-  {
-    tt = --[[Term.UPDATE]],
-    mt = 'update'
-  }
-)
-
-Delete = class(
-  'Delete', ReQLOp,
-  {
-    tt = --[[Term.DELETE]],
-    mt = 'delete'
-  }
-)
-
-Replace = class(
-  'Replace', ReQLOp,
-  {
-    tt = --[[Term.REPLACE]],
-    mt = 'replace'
-  }
-)
-
-Insert = class(
-  'Insert', ReQLOp,
-  {
-    tt = --[[Term.INSERT]],
-    mt = 'insert'
-  }
-)
-
-DbCreate = class(
-  'DbCreate', ReQLOp,
-  {
-    tt = --[[Term.DB_CREATE]],
-    st = 'db_create'
-  }
-)
-
-DbDrop = class(
-  'DbDrop', ReQLOp,
-  {
-    tt = --[[Term.DB_DROP]],
-    st = 'db_drop'
-  }
-)
-
-DbList = class(
-  'DbList', ReQLOp,
-  {
-    tt = --[[Term.DB_LIST]],
-    st = 'db_list'
-  }
-)
-
-TableCreate = class(
-  'TableCreate', ReQLOp,
-  {
-    tt = --[[Term.TABLE_CREATE]],
-    mt = 'table_create'
-  }
-)
-
-TableDrop = class(
-  'TableDrop', ReQLOp,
-  {
-    tt = --[[Term.TABLE_DROP]],
-    mt = 'table_drop'
-  }
-)
-
-TableList = class(
-  'TableList', ReQLOp,
-  {
-    tt = --[[Term.TABLE_LIST]],
-    mt = 'table_list'
-  }
-)
-
-IndexCreate = class(
-  'IndexCreate', ReQLOp,
-  {
-    tt = --[[Term.INDEX_CREATE]],
-    mt = 'index_create'
-  }
-)
-
-IndexDrop = class(
-  'IndexDrop', ReQLOp,
-  {
-    tt = --[[Term.INDEX_DROP]],
-    mt = 'index_drop'
-  }
-)
-
-IndexRename = class(
-  'IndexRename', ReQLOp,
-  {
-    tt = --[[Term.INDEX_RENAME]],
-    mt = 'index_rename'
-  }
-)
-
-IndexList = class(
-  'IndexList', ReQLOp,
-  {
-    tt = --[[Term.INDEX_LIST]],
-    mt = 'index_list'
-  }
-)
-
-IndexStatus = class(
-  'IndexStatus', ReQLOp,
-  {
-    tt = --[[Term.INDEX_STATUS]],
-    mt = 'index_status'
-  }
-)
-
-IndexWait = class(
-  'IndexWait', ReQLOp,
-  {
-    tt = --[[Term.INDEX_WAIT]],
-    mt = 'index_wait'
-  }
-)
-
-Sync = class(
-  'Sync', ReQLOp,
-  {
-    tt = --[[Term.SYNC]],
-    mt = 'sync'
-  }
-)
-
-FunCall = class(
-  'FunCall', ReQLOp,
-  {
-    tt = --[[Term.FUNCALL]],
-    st = 'do_', -- This is only used by the `nil` argument checker
-  }
-)
-
-Default = class(
-  'Default', ReQLOp,
-  {
-    tt = --[[Term.DEFAULT]],
-    mt = 'default'
-  }
-)
-
-Branch = class(
-  'Branch', ReQLOp,
-  {
-    tt = --[[Term.BRANCH]],
-    st = 'branch'
-  }
-)
-
-Any = class(
-  'Any', ReQLOp,
-  {
-    tt = --[[Term.ANY]],
-    mt = 'or_'
-  }
-)
-
-All = class(
-  'All', ReQLOp,
-  {
-    tt = --[[Term.ALL]],
-    mt = 'and_'
-  }
-)
-
-ForEach = class(
-  'ForEach', ReQLOp,
-  {
-    tt = --[[Term.FOREACH]],
-    mt = 'for_each'
-  }
-)
-
-Func = class(
-  'Func', ReQLOp,
-  {
-    next_var_id = 0,
-    tt = --[[Term.FUNC]],
-  }
-)
-
-Asc = class(
-  'Asc', ReQLOp,
-  {
-    tt = --[[Term.ASC]],
-    st = 'asc'
-  }
-)
-
-Desc = class(
-  'Desc', ReQLOp,
-  {
-    tt = --[[Term.DESC]],
-    st = 'desc'
-  }
-)
-
-Literal = class(
-  'Literal', ReQLOp,
-  {
-    tt = --[[Term.LITERAL]],
-    st = 'literal'
-  }
-)
-
-ISO8601 = class(
-  'ISO8601', ReQLOp,
-  {
-    tt = --[[Term.ISO8601]],
-    st = 'iso8601'
-  }
-)
-
-ToISO8601 = class(
-  'ToISO8601', ReQLOp,
-  {
-    tt = --[[Term.TO_ISO8601]],
-    mt = 'to_iso8601'
-  }
-)
-
-EpochTime = class(
-  'EpochTime', ReQLOp,
-  {
-    tt = --[[Term.EPOCH_TIME]],
-    st = 'epoch_time'
-  }
-)
-
-ToEpochTime = class(
-  'ToEpochTime', ReQLOp,
-  {
-    tt = --[[Term.TO_EPOCH_TIME]],
-    mt = 'to_epoch_time'
-  }
-)
-
-Now = class(
-  'Now', ReQLOp,
-  {
-    tt = --[[Term.NOW]],
-    st = 'now'
-  }
-)
-
-InTimezone = class(
-  'InTimezone', ReQLOp,
-  {
-    tt = --[[Term.IN_TIMEZONE]],
-    mt = 'in_timezone'
-  }
-)
-
-During = class(
-  'During', ReQLOp,
-  {
-    tt = --[[Term.DURING]],
-    mt = 'during'
-  }
-)
-
-ReQLDate = class(
-  'ReQLDate', ReQLOp,
-  {
-    tt = --[[Term.DATE]],
-    mt = 'date'
-  }
-)
-
-TimeOfDay = class(
-  'TimeOfDay', ReQLOp,
-  {
-    tt = --[[Term.TIME_OF_DAY]],
-    mt = 'time_of_day'
-  }
-)
-
-Timezone = class(
-  'Timezone', ReQLOp,
-  {
-    tt = --[[Term.TIMEZONE]],
-    mt = 'timezone'
-  }
-)
-
-Year = class(
-  'Year', ReQLOp,
-  {
-    tt = --[[Term.YEAR]],
-    mt = 'year'
-  }
-)
-
-Month = class(
-  'Month', ReQLOp,
-  {
-    tt = --[[Term.MONTH]],
-    mt = 'month'
-  }
-)
-
-Day = class(
-  'Day', ReQLOp,
-  {
-    tt = --[[Term.DAY]],
-    mt = 'day'
-  }
-)
-
-DayOfWeek = class(
-  'DayOfWeek', ReQLOp,
-  {
-    tt = --[[Term.DAY_OF_WEEK]],
-    mt = 'day_of_week'
-  }
-)
-
-DayOfYear = class(
-  'DayOfYear', ReQLOp,
-  {
-    tt = --[[Term.DAY_OF_YEAR]],
-    mt = 'day_of_year'
-  }
-)
-
-Hours = class(
-  'Hours', ReQLOp,
-  {
-    tt = --[[Term.HOURS]],
-    mt = 'hours'
-  }
-)
-
-Minutes = class(
-  'Minutes', ReQLOp,
-  {
-    tt = --[[Term.MINUTES]],
-    mt = 'minutes'
-  }
-)
-
-Seconds = class(
-  'Seconds', ReQLOp,
-  {
-    tt = --[[Term.SECONDS]],
-    mt = 'seconds'
-  }
-)
-
-Time = class(
-  'Time', ReQLOp,
-  {
-    tt = --[[Term.TIME]],
-    st = 'time'
-  }
-)
-
-GeoJson = class(
-  'GeoJson', ReQLOp,
-  {
-    tt = --[[Term.GEOJSON]],
-    mt = 'geojson'
-  }
-)
-
-ToGeoJson = class(
-  'ToGeoJson', ReQLOp,
-  {
-    tt = --[[Term.TO_GEOJSON]],
-    mt = 'to_geojson'
-  }
-)
-
-Point = class(
-  'Point', ReQLOp,
-  {
-    tt = --[[Term.POINT]],
-    mt = 'point'
-  }
-)
-
-Line = class(
-  'Line', ReQLOp,
-  {
-    tt = --[[Term.LINE]],
-    mt = 'line'
-  }
-)
-
-Polygon = class(
-  'Polygon', ReQLOp,
-  {
-    tt = --[[Term.POLYGON]],
-    mt = 'polygon'
-  }
-)
-
-Distance = class(
-  'Distance', ReQLOp,
-  {
-    tt = --[[Term.DISTANCE]],
-    mt = 'distance'
-  }
-)
-
-Intersects = class(
-  'Intersects', ReQLOp,
-  {
-    tt = --[[Term.INTERSECTS]],
-    mt = 'intersects'
-  }
-)
-
-Includes = class(
-  'Includes', ReQLOp,
-  {
-    tt = --[[Term.INCLUDES]],
-    mt = 'includes'
-  }
-)
-
-Circle = class(
-  'Circle', ReQLOp,
-  {
-    tt = --[[Term.CIRCLE]],
-    mt = 'circle'
-  }
-)
-
-GetIntersecting = class(
-  'GetIntersecting', ReQLOp,
-  {
-    tt = --[[Term.GET_INTERSECTING]],
-    mt = 'get_intersecting'
-  }
-)
-
-GetNearest = class(
-  'GetNearest', ReQLOp,
-  {
-    tt = --[[Term.GET_NEAREST]],
-    mt = 'get_nearest'
-  }
-)
-
-Fill = class(
-  'Fill', ReQLOp,
-  {
-    tt = --[[Term.FILL]],
-    mt = 'fill'
-  }
-)
-
-PolygonSub = class(
-  'PolygonSub', ReQLOp,
-  {
-    tt = --[[Term.POLYGON_SUB]],
-    st = 'polygon_sub'
-  }
-)
-
-UUID = class(
-  'UUID', ReQLOp,
-  {
-    tt = --[[Term.UUID]],
-    st = 'uuid'
-  }
-)
+MakeArray = class(--[[Class.MAKE_ARRAY]])
+MakeObj = class(--[[Class.MAKE_OBJ]])
+Var = class(--[[Class.VAR]])
+JavaScript = class(--[[Class.JAVASCRIPT]])
+Http = class(--[[Class.HTTP]])
+Json = class(--[[Class.JSON]])
+Binary = class(--[[Class.BINARY]])
+Args = class(--[[Class.ARGS]])
+Error = class(--[[Class.ERROR]])
+Random = class(--[[Class.RANDOM]])
+Db = class(--[[Class.DB]])
+Table = class(--[[Class.TABLE]])
+Get = class(--[[Class.GET]])
+GetAll = class(--[[Class.GET_ALL]])
+Eq = class(--[[Class.EQ]])
+Ne = class(--[[Class.NE]])
+Lt = class(--[[Class.LT]])
+Le = class(--[[Class.LE]])
+Gt = class(--[[Class.GT]])
+Ge = class(--[[Class.GE]])
+Not = class(--[[Class.NOT]])
+Add = class(--[[Class.ADD]])
+Sub = class(--[[Class.SUB]])
+Mul = class(--[[Class.MUL]])
+Div = class(--[[Class.DIV]])
+Mod = class(--[[Class.MOD]])
+Append = class(--[[Class.APPEND]])
+Prepend = class(--[[Class.PREPEND]])
+Difference = class(--[[Class.DIFFERENCE]])
+SetInsert = class(--[[Class.SET_INSERT]])
+SetUnion = class(--[[Class.SET_UNION]])
+SetIntersection = class(--[[Class.SET_INTERSECTION]])
+SetDifference = class(--[[Class.SET_DIFFERENCE]])
+Slice = class(--[[Class.SLICE]])
+Skip = class(--[[Class.SKIP]])
+Limit = class(--[[Class.LIMIT]])
+GetField = class(--[[Class.GET_FIELD]])
+Bracket = class(--[[Class.BRACKET]])
+Contains = class(--[[Class.CONTAINS]])
+InsertAt = class(--[[Class.INSERT_AT]])
+SpliceAt = class(--[[Class.SPLICE_AT]])
+DeleteAt = class(--[[Class.DELETE_AT]])
+ChangeAt = class(--[[Class.CHANGE_AT]])
+Contains = class(--[[Class.CONTAINS]])
+HasFields = class(--[[Class.HAS_FIELDS]])
+WithFields = class(--[[Class.WITH_FIELDS]])
+Keys = class(--[[Class.KEYS]])
+Changes = class(--[[Class.CHANGES]])
+Object = class(--[[Class.OBJECT]])
+Pluck = class(--[[Class.PLUCK]])
+IndexesOf = class(--[[Class.INDEXES_OF]])
+Without = class(--[[Class.WITHOUT]])
+Merge = class(--[[Class.MERGE]])
+Between = class(--[[Class.BETWEEN]])
+Reduce = class(--[[Class.REDUCE]])
+Map = class(--[[Class.MAP]])
+Filter = class(--[[Class.FILTER]])
+ConcatMap = class(--[[Class.CONCATMAP]])
+OrderBy = class(--[[Class.ORDERBY]])
+Distinct = class(--[[Class.DISTINCT]])
+Count = class(--[[Class.COUNT]])
+Union = class(--[[Class.UNION]])
+Nth = class(--[[Class.NTH]])
+ToJsonString = class(--[[Class.TO_JSON_STRING]])
+Match = class(--[[Class.MATCH]])
+Split = class(--[[Class.SPLIT]])
+Upcase = class(--[[Class.UPCASE]])
+Downcase = class(--[[Class.DOWNCASE]])
+IsEmpty = class(--[[Class.IS_EMPTY]])
+Group = class(--[[Class.GROUP]])
+Sum = class(--[[Class.SUM]])
+Avg = class(--[[Class.AVG]])
+Min = class(--[[Class.MIN]])
+Max = class(--[[Class.MAX]])
+InnerJoin = class(--[[Class.INNER_JOIN]])
+OuterJoin = class(--[[Class.OUTER_JOIN]])
+EqJoin = class(--[[Class.EQ_JOIN]])
+Zip = class(--[[Class.ZIP]])
+CoerceTo = class(--[[Class.COERCE_TO]])
+Ungroup = class(--[[Class.UNGROUP]])
+TypeOf = class(--[[Class.TYPEOF]])
+Info = class(--[[Class.INFO]])
+Sample = class(--[[Class.SAMPLE]])
+Update = class(--[[Class.UPDATE]])
+Delete = class(--[[Class.DELETE]])
+Replace = class(--[[Class.REPLACE]])
+Insert = class(--[[Class.INSERT]])
+DbCreate = class(--[[Class.DB_CREATE]])
+DbDrop = class(--[[Class.DB_DROP]])
+DbList = class(--[[Class.DB_LIST]])
+TableCreate = class(--[[Class.TABLE_CREATE]])
+TableDrop = class(--[[Class.TABLE_DROP]])
+TableList = class(--[[Class.TABLE_LIST]])
+IndexCreate = class(--[[Class.INDEX_CREATE]])
+IndexDrop = class(--[[Class.INDEX_DROP]])
+IndexRename = class(--[[Class.INDEX_RENAME]])
+IndexList = class(--[[Class.INDEX_LIST]])
+IndexStatus = class(--[[Class.INDEX_STATUS]])
+IndexWait = class(--[[Class.INDEX_WAIT]])
+Sync = class(--[[Class.SYNC]])
+FunCall = class(--[[Class.FUNCALL]])
+Default = class(--[[Class.DEFAULT]])
+Branch = class(--[[Class.BRANCH]])
+Any = class(--[[Class.ANY]])
+All = class(--[[Class.ALL]])
+ForEach = class(--[[Class.FOREACH]])
+Func = class(--[[Class.FUNC]])
+Asc = class(--[[Class.ASC]])
+Desc = class(--[[Class.DESC]])
+Literal = class(--[[Class.LITERAL]])
+ISO8601 = class(--[[Class.ISO8601]])
+ToISO8601 = class(--[[Class.TO_ISO8601]])
+EpochTime = class(--[[Class.EPOCH_TIME]])
+ToEpochTime = class(--[[Class.TO_EPOCH_TIME]])
+Now = class(--[[Class.NOW]])
+InTimezone = class(--[[Class.IN_TIMEZONE]])
+During = class(--[[Class.DURING]])
+Date = class(--[[Class.DATE]])
+TimeOfDay = class(--[[Class.TIME_OF_DAY]])
+Timezone = class(--[[Class.TIMEZONE]])
+Year = class(--[[Class.YEAR]])
+Month = class(--[[Class.MONTH]])
+Day = class(--[[Class.DAY]])
+DayOfWeek = class(--[[Class.DAY_OF_WEEK]])
+DayOfYear = class(--[[Class.DAY_OF_YEAR]])
+Hours = class(--[[Class.HOURS]])
+Minutes = class(--[[Class.MINUTES]])
+Seconds = class(--[[Class.SECONDS]])
+Time = class(--[[Class.TIME]])
+GeoJson = class(--[[Class.GEOJSON]])
+ToGeoJson = class(--[[Class.TO_GEOJSON]])
+Point = class(--[[Class.POINT]])
+Line = class(--[[Class.LINE]])
+Polygon = class(--[[Class.POLYGON]])
+Distance = class(--[[Class.DISTANCE]])
+Intersects = class(--[[Class.INTERSECTS]])
+Includes = class(--[[Class.INCLUDES]])
+Circle = class(--[[Class.CIRCLE]])
+GetIntersecting = class(--[[Class.GET_INTERSECTING]])
+GetNearest = class(--[[Class.GET_NEAREST]])
+Fill = class(--[[Class.FILL]])
+PolygonSub = class(--[[Class.POLYGON_SUB]])
+UUID = class(--[[Class.UUID]])
 
 -- All top level exported functions
 
@@ -1984,7 +976,7 @@ function r.expr(val, nesting_depth)
     if array then
       return MakeArray({}, val)
     end
-    return MakeObject(val)
+    return MakeObj(val)
   end
   return DatumTerm(val)
 end
@@ -1998,7 +990,7 @@ function r.json(...)
   return Json({}, ...)
 end
 function r.error(...)
-  return UserError({}, ...)
+  return Error({}, ...)
 end
 function r.random(...)
   -- Default if no opts dict provided
@@ -2125,26 +1117,26 @@ function r.time(...)
   return Time({}, ...)
 end
 
-r.monday = class('Monday', ReQLOp, {tt = --[[Term.MONDAY]]})()
-r.tuesday = class('Tuesday', ReQLOp, {tt = --[[Term.TUESDAY]]})()
-r.wednesday = class('Wednesday', ReQLOp, {tt = --[[Term.WEDNESDAY]]})()
-r.thursday = class('Thursday', ReQLOp, {tt = --[[Term.THURSDAY]]})()
-r.friday = class('Friday', ReQLOp, {tt = --[[Term.FRIDAY]]})()
-r.saturday = class('Saturday', ReQLOp, {tt = --[[Term.SATURDAY]]})()
-r.sunday = class('Sunday', ReQLOp, {tt = --[[Term.SUNDAY]]})()
+r.monday = class(--[[Class.MONDAY]])()
+r.tuesday = class(--[[Class.TUESDAY]])()
+r.wednesday = class(--[[Class.WEDNESDAY]])()
+r.thursday = class(--[[Class.THURSDAY]])()
+r.friday = class(--[[Class.FRIDAY]])()
+r.saturday = class(--[[Class.SATURDAY]])()
+r.sunday = class(--[[Class.SUNDAY]])()
 
-r.january = class('January', ReQLOp, {tt = --[[Term.JANUARY]]})()
-r.february = class('February', ReQLOp, {tt = --[[Term.FEBRUARY]]})()
-r.march = class('March', ReQLOp, {tt = --[[Term.MARCH]]})()
-r.april = class('April', ReQLOp, {tt = --[[Term.APRIL]]})()
-r.may = class('May', ReQLOp, {tt = --[[Term.MAY]]})()
-r.june = class('June', ReQLOp, {tt = --[[Term.JUNE]]})()
-r.july = class('July', ReQLOp, {tt = --[[Term.JULY]]})()
-r.august = class('August', ReQLOp, {tt = --[[Term.AUGUST]]})()
-r.september = class('September', ReQLOp, {tt = --[[Term.SEPTEMBER]]})()
-r.october = class('October', ReQLOp, {tt = --[[Term.OCTOBER]]})()
-r.november = class('November', ReQLOp, {tt = --[[Term.NOVEMBER]]})()
-r.december = class('December', ReQLOp, {tt = --[[Term.DECEMBER]]})()
+r.january = class(--[[Class.JANUARY]])()
+r.february = class(--[[Class.FEBRUARY]])()
+r.march = class(--[[Class.MARCH]])()
+r.april = class(--[[Class.APRIL]])()
+r.may = class(--[[Class.MAY]])()
+r.june = class(--[[Class.JUNE]])()
+r.july = class(--[[Class.JULY]])()
+r.august = class(--[[Class.AUGUST]])()
+r.september = class(--[[Class.SEPTEMBER]])()
+r.october = class(--[[Class.OCTOBER]])()
+r.november = class(--[[Class.NOVEMBER]])()
+r.december = class(--[[Class.DECEMBER]])()
 
 function r.object(...)
   return Object({}, ...)
