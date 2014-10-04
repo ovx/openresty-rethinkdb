@@ -2,7 +2,6 @@ local json = require('json')
 local mime = require('mime')
 
 local errors = require('./errors')
-local net = require('./net')
 local util = require('./util')
 
 -- Import some names to this namespace for convienience
@@ -10,9 +9,12 @@ local is_instance = util.is_instance
 local class = util.class
 
 -- rethinkdb is both the main export object for the module
-local rethinkdb = { }
-
-local has_implicit, intsp, kved, intspallargs, should_wrap
+local rethinkdb = {}
+setmetatable(rethinkdb, {
+  __call = function(cls, ...)
+    return rethinkdb.expr(...)
+  end
+})
 
 local DatumTerm, RDBOp, RDBOp, MakeArray, MakeObject, Var, PolygonSub
 local JavaScript, Http, Json, Binary, Args, UserError, Random, ImplicitVar, Db
@@ -35,26 +37,138 @@ local GetIntersecting, GetNearest, Fill, UUID, Monday, Tuesday, Wednesday
 local Thursday, Friday, Saturday, Sunday, January, February, March, April, May
 local June, July, August, September, October, November, December, ToJson
 
+function ivar_scan(node)
+  if not is_instance(RDBOp, node) then
+    return false
+  end
+  if is_instance(ImplicitVar, node) then
+    return true
+  end
+  for _, v in ipairs(node.args) do
+    if ivar_scan(v) then return true end
+  end
+  for _, v in pairs(node.optargs) do
+    if ivar_scan(v) then return true end
+  end
+  return false
+end
+function intsp(seq)
+  if seq[1] == nil then
+    return {}
+  end
+  local res = {seq[1]}
+  for i=2, #seq do
+    table.insert(res, ', ')
+    table.insert(res, seq[i])
+  end
+  return res
+end
+function kved(optargs)
+  return {
+    '{',
+    intsp((function()
+      local _accum_0 = {}
+      local i = 1
+      for k, v in pairs(optargs) do
+        _accum_0[i] = {k, ': ', v}
+        i = i + 1
+      end
+      return _accum_0
+    end)()),
+    '}'
+  }
+end
+function intspallargs(args, optargs)
+  local argrepr = {}
+  if #args > 0 then
+    table.insert(argrepr, intsp(args))
+  end
+  if optargs and #optargs > 0 then
+    if #argrepr > 0 then
+      table.insert(argrepr, ', ')
+    end
+    table.insert(argrepr, kved(optargs))
+  end
+  return argrepr
+end
+function should_wrap(arg)
+  return is_instance(DatumTerm, arg) or is_instance(MakeArray, arg) or is_instance(MakeObject, arg)
+end
+
 -- AST classes
 
 RDBOp = class(
   'RDBOp',
   {
     __init = function(self, optargs, ...)
+      optargs = optargs or {}
       self.args = {...}
-      for i, a in ipairs(self.args) do
-        self.args[i] = rethinkdb.expr(a)
+      local first = self.args[1]
+      if self.tt == 69 then
+        local args = {}
+        local arg_nums = {}
+        for i=1, optargs.arity or 1 do
+          table.insert(arg_nums, RDBOp.next_var_id)
+          table.insert(args, Var({}, RDBOp.next_var_id))
+          RDBOp.next_var_id = RDBOp.next_var_id + 1
+        end
+        if not ivar_scan(first) then
+          first = first(unpack(args))
+        end
+        if first == nil then
+          error(errors.ReQLDriverError('Anonymous function returned `nil`. Did you forget a `return`?'))
+        end
+        optargs.arity = nil
+        self.args = {MakeArray({}, arg_nums), rethinkdb.expr(first)}
+      elseif self.tt == 155 then
+        if is_instance(RDBOp, first) then
+        elseif type(first) == 'string' then
+          self.base64_data = mime.b64(first)
+        else
+          error('Parameter to `r.binary` must be a string or ReQL query.')
+        end
+      elseif self.tt == 2 then
+        self.args = first
+      elseif self.tt == 3 then
+      else
+        for i, a in ipairs(self.args) do
+          self.args[i] = rethinkdb.expr(a)
+        end
       end
-      self.optargs = optargs or {}
+      self.optargs = optargs
     end,
     build = function(self)
+      if self.tt == 155 and (not self.args[1]) then
+        return {
+          ['$reql_type$'] = 'BINARY',
+          data = self.base64_data
+        }
+      end
+      if self.tt == 2 then
+        local args = {}
+        for i, arg in ipairs(self.args) do
+          if is_instance(RDBOp, arg) then
+            args[i] = arg:build()
+          else
+            args[i] = arg
+          end
+        end
+        return {self.tt, args}
+      end
+      if self.tt == 3 then
+        local res = {}
+        for key, val in pairs(self.optargs) do
+          res[key] = val:build()
+        end
+        return res
+      end
       local args = {}
       for i, arg in ipairs(self.args) do
         args[i] = arg:build()
       end
       res = {self.tt, args}
       if #self.optargs > 0 then
-        local opts = { }
+        local opts = {}
         for key, val in pairs(self.optargs) do
           opts[key] = val:build()
         end
@@ -63,6 +177,125 @@ RDBOp = class(
       return res
     end,
     compose = function(self, args, optargs)
+      if self.tt == 2 then
+        return {
+          '{',
+          intsp(args),
+          '}'
+        }
+      end
+      if self.tt == 3 then
+        return kved(optargs)
+      end
+      if self.tt == 'Var' then
+        if not args then return {} end
+        for i, v in ipairs(args) do
+          args[i] = 'var_' .. v
+        end
+        return args
+      end
+      if self.tt == 155 then
+        if self.args[1] then
+          return {
+            'r.binary(',
+            intspallargs(args, optargs),
+            ')'
+          }
+        else
+          return 'r.binary(<data>)'
+        end
+      end
+      if self.tt == 13 then
+        return {
+          'r.row'
+        }
+      end
+      if self.tt == 15 then
+        if is_instance(Db, self.args[1]) then
+          return {
+            args[1],
+            ':table(',
+            intspallargs((function()
+              local _accum_0 = {}
+              for _index_0 = 2, #args do
+                _accum_0[_index_0 - 1] = args[_index_0]
+              end
+              return _accum_0
+            end)(), optargs),
+            ')'
+          }
+        else
+          return {
+            'r.table(',
+            intspallargs(args, optargs),
+            ')'
+          }
+        end
+      end
+      if self.tt == 170 then
+        return {
+          args[0],
+          '[',
+          args[1],
+          ']'
+        }
+      end
+      if self.tt == 69 then
+        if ivar_scan(self.args[2]) then
+          return {
+            args[2]
+          }
+        end
+        local var_str = ''
+        for i, arg in ipairs(args[1][2]) do -- ['0', ', ', '1']
+          if i % 2 == 0 then
+            var_str = var_str .. Var.compose(arg)
+          else
+            var_str = var_str .. arg
+          end
+        end
+        return {
+          'function(',
+          var_str,
+          ') return ',
+          args[1],
+          ' end'
+        }
+      end
+      if self.tt == 64 then
+        if #args > 2 then
+          return {
+            'r.do_(',
+            intsp((function()
+              local _accum_0 = {}
+              local _len_0 = 1
+              for _index_0 = 2, #args do
+                local a = args[_index_0]
+                _accum_0[_len_0] = a
+                _len_0 = _len_0 + 1
+              end
+              return _accum_0
+            end)()),
+            ', ',
+            args[0],
+            ')'
+          }
+        else
+          if should_wrap(self.args[1]) then
+            args[1] = {
+              'r(',
+              args[1],
+              ')'
+            }
+          end
+          return {
+            args[1],
+            '.do_(',
+            args[0],
+            ')'
+          }
+        end
+      end
       if self.st then
         return {
           'r.',
@@ -87,7 +320,7 @@ RDBOp = class(
           self.mt,
           '(',
           intspallargs((function()
-            local _accum_0 = { }
+            local _accum_0 = {}
             for _index_0 = 2, #args do
               _accum_0[_index_0 - 1] = args[_index_0]
             end
@@ -105,21 +338,17 @@ RDBOp = class(
 
       -- Handle run(connection, callback)
       if type(options) == 'function' then
-        if not (callback) then
+        if not callback then
           callback = options
-          options = { }
+          options = {}
         else
-          options(errors.ReQLDriverError('Second argument to `run` cannot be a function if a third argument is provided.'))
-          return
-        end
-      else
-        -- else we suppose that we have run(connection[, options][, callback])
-        if not (options) then
-          options = { }
+          return options(errors.ReQLDriverError('Second argument to `run` cannot be a function if a third argument is provided.'))
         end
       end
+      -- else we suppose that we have run(connection[, options][, callback])
+      options = options or {}
 
-      if not net.is_connection(connection) then
+      if type(connection._start) ~= 'function' then
         if callback then
           return callback(errors.ReQLDriverError('First argument to `run` must be an open connection.'))
         end
@@ -128,127 +357,129 @@ RDBOp = class(
 
       return connection:_start(self, callback, options)
     end,
+    next_var_id = 0,
+    __call = function(cls, ...)
+      error('Bracket is not ready')
+      return Bracket({}, ...)
+    end,
     eq = function(...)
-      return Eq({ }, ...)
+      return Eq({}, ...)
     end,
     ne = function(...)
-      return Ne({ }, ...)
+      return Ne({}, ...)
     end,
     lt = function(...)
-      return Lt({ }, ...)
+      return Lt({}, ...)
     end,
     le = function(...)
-      return Le({ }, ...)
+      return Le({}, ...)
     end,
     gt = function(...)
-      return Gt({ }, ...)
+      return Gt({}, ...)
     end,
     ge = function(...)
-      return Ge({ }, ...)
+      return Ge({}, ...)
     end,
     not_ = function(...)
-      return Not({ }, ...)
+      return Not({}, ...)
     end,
     add = function(...)
-      return Add({ }, ...)
+      return Add({}, ...)
     end,
     sub = function(...)
-      return Sub({ }, ...)
+      return Sub({}, ...)
     end,
     mul = function(...)
-      return Mul({ }, ...)
+      return Mul({}, ...)
     end,
     div = function(...)
-      return Div({ }, ...)
+      return Div({}, ...)
     end,
     mod = function(...)
-      return Mod({ }, ...)
+      return Mod({}, ...)
     end,
     append = function(...)
-      return Append({ }, ...)
+      return Append({}, ...)
     end,
     prepend = function(...)
-      return Prepend({ }, ...)
+      return Prepend({}, ...)
     end,
     difference = function(...)
-      return Difference({ }, ...)
+      return Difference({}, ...)
     end,
     set_insert = function(...)
-      return SetInsert({ }, ...)
+      return SetInsert({}, ...)
     end,
     set_union = function(...)
-      return SetUnion({ }, ...)
+      return SetUnion({}, ...)
     end,
     set_intersection = function(...)
-      return SetIntersection({ }, ...)
+      return SetIntersection({}, ...)
     end,
     set_difference = function(...)
-      return SetDifference({ }, ...)
+      return SetDifference({}, ...)
     end,
     slice = function(self, left, right_or_opts, opts)
       if opts then
         return Slice(opts, self, left, right_or_opts)
-      else
-        if right_or_opts then
-          if (type(right_or_opts) == 'table') and (not is_instance(RDBOp, right_or_opts)) then
-            return Slice(right_or_opts, self, left)
-          else
-            return Slice({ }, self, left, right_or_opts)
-          end
-        else
-          return Slice({ }, self, left)
-        end
       end
+      if right_or_opts then
+        if (type(right_or_opts) == 'table') and (not is_instance(RDBOp, right_or_opts)) then
+          return Slice(right_or_opts, self, left)
+        end
+        return Slice({}, self, left, right_or_opts)
+      end
+      return Slice({}, self, left)
     end,
     skip = function(...)
-      return Skip({ }, ...)
+      return Skip({}, ...)
     end,
     limit = function(...)
-      return Limit({ }, ...)
+      return Limit({}, ...)
     end,
     get_field = function(...)
-      return GetField({ }, ...)
+      return GetField({}, ...)
     end,
     contains = function(...)
-      return Contains({ }, ...)
+      return Contains({}, ...)
     end,
     insert_at = function(...)
-      return InsertAt({ }, ...)
+      return InsertAt({}, ...)
     end,
     splice_at = function(...)
-      return SpliceAt({ }, ...)
+      return SpliceAt({}, ...)
     end,
     delete_at = function(...)
-      return DeleteAt({ }, ...)
+      return DeleteAt({}, ...)
     end,
     change_at = function(...)
-      return ChangeAt({ }, ...)
+      return ChangeAt({}, ...)
     end,
     indexes_of = function(...)
-      return IndexesOf({ }, ...)
+      return IndexesOf({}, ...)
     end,
     has_fields = function(...)
-      return HasFields({ }, ...)
+      return HasFields({}, ...)
     end,
     with_fields = function(...)
-      return WithFields({ }, ...)
+      return WithFields({}, ...)
     end,
     keys = function(...)
-      return Keys({ }, ...)
+      return Keys({}, ...)
     end,
     changes = function(...)
-      return Changes({ }, ...)
+      return Changes({}, ...)
     end,
 
     -- pluck and without on zero fields are allowed
     pluck = function(...)
-      return Pluck({ }, ...)
+      return Pluck({}, ...)
     end,
     without = function(...)
-      return Without({ }, ...)
+      return Without({}, ...)
     end,
     merge = function(...)
-      return Merge({ }, ...)
+      return Merge({}, ...)
     end,
     between = function(self, left, right, opts)
       return Between(opts, self, left, right)
@@ -257,67 +488,64 @@ RDBOp = class(
       return Reduce({arity = 2}, ...)
     end,
     map = function(...)
-      return Map({ }, ...)
+      return Map({}, ...)
     end,
     filter = function(self, predicate, opts)
       return Filter(opts, self, rethinkdb.expr(predicate))
     end,
     concat_map = function(...)
-      return ConcatMap({ }, ...)
+      return ConcatMap({}, ...)
     end,
     distinct = function(self, opts)
       return Distinct(opts, self)
     end,
     count = function(...)
-      return Count({ }, ...)
+      return Count({}, ...)
     end,
     union = function(...)
-      return Union({ }, ...)
+      return Union({}, ...)
     end,
     nth = function(...)
-      return Nth({ }, ...)
+      return Nth({}, ...)
     end,
     to_json = function(...)
       return ToJson({}, ...)
     end,
-    bracket = function(...)
-      return Bracket({ }, ...)
-    end,
     match = function(...)
-      return Match({ }, ...)
+      return Match({}, ...)
     end,
     split = function(...)
-      return Split({ }, ...)
+      return Split({}, ...)
     end,
     upcase = function(...)
-      return Upcase({ }, ...)
+      return Upcase({}, ...)
     end,
     downcase = function(...)
-      return Downcase({ }, ...)
+      return Downcase({}, ...)
     end,
     is_empty = function(...)
-      return IsEmpty({ }, ...)
+      return IsEmpty({}, ...)
     end,
     inner_join = function(...)
-      return InnerJoin({ }, ...)
+      return InnerJoin({}, ...)
     end,
     outer_join = function(...)
-      return OuterJoin({ }, ...)
+      return OuterJoin({}, ...)
     end,
     eq_join = function(self, left_attr, right, opts)
       return EqJoin(opts, self, rethinkdb.expr(left_attr), right)
     end,
     zip = function(...)
-      return Zip({ }, ...)
+      return Zip({}, ...)
     end,
     coerce_to = function(...)
-      return CoerceTo({ }, ...)
+      return CoerceTo({}, ...)
     end,
     ungroup = function(...)
-      return Ungroup({ }, ...)
+      return Ungroup({}, ...)
     end,
     type_of = function(...)
-      return TypeOf({ }, ...)
+      return TypeOf({}, ...)
     end,
     update = function(self, func, opts)
       return Update(opts, self, Func({}, func))
@@ -332,41 +560,41 @@ RDBOp = class(
       local args = {...}
       local func = Func({arity = args.n - 1}, args[args.n])
       args[args.n] = nil
-      return FunCall({ }, func, self, unpack(args))
+      return FunCall({}, func, self, unpack(args))
     end,
     default = function(...)
-      return Default({ }, ...)
+      return Default({}, ...)
     end,
     any = function(...)
-      return Any({ }, ...)
+      return Any({}, ...)
     end,
     all = function(...)
-      return All({ }, ...)
+      return All({}, ...)
     end,
     for_each = function(...)
-      return ForEach({ }, ...)
+      return ForEach({}, ...)
     end,
     sum = function(...)
-      return Sum({ }, ...)
+      return Sum({}, ...)
     end,
     avg = function(...)
-      return Avg({ }, ...)
+      return Avg({}, ...)
     end,
     min = function(...)
-      return Min({ }, ...)
+      return Min({}, ...)
     end,
     max = function(...)
-      return Max({ }, ...)
+      return Max({}, ...)
     end,
     info = function(...)
       return Info({}, ...)
     end,
     sample = function(...)
-      return Sample({ }, ...)
+      return Sample({}, ...)
     end,
     group = function(self, ...)
       -- Default if no opts dict provided
-      local opts = { }
+      local opts = {}
       local fields = {...}
 
       -- Look for opts dict
@@ -385,7 +613,7 @@ RDBOp = class(
     end,
     order_by = function(self, ...)
       -- Default if no opts dict provided
-      local opts = { }
+      local opts = {}
       local attrs = {...}
 
       -- Look for opts dict
@@ -410,12 +638,14 @@ RDBOp = class(
     distance = function(self, g, opts)
       return Distance(opts, self, g)
     end,
-    intersects = Intersects,
+    intersects = function(...)
+      return Intersects({}, ...)
+    end,
     includes = function(...)
-      return Includes({ }, ...)
+      return Includes({}, ...)
     end,
     fill = function(...)
-      return Fill({ }, ...)
+      return Fill({}, ...)
     end,
     polygon_sub = function(...)
       return PolygonSub({}, ...)
@@ -427,10 +657,10 @@ RDBOp = class(
       return TableCreate(opts, self, tbl_name)
     end,
     table_drop = function(...)
-      return TableDrop({ }, ...)
+      return TableDrop({}, ...)
     end,
     table_list = function(...)
-      return TableList({ }, ...)
+      return TableList({}, ...)
     end,
     table = function(self, tbl_name, opts)
       return Table(opts, self, tbl_name)
@@ -439,17 +669,17 @@ RDBOp = class(
     -- Table operations
 
     get = function(...)
-      return Get({ }, ...)
+      return Get({}, ...)
     end,
     get_all = function(self, ...)
       -- Default if no opts dict provided
-      local opts = { }
+      local opts = {}
       local keys = {...}
 
       -- Look for opts dict
       if keys.n > 1 then
         local perhaps_opt_dict = keys[keys.n]
-        if perhaps_opt_dict and ((type(perhaps_opt_dict) == 'table') and not (is_instance(RDBOp, perhaps_opt_dict))) then
+        if (type(perhaps_opt_dict) == 'table') and (not is_instance(RDBOp, perhaps_opt_dict)) then
           opts = perhaps_opt_dict
           keys[keys.n] = nil
         end
@@ -462,81 +692,77 @@ RDBOp = class(
     index_create = function(self, name, defun_or_opts, opts)
       if opts then
         return IndexCreate(opts, self, name, rethinkdb.expr(defun_or_opts))
-      else
-        if defun_or_opts then
-          -- FIXME?
-          if (type(defun_or_opts) == 'table') and not is_instance(RDBOp, defun_or_opts) then
-            return IndexCreate(defun_or_opts, self, name)
-          else
-            return IndexCreate({ }, self, name, rethinkdb.expr(defun_or_opts))
-          end
-        else
-          return IndexCreate({ }, self, name)
-        end
       end
+      if defun_or_opts then
+        if (type(defun_or_opts) == 'table') and (not is_instance(RDBOp, defun_or_opts)) then
+          return IndexCreate(defun_or_opts, self, name)
+        end
+        return IndexCreate({}, self, name, rethinkdb.expr(defun_or_opts))
+      end
+      return IndexCreate({}, self, name)
     end,
     index_drop = function(...)
-      return IndexDrop({ }, ...)
+      return IndexDrop({}, ...)
     end,
     index_list = function(...)
-      return IndexList({ }, ...)
+      return IndexList({}, ...)
     end,
     index_status = function(...)
-      return IndexStatus({ }, ...)
+      return IndexStatus({}, ...)
     end,
     index_wait = function(...)
-      return IndexWait({ }, ...)
+      return IndexWait({}, ...)
     end,
     index_rename = function(self, old_name, new_name, opts)
       return IndexRename(opts, self, old_name, new_name)
     end,
     sync = function(...)
-      return Sync({ }, ...)
+      return Sync({}, ...)
     end,
     to_iso8601 = function(...)
-      return ToISO8601({ }, ...)
+      return ToISO8601({}, ...)
     end,
     to_epoch_time = function(...)
       return ToEpochTime({}, ...)
     end,
     in_timezone = function(...)
-      return InTimezone({ }, ...)
+      return InTimezone({}, ...)
     end,
     during = function(self, t2, t3, opts)
       return During(opts, self, t2, t3)
     end,
     date = function(...)
-      return ReQLDate({ }, ...)
+      return ReQLDate({}, ...)
     end,
     time_of_day = function(...)
-      return TimeOfDay({ }, ...)
+      return TimeOfDay({}, ...)
     end,
     timezone = function(...)
-      return Timezone({ }, ...)
+      return Timezone({}, ...)
     end,
     year = function(...)
-      return Year({ }, ...)
+      return Year({}, ...)
     end,
     month = function(...)
-      return Month({ }, ...)
+      return Month({}, ...)
     end,
     day = function(...)
-      return Day({ }, ...)
+      return Day({}, ...)
     end,
     day_of_week = function(...)
-      return DayOfWeek({ }, ...)
+      return DayOfWeek({}, ...)
     end,
     day_of_year = function(...)
-      return DayOfYear({ }, ...)
+      return DayOfYear({}, ...)
     end,
     hours = function(...)
-      return Hours({ }, ...)
+      return Hours({}, ...)
     end,
     minutes = function(...)
-      return Minutes({ }, ...)
+      return Minutes({}, ...)
     end,
     seconds = function(...)
-      return Seconds({ }, ...)
+      return Seconds({}, ...)
     end,
     uuid = function(...)
       return UUID({}, ...)
@@ -556,8 +782,8 @@ DatumTerm = class(
     __init = function(self, val)
       self.data = val
     end,
-    args = { },
-    optargs = { },
+    args = {},
+    optargs = {},
     compose = function(self)
       if type(self.data) == 'string' then
         return '"' .. self.data .. '"'
@@ -577,104 +803,19 @@ DatumTerm = class(
   }
 )
 
-function intsp(seq)
-  if seq[1] == nil then
-    return { }
-  end
-  local res = {
-    seq[1]
-  }
-  for _index_0 = 2, #seq do
-    table.insert(res, ', ')
-    table.insert(res, seq[_index_0])
-  end
-  return res
-end
-function kved(optargs)
-  return {
-    '{',
-    intsp((function()
-      local _accum_0 = { }
-      local _len_0 = 1
-      for k, v in pairs(optargs) do
-        _accum_0[_len_0] = {
-          k,
-          ': ',
-          v
-        }
-        _len_0 = _len_0 + 1
-      end
-      return _accum_0
-    end)()),
-    '}'
-  }
-end
-function intspallargs(args, optargs)
-  local argrepr = { }
-  if #args > 0 then
-    table.insert(argrepr, intsp(args))
-  end
-  if optargs and #optargs > 0 then
-    if #argrepr > 0 then
-      table.insert(argrepr, ', ')
-    end
-    table.insert(argrepr, kved(optargs))
-  end
-  return argrepr
-end
-function should_wrap(arg)
-  return is_instance(DatumTerm, arg) or is_instance(MakeArray, arg) or is_instance(MakeObject, arg)
-end
-
 MakeArray = class(
   'MakeArray', RDBOp,
   {
-    __init = function(self, arr)
-      self.args = arr
-      self.optargs = {}
-    end,
     tt = 2,
-    st = '{...}', -- This is only used by the `nil` argument checker
-    build = function(self)
-      local args = {}
-      for i, arg in ipairs(self.args) do
-        if type(arg) == 'table' then
-          args[i] = arg:build()
-        else
-          args[i] = arg
-        end
-      end
-      return {self.tt, args}
-    end,
-    compose = function(self, args)
-      return {
-        '{',
-        intsp(args),
-        '}'
-      }
-    end
+    st = '{...}' -- This is only used by the `nil` argument checker
   }
 )
 
 MakeObject = class(
   'MakeObject', RDBOp,
   {
-    __init = function(self, obj)
-      self.args = {}
-      self.optargs = obj
-    end,
     tt = 3,
-    st = '{...}', -- This is only used by the `nil` argument checker
-    compose = function(self, args, optargs)
-      return kved(optargs)
-    end,
-    build = function(self)
-      local res = { }
-      for key, val in pairs(self.optargs) do
-        res[key] = val:build()
-      end
-      return res
-    end
+    st = '{...}' -- This is only used by the `nil` argument checker
   }
 )
 
@@ -682,13 +823,6 @@ Var = class(
   'Var', RDBOp,
   {
     tt = 10,
-    compose = function(self, args)
-      if not args then return {} end
-      for i, v in ipairs(args) do
-        args[i] = 'var_' .. v
-      end
-      return args
-    end
   }
 )
 
@@ -719,46 +853,8 @@ Json = class(
 Binary = class(
   'Binary', RDBOp,
   {
-    __init = function(self, data)
-      self.args = {}
-      self.optargs = {}
-      if is_instance(RDBOp, data) then
-        table.insert(self.args, data)
-      else
-        if type(data) == 'string' then
-          self.base64_data = mime.b64(data)
-        else
-          error('Parameter to `r.binary` must be a string or ReQL query.')
-        end
-      end
-    end,
     tt = 155,
-    st = 'binary',
-    compose = function(self, args, optargs)
-      if self.args[1] then
-        return {
-          'r.binary(',
-          intspallargs(args, optargs),
-          ')'
-        }
-      else
-        return 'r.binary(<data>)'
-      end
-    end,
-    build = function(self)
-      if self.args[1] then
-        local args = {}
-        for i, arg in ipairs(self.args) do
-          args[i] = arg:build()
-        end
-        return {self.tt, args}
-      else
-        return {
-          ['$reql_type$'] = 'BINARY',
-          data = self.base64_data
-        }
-      end
-    end
+    st = 'binary'
   }
 )
 
@@ -790,11 +886,6 @@ ImplicitVar = class(
   'ImplicitVar', RDBOp,
   {
     tt = 13,
-    compose = function(self)
-      return {
-        'r.row'
-      }
-    end
   }
 )
 
@@ -810,29 +901,7 @@ Table = class(
   'Table', RDBOp,
   {
     tt = 15,
-    st = 'table',
-    compose = function(self, args, optargs)
-      if is_instance(Db, self.args[1]) then
-        return {
-          args[1],
-          '.table(',
-          intspallargs((function()
-            local _accum_0 = { }
-            for _index_0 = 2, #args do
-              _accum_0[_index_0 - 1] = args[_index_0]
-            end
-            return _accum_0
-          end)(), optargs),
-          ')'
-        }
-      else
-        return {
-          'r.table(',
-          intspallargs(args, optargs),
-          ')'
-        }
-      end
-    end
+    st = 'table'
   }
 )
 
@@ -1041,14 +1110,6 @@ Bracket = class(
   {
     tt = 170,
     st = '[...]', -- This is only used by the `nil` argument checker
-    compose = function(self, args)
-      return {
-        args[0],
-        '[',
-        args[1],
-        ']'
-      }
-    end
   }
 )
 
@@ -1553,40 +1614,6 @@ FunCall = class(
   {
     tt = 64,
     st = 'do_', -- This is only used by the `nil` argument checker
-    compose = function(self, args)
-      if #args > 2 then
-        return {
-          'r.do_(',
-          intsp((function()
-            local _accum_0 = { }
-            local _len_0 = 1
-            for _index_0 = 2, #args do
-              local a = args[_index_0]
-              _accum_0[_len_0] = a
-              _len_0 = _len_0 + 1
-            end
-            return _accum_0
-          end)()),
-          ', ',
-          args[0],
-          ')'
-        }
-      else
-        if should_wrap(self.args[1]) then
-          args[1] = {
-            'r(',
-            args[1],
-            ')'
-          }
-        end
-        return {
-          args[1],
-          '.do_(',
-          args[0],
-          ')'
-        }
-      end
-    end
   }
 )
 
@@ -1630,92 +1657,11 @@ ForEach = class(
   }
 )
 
-function ivar_scan(node)
-  if not is_instance(RDBOp, node) then
-    return false
-  end
-  if is_instance(ImplicitVar, node) then
-    return true
-  end
-  for _, v in ipairs(node.args) do
-    if ivar_scan(v) then
-      return true
-    end
-  end
-  for _, v in pairs(node.optargs) do
-    if ivar_scan(v) then
-      return true
-    end
-  end
-  return false
-end
-
-function has_implicit(args)
-  -- args is an array of (strings and arrays)
-  -- We recurse to look for `r.row` which is an implicit var
-  if type(args) == 'table' then
-    for _, arg in ipairs(args) do
-      if has_implicit(arg) == true then
-        return true
-      end
-    end
-  else
-    if args == 'r.row' then
-      return true
-    end
-  end
-  return false
-end
-
 Func = class(
   'Func', RDBOp,
   {
-    __init = function(self, optargs, func)
-      if ivar_scan(func) then
-        func = function(x)
-          return func
-        end
-      end
-      local args = { }
-      local arg_nums = { }
-      if not optargs then optargs = {} end
-      for i=1, optargs.arity or 1 do
-        table.insert(arg_nums, Func.next_var_id)
-        table.insert(args, Var({ }, Func.next_var_id))
-        Func.next_var_id = Func.next_var_id + 1
-      end
-      local body = func(unpack(args))
-      if not body then
-        error(errors.ReQLDriverError('Anonymous function returned `nil`. Did you forget a `return`?'))
-      end
-      optargs.arity = nil
-      self.args = {MakeArray(arg_nums), body}
-      self.optargs = optargs
-    end,
     next_var_id = 0,
     tt = 69,
-    compose = function(self, args)
-      if has_implicit(args[1]) then
-        return {
-          args[1]
-        }
-      end
-      local var_str = ''
-      for i, arg in ipairs(args[1][2]) do -- ['0', ', ', '1']
-        if i % 2 == 0 then
-          var_str = var_str .. Var.compose(arg)
-        else
-          var_str = var_str .. arg
-        end
-      end
-      return {
-        'function(',
-        var_str,
-        ') return ',
-        args[1],
-        ' end'
-      }
-    end
   }
 )
 
@@ -2033,7 +1979,7 @@ function rethinkdb.expr(val, nesting_depth)
       val[k] = rethinkdb.expr(v, nesting_depth - 1)
     end
     if array then
-      return MakeArray(val)
+      return MakeArray({}, val)
     end
     return MakeObject(val)
   end
@@ -2046,14 +1992,14 @@ function rethinkdb.http(url, opts)
   return Http(opts, url)
 end
 function rethinkdb.json(...)
-  return Json({ }, ...)
+  return Json({}, ...)
 end
 function rethinkdb.error(...)
-  return UserError({ }, ...)
+  return UserError({}, ...)
 end
 function rethinkdb.random(...)
   -- Default if no opts dict provided
-  local opts = { }
+  local opts = {}
   local limits = {...}
 
   -- Look for opts dict
@@ -2067,114 +2013,114 @@ end
 function rethinkdb.binary(data)
   return Binary(data)
 end
-rethinkdb.row = ImplicitVar({ })
+rethinkdb.row = ImplicitVar()
 function rethinkdb.table(tbl_name, opts)
   return Table(opts, tbl_name)
 end
 function rethinkdb.db(...)
-  return Db({ }, ...)
+  return Db({}, ...)
 end
 function rethinkdb.db_create(...)
-  return DbCreate({ }, ...)
+  return DbCreate({}, ...)
 end
 function rethinkdb.db_drop(...)
-  return DbDrop({ }, ...)
+  return DbDrop({}, ...)
 end
 function rethinkdb.db_list(...)
-  return DbList({ }, ...)
+  return DbList({}, ...)
 end
 function rethinkdb.table_create(tbl_name, opts)
   return TableCreate(opts, tbl_name)
 end
 function rethinkdb.table_drop(...)
-  return TableDrop({ }, ...)
+  return TableDrop({}, ...)
 end
 function rethinkdb.table_list(...)
-  return TableList({ }, ...)
+  return TableList({}, ...)
 end
 function rethinkdb.do_(...)
   args = {...}
-  func = Func({}, args[args.n])
+  func = Func({arity = args.n - 1}, args[args.n])
   args[args.n] = nil
-  return FunCall({ }, func, unpack(args))
+  return FunCall({}, func, unpack(args))
 end
 function rethinkdb.branch(...)
-  return Branch({ }, ...)
+  return Branch({}, ...)
 end
 function rethinkdb.asc(...)
-  return Asc({ }, ...)
+  return Asc({}, ...)
 end
 function rethinkdb.desc(...)
-  return Desc({ }, ...)
+  return Desc({}, ...)
 end
 function rethinkdb.eq(...)
-  return Eq({ }, ...)
+  return Eq({}, ...)
 end
 function rethinkdb.ne(...)
-  return Ne({ }, ...)
+  return Ne({}, ...)
 end
 function rethinkdb.lt(...)
-  return Lt({ }, ...)
+  return Lt({}, ...)
 end
 function rethinkdb.le(...)
-  return Le({ }, ...)
+  return Le({}, ...)
 end
 function rethinkdb.gt(...)
-  return Gt({ }, ...)
+  return Gt({}, ...)
 end
 function rethinkdb.ge(...)
-  return Ge({ }, ...)
+  return Ge({}, ...)
 end
 function rethinkdb.or_(...)
-  return Any({ }, ...)
+  return Any({}, ...)
 end
 function rethinkdb.any(...)
-  return Any({ }, ...)
+  return Any({}, ...)
 end
 function rethinkdb.and_(...)
-  return All({ }, ...)
+  return All({}, ...)
 end
 function rethinkdb.all(...)
-  return All({ }, ...)
+  return All({}, ...)
 end
 function rethinkdb.not_(...)
-  return Not({ }, ...)
+  return Not({}, ...)
 end
 function rethinkdb.add(...)
-  return Add({ }, ...)
+  return Add({}, ...)
 end
 function rethinkdb.sub(...)
-  return Sub({ }, ...)
+  return Sub({}, ...)
 end
 function rethinkdb.div(...)
-  return Div({ }, ...)
+  return Div({}, ...)
 end
 function rethinkdb.mul(...)
-  return Mul({ }, ...)
+  return Mul({}, ...)
 end
 function rethinkdb.mod(...)
-  return Mod({ }, ...)
+  return Mod({}, ...)
 end
 function rethinkdb.type_of(...)
-  return TypeOf({ }, ...)
+  return TypeOf({}, ...)
 end
 function rethinkdb.info(...)
-  return Info({ }, ...)
+  return Info({}, ...)
 end
 function rethinkdb.literal(...)
-  return Literal({ }, ...)
+  return Literal({}, ...)
 end
 function rethinkdb.iso8601(str, opts)
   return ISO8601(opts, str)
 end
 function rethinkdb.epoch_time(...)
-  return EpochTime({ }, ...)
+  return EpochTime({}, ...)
 end
 function rethinkdb.now(...)
-  return Now({ }, ...)
+  return Now({}, ...)
 end
 function rethinkdb.time(...)
-  return Time({ }, ...)
+  return Time({}, ...)
 end
 
 rethinkdb.monday = class('Monday', RDBOp, {tt = 107})()
@@ -2199,25 +2145,25 @@ rethinkdb.november = class('November', RDBOp, {tt = 124})()
 rethinkdb.december = class('December', RDBOp, {tt = 125})()
 
 function rethinkdb.object(...)
-  return Object({ }, ...)
+  return Object({}, ...)
 end
 function rethinkdb.args(...)
-  return Args({ }, ...)
+  return Args({}, ...)
 end
 function rethinkdb.geojson(...)
-  return GeoJson({ }, ...)
+  return GeoJson({}, ...)
 end
 function rethinkdb.point(...)
-  return Point({ }, ...)
+  return Point({}, ...)
 end
 function rethinkdb.line(...)
-  return Line({ }, ...)
+  return Line({}, ...)
 end
 function rethinkdb.polygon(...)
-  return Polygon({ }, ...)
+  return Polygon({}, ...)
 end
 function rethinkdb.intersects(...)
-  return Intersects({ }, ...)
+  return Intersects({}, ...)
 end
 function rethinkdb.distance(g1, g2, opts)
   return Distance(opts, g1, g2)
@@ -2226,7 +2172,7 @@ function rethinkdb.circle(cen, rad, opts)
   return Circle(opts, cen, rad)
 end
 function rethinkdb.uuid(...)
-  return UUID({ }, ...)
+  return UUID({}, ...)
 end
 
 -- Export all names defined on rethinkdb
