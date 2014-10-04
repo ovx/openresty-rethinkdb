@@ -470,7 +470,7 @@ Connection = class(
 
       -- Set global options
       if self.db then
-        opts.db = r.DB(self.db):build()
+        opts.db = r.db(self.db):build()
       end
 
       -- Construct query

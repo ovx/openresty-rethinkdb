@@ -96,7 +96,7 @@ local meta = {
     return Sub({}, ...)
   end,
   __div = function(...)
-    return Bracket({}, ...)
+    return Div({}, ...)
   end
 }
 
