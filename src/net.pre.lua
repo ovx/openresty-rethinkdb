@@ -102,6 +102,7 @@ function recursively_convert_pseudotype(obj, opts)
     end
     obj = convert_pseudotype(obj, opts)
   end
+  if obj == json.util.null() then return nil end
   return obj
 end
 
