@@ -35,4 +35,4 @@ before_script:
 
 # command to run tests
 script:
-  - 'python build.py -f 1'
+  - 'python build.py -f'

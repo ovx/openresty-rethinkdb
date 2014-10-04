@@ -118,7 +118,7 @@ def main():
     parser = argparse.ArgumentParser(description='Process some integers.')
 
     parser.add_argument('action', nargs='?', default='test')
-    parser.add_argument('-f', type=bool)
+    parser.add_argument('-f', action='store_true')
 
     args = parser.parse_args()
 
