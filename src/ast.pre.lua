@@ -6,7 +6,6 @@ local util = require('./util')
 
 -- Import some names to this namespace for convienience
 local is_instance = util.is_instance
-local class = util.class
 
 -- rethinkdb is both the main export object for the module
 local rethinkdb = {}
@@ -78,6 +77,42 @@ function intspallargs(args, optargs)
 end
 function should_wrap(arg)
   return is_instance(DatumTerm, arg) or is_instance(MakeArray, arg) or is_instance(MakeObject, arg)
+end
+
+local meta = {
+  __call = function(...)
+    return Bracket({}, ...)
+  end,
+  __add = function(...)
+    return Add({}, ...)
+  end,
+  __mul = function(...)
+    return Mul({}, ...)
+  end,
+  __mod = function(...)
+    return Mod({}, ...)
+  end,
+  __sub = function(...)
+    return Sub({}, ...)
+  end,
+  __div = function(...)
+    return Div({}, ...)
+  end
+}
+
+function class(name, parent, base)
+  if base == nil then
+    base = parent
+    parent = nil
+  end
+
+  if type(base) == 'function' then
+    base = {__init = base}
+  end
+  for k, v in pairs(meta) do
+    base[k] = v
+  end
+  return util.class(name, parent, base)
 end
 
 -- AST classes
@@ -341,10 +376,6 @@ RDBOp = class(
       return connection:_start(self, callback, options)
     end,
     next_var_id = 0,
-    __call = function(cls, ...)
-      error('Bracket is not ready')
-      return Bracket({}, ...)
-    end,
     eq = function(...)
       return Eq({}, ...)
     end,

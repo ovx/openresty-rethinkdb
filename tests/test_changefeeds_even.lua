@@ -3,7 +3,7 @@ r = require('rethinkdb')
 r.connect({timeout = 1}, function(err, c)
   r.db('changefeeds'):table('watched'):changes():filter(
     function(row)
-      return row:get_field('new_val'):get_field('id'):mod(2):eq(0)
+      return (row('new_val')('id') % 2):eq(0)
     end
   ):limit(2):run(
     c, function(err, cur)
