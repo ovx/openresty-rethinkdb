@@ -16,7 +16,7 @@ setmetatable(r, {
   end
 })
 
-local DatumTerm, RDBOp, RDBOp, MakeArray, MakeObject, Var, PolygonSub
+local DatumTerm, ReQLOp, ReQLOp, MakeArray, MakeObject, Var, PolygonSub
 local JavaScript, Http, Json, Binary, Args, UserError, Random, Db
 local Table, Get, GetAll, Eq, Ne, Lt, Le, Gt, Ge, Not, Add, Sub, Mul, Div, Mod
 local Append, Prepend, Difference, SetInsert, SetUnion, SetIntersection
@@ -118,8 +118,8 @@ end
 
 -- AST classes
 
-RDBOp = class(
-  'RDBOp',
+ReQLOp = class(
+  'ReQLOp',
   {
     __init = function(self, optargs, ...)
       optargs = optargs or {}
@@ -129,9 +129,9 @@ RDBOp = class(
         local args = {}
         local arg_nums = {}
         for i=1, optargs.arity or 1 do
-          table.insert(arg_nums, RDBOp.next_var_id)
-          table.insert(args, Var({}, RDBOp.next_var_id))
-          RDBOp.next_var_id = RDBOp.next_var_id + 1
+          table.insert(arg_nums, ReQLOp.next_var_id)
+          table.insert(args, Var({}, ReQLOp.next_var_id))
+          ReQLOp.next_var_id = ReQLOp.next_var_id + 1
         end
         first = first(unpack(args))
         if first == nil then
@@ -140,7 +140,7 @@ RDBOp = class(
         optargs.arity = nil
         self.args = {MakeArray({}, arg_nums), r.expr(first)}
       elseif self.tt == 155 then
-        if is_instance(RDBOp, first) then
+        if is_instance(ReQLOp, first) then
         elseif type(first) == 'string' then
           self.base64_data = mime.b64(first)
         else
@@ -166,7 +166,7 @@ RDBOp = class(
       if self.tt == 2 then
         local args = {}
         for i, arg in ipairs(self.args) do
-          if is_instance(RDBOp, arg) then
+          if is_instance(ReQLOp, arg) then
             args[i] = arg:build()
           else
             args[i] = arg
@@ -439,7 +439,7 @@ RDBOp = class(
         return Slice(opts, self, left, right_or_opts)
       end
       if right_or_opts then
-        if (type(right_or_opts) == 'table') and (not is_instance(RDBOp, right_or_opts)) then
+        if (type(right_or_opts) == 'table') and (not is_instance(ReQLOp, right_or_opts)) then
           return Slice(right_or_opts, self, left)
         end
         return Slice({}, self, left, right_or_opts)
@@ -615,7 +615,7 @@ RDBOp = class(
       -- Look for opts dict
       if fields.n > 0 then
         local perhaps_opt_dict = fields[fields.n]
-        if perhaps_opt_dict and (type(perhaps_opt_dict) == 'table') and not (is_instance(RDBOp, perhaps_opt_dict)) then
+        if perhaps_opt_dict and (type(perhaps_opt_dict) == 'table') and not (is_instance(ReQLOp, perhaps_opt_dict)) then
           opts = perhaps_opt_dict
           fields[fields.n] = nil
           fields.n = fields.n - 1
@@ -633,7 +633,7 @@ RDBOp = class(
 
       -- Look for opts dict
       local perhaps_opt_dict = attrs[attrs.n]
-      if perhaps_opt_dict and (type(perhaps_opt_dict) == 'table') and not is_instance(RDBOp, perhaps_opt_dict) then
+      if perhaps_opt_dict and (type(perhaps_opt_dict) == 'table') and not is_instance(ReQLOp, perhaps_opt_dict) then
         opts = perhaps_opt_dict
         attrs[attrs.n] = nil
         attrs.n = attrs.n - 1
@@ -694,7 +694,7 @@ RDBOp = class(
       -- Look for opts dict
       if keys.n > 1 then
         local perhaps_opt_dict = keys[keys.n]
-        if (type(perhaps_opt_dict) == 'table') and (not is_instance(RDBOp, perhaps_opt_dict)) then
+        if (type(perhaps_opt_dict) == 'table') and (not is_instance(ReQLOp, perhaps_opt_dict)) then
           opts = perhaps_opt_dict
           keys[keys.n] = nil
         end
@@ -709,7 +709,7 @@ RDBOp = class(
         return IndexCreate(opts, self, name, r.expr(defun_or_opts))
       end
       if defun_or_opts then
-        if (type(defun_or_opts) == 'table') and (not is_instance(RDBOp, defun_or_opts)) then
+        if (type(defun_or_opts) == 'table') and (not is_instance(ReQLOp, defun_or_opts)) then
           return IndexCreate(defun_or_opts, self, name)
         end
         return IndexCreate({}, self, name, r.expr(defun_or_opts))
@@ -792,7 +792,7 @@ RDBOp = class(
 )
 
 DatumTerm = class(
-  'DatumTerm', RDBOp,
+  'DatumTerm', ReQLOp,
   {
     __init = function(self, val)
       self.data = val
@@ -821,7 +821,7 @@ DatumTerm = class(
 )
 
 MakeArray = class(
-  'MakeArray', RDBOp,
+  'MakeArray', ReQLOp,
   {
     tt = 2,
     st = '{...}' -- This is only used by the `nil` argument checker
@@ -829,7 +829,7 @@ MakeArray = class(
 )
 
 MakeObject = class(
-  'MakeObject', RDBOp,
+  'MakeObject', ReQLOp,
   {
     tt = 3,
     st = '{...}' -- This is only used by the `nil` argument checker
@@ -837,14 +837,14 @@ MakeObject = class(
 )
 
 Var = class(
-  'Var', RDBOp,
+  'Var', ReQLOp,
   {
     tt = 10,
   }
 )
 
 JavaScript = class(
-  'JavaScript', RDBOp,
+  'JavaScript', ReQLOp,
   {
     tt = 11,
     st = 'js'
@@ -852,7 +852,7 @@ JavaScript = class(
 )
 
 Http = class(
-  'Http', RDBOp,
+  'Http', ReQLOp,
   {
     tt = 153,
     st = 'http'
@@ -860,7 +860,7 @@ Http = class(
 )
 
 Json = class(
-  'Json', RDBOp,
+  'Json', ReQLOp,
   {
     tt = 98,
     st = 'json'
@@ -868,7 +868,7 @@ Json = class(
 )
 
 Binary = class(
-  'Binary', RDBOp,
+  'Binary', ReQLOp,
   {
     tt = 155,
     st = 'binary'
@@ -876,7 +876,7 @@ Binary = class(
 )
 
 Args = class(
-  'Args', RDBOp,
+  'Args', ReQLOp,
   {
     tt = 154,
     st = 'args'
@@ -884,7 +884,7 @@ Args = class(
 )
 
 UserError = class(
-  'UserError', RDBOp,
+  'UserError', ReQLOp,
   {
     tt = 12,
     st = 'error'
@@ -892,7 +892,7 @@ UserError = class(
 )
 
 Random = class(
-  'Random', RDBOp,
+  'Random', ReQLOp,
   {
     tt = 151,
     st = 'random'
@@ -900,7 +900,7 @@ Random = class(
 )
 
 Db = class(
-  'Db', RDBOp,
+  'Db', ReQLOp,
   {
     tt = 14,
     st = 'db'
@@ -908,7 +908,7 @@ Db = class(
 )
 
 Table = class(
-  'Table', RDBOp,
+  'Table', ReQLOp,
   {
     tt = 15,
     st = 'table'
@@ -916,7 +916,7 @@ Table = class(
 )
 
 Get = class(
-  'Get', RDBOp,
+  'Get', ReQLOp,
   {
     tt = 16,
     mt = 'get'
@@ -924,7 +924,7 @@ Get = class(
 )
 
 GetAll = class(
-  'GetAll', RDBOp,
+  'GetAll', ReQLOp,
   {
     tt = 78,
     mt = 'get_all'
@@ -932,7 +932,7 @@ GetAll = class(
 )
 
 Eq = class(
-  'Eq', RDBOp,
+  'Eq', ReQLOp,
   {
     tt = 17,
     mt = 'eq'
@@ -940,7 +940,7 @@ Eq = class(
 )
 
 Ne = class(
-  'Ne', RDBOp,
+  'Ne', ReQLOp,
   {
     tt = 18,
     mt = 'ne'
@@ -948,7 +948,7 @@ Ne = class(
 )
 
 Lt = class(
-  'Lt', RDBOp,
+  'Lt', ReQLOp,
   {
     tt = 19,
     mt = 'lt'
@@ -956,7 +956,7 @@ Lt = class(
 )
 
 Le = class(
-  'Le', RDBOp,
+  'Le', ReQLOp,
   {
     tt = 20,
     mt = 'le'
@@ -964,7 +964,7 @@ Le = class(
 )
 
 Gt = class(
-  'Gt', RDBOp,
+  'Gt', ReQLOp,
   {
     tt = 21,
     mt = 'gt'
@@ -972,7 +972,7 @@ Gt = class(
 )
 
 Ge = class(
-  'Ge', RDBOp,
+  'Ge', ReQLOp,
   {
     tt = 22,
     mt = 'ge'
@@ -980,7 +980,7 @@ Ge = class(
 )
 
 Not = class(
-  'Not', RDBOp,
+  'Not', ReQLOp,
   {
     tt = 23,
     mt = 'not_'
@@ -988,7 +988,7 @@ Not = class(
 )
 
 Add = class(
-  'Add', RDBOp,
+  'Add', ReQLOp,
   {
     tt = 24,
     mt = 'add'
@@ -996,7 +996,7 @@ Add = class(
 )
 
 Sub = class(
-  'Sub', RDBOp,
+  'Sub', ReQLOp,
   {
     tt = 25,
     mt = 'sub'
@@ -1004,7 +1004,7 @@ Sub = class(
 )
 
 Mul = class(
-  'Mul', RDBOp,
+  'Mul', ReQLOp,
   {
     tt = 26,
     mt = 'mul'
@@ -1012,7 +1012,7 @@ Mul = class(
 )
 
 Div = class(
-  'Div', RDBOp,
+  'Div', ReQLOp,
   {
     tt = 27,
     mt = 'div'
@@ -1020,7 +1020,7 @@ Div = class(
 )
 
 Mod = class(
-  'Mod', RDBOp,
+  'Mod', ReQLOp,
   {
     tt = 28,
     mt = 'mod'
@@ -1028,7 +1028,7 @@ Mod = class(
 )
 
 Append = class(
-  'Append', RDBOp,
+  'Append', ReQLOp,
   {
     tt = 29,
     mt = 'append'
@@ -1036,7 +1036,7 @@ Append = class(
 )
 
 Prepend = class(
-  'Prepend', RDBOp,
+  'Prepend', ReQLOp,
   {
     tt = 80,
     mt = 'prepend'
@@ -1044,7 +1044,7 @@ Prepend = class(
 )
 
 Difference = class(
-  'Difference', RDBOp,
+  'Difference', ReQLOp,
   {
     tt = 95,
     mt = 'difference'
@@ -1052,7 +1052,7 @@ Difference = class(
 )
 
 SetInsert = class(
-  'SetInsert', RDBOp,
+  'SetInsert', ReQLOp,
   {
     tt = 88,
     mt = 'set_insert'
@@ -1060,7 +1060,7 @@ SetInsert = class(
 )
 
 SetUnion = class(
-  'SetUnion', RDBOp,
+  'SetUnion', ReQLOp,
   {
     tt = 90,
     mt = 'set_union'
@@ -1068,7 +1068,7 @@ SetUnion = class(
 )
 
 SetIntersection = class(
-  'SetIntersection', RDBOp,
+  'SetIntersection', ReQLOp,
   {
     tt = 89,
     mt = 'set_intersection'
@@ -1076,7 +1076,7 @@ SetIntersection = class(
 )
 
 SetDifference = class(
-  'SetDifference', RDBOp,
+  'SetDifference', ReQLOp,
   {
     tt = 91,
     mt = 'set_difference'
@@ -1084,7 +1084,7 @@ SetDifference = class(
 )
 
 Slice = class(
-  'Slice', RDBOp,
+  'Slice', ReQLOp,
   {
     tt = 30,
     mt = 'slice'
@@ -1092,7 +1092,7 @@ Slice = class(
 )
 
 Skip = class(
-  'Skip', RDBOp,
+  'Skip', ReQLOp,
   {
     tt = 70,
     mt = 'skip'
@@ -1100,7 +1100,7 @@ Skip = class(
 )
 
 Limit = class(
-  'Limit', RDBOp,
+  'Limit', ReQLOp,
   {
     tt = 71,
     mt = 'limit'
@@ -1108,7 +1108,7 @@ Limit = class(
 )
 
 GetField = class(
-  'GetField', RDBOp,
+  'GetField', ReQLOp,
   {
     tt = 31,
     mt = 'get_field'
@@ -1116,7 +1116,7 @@ GetField = class(
 )
 
 Bracket = class(
-  'Bracket', RDBOp,
+  'Bracket', ReQLOp,
   {
     tt = 170,
     st = '[...]', -- This is only used by the `nil` argument checker
@@ -1124,7 +1124,7 @@ Bracket = class(
 )
 
 Contains = class(
-  'Contains', RDBOp,
+  'Contains', ReQLOp,
   {
     tt = 93,
     mt = 'contains'
@@ -1132,7 +1132,7 @@ Contains = class(
 )
 
 InsertAt = class(
-  'InsertAt', RDBOp,
+  'InsertAt', ReQLOp,
   {
     tt = 82,
     mt = 'insert_at'
@@ -1140,7 +1140,7 @@ InsertAt = class(
 )
 
 SpliceAt = class(
-  'SpliceAt', RDBOp,
+  'SpliceAt', ReQLOp,
   {
     tt = 85,
     mt = 'splice_at'
@@ -1148,7 +1148,7 @@ SpliceAt = class(
 )
 
 DeleteAt = class(
-  'DeleteAt', RDBOp,
+  'DeleteAt', ReQLOp,
   {
     tt = 83,
     mt = 'delete_at'
@@ -1156,7 +1156,7 @@ DeleteAt = class(
 )
 
 ChangeAt = class(
-  'ChangeAt', RDBOp,
+  'ChangeAt', ReQLOp,
   {
     tt = 84,
     mt = 'change_at'
@@ -1164,7 +1164,7 @@ ChangeAt = class(
 )
 
 Contains = class(
-  'Contains', RDBOp,
+  'Contains', ReQLOp,
   {
     tt = 93,
     mt = 'contains'
@@ -1172,7 +1172,7 @@ Contains = class(
 )
 
 HasFields = class(
-  'HasFields', RDBOp,
+  'HasFields', ReQLOp,
   {
     tt = 32,
     mt = 'has_fields'
@@ -1180,7 +1180,7 @@ HasFields = class(
 )
 
 WithFields = class(
-  'WithFields', RDBOp,
+  'WithFields', ReQLOp,
   {
     tt = 96,
     mt = 'with_fields'
@@ -1188,7 +1188,7 @@ WithFields = class(
 )
 
 Keys = class(
-  'Keys', RDBOp,
+  'Keys', ReQLOp,
   {
     tt = 94,
     mt = 'keys'
@@ -1196,7 +1196,7 @@ Keys = class(
 )
 
 Changes = class(
-  'Changes', RDBOp,
+  'Changes', ReQLOp,
   {
     tt = 152,
     mt = 'changes'
@@ -1204,7 +1204,7 @@ Changes = class(
 )
 
 Object = class(
-  'Object', RDBOp,
+  'Object', ReQLOp,
   {
     tt = 143,
     mt = 'object'
@@ -1212,7 +1212,7 @@ Object = class(
 )
 
 Pluck = class(
-  'Pluck', RDBOp,
+  'Pluck', ReQLOp,
   {
     tt = 33,
     mt = 'pluck'
@@ -1220,7 +1220,7 @@ Pluck = class(
 )
 
 IndexesOf = class(
-  'IndexesOf', RDBOp,
+  'IndexesOf', ReQLOp,
   {
     tt = 87,
     mt = 'indexes_of'
@@ -1228,7 +1228,7 @@ IndexesOf = class(
 )
 
 Without = class(
-  'Without', RDBOp,
+  'Without', ReQLOp,
   {
     tt = 34,
     mt = 'without'
@@ -1236,7 +1236,7 @@ Without = class(
 )
 
 Merge = class(
-  'Merge', RDBOp,
+  'Merge', ReQLOp,
   {
     tt = 35,
     mt = 'merge'
@@ -1244,7 +1244,7 @@ Merge = class(
 )
 
 Between = class(
-  'Between', RDBOp,
+  'Between', ReQLOp,
   {
     tt = 36,
     mt = 'between'
@@ -1252,7 +1252,7 @@ Between = class(
 )
 
 Reduce = class(
-  'Reduce', RDBOp,
+  'Reduce', ReQLOp,
   {
     tt = 37,
     mt = 'reduce'
@@ -1260,7 +1260,7 @@ Reduce = class(
 )
 
 Map = class(
-  'Map', RDBOp,
+  'Map', ReQLOp,
   {
     tt = 38,
     mt = 'map'
@@ -1268,7 +1268,7 @@ Map = class(
 )
 
 Filter = class(
-  'Filter', RDBOp,
+  'Filter', ReQLOp,
   {
     tt = 39,
     mt = 'filter'
@@ -1276,7 +1276,7 @@ Filter = class(
 )
 
 ConcatMap = class(
-  'ConcatMap', RDBOp,
+  'ConcatMap', ReQLOp,
   {
     tt = 40,
     mt = 'concat_map'
@@ -1284,7 +1284,7 @@ ConcatMap = class(
 )
 
 OrderBy = class(
-  'OrderBy', RDBOp,
+  'OrderBy', ReQLOp,
   {
     tt = 41,
     mt = 'order_by'
@@ -1292,7 +1292,7 @@ OrderBy = class(
 )
 
 Distinct = class(
-  'Distinct', RDBOp,
+  'Distinct', ReQLOp,
   {
     tt = 42,
     mt = 'distinct'
@@ -1300,7 +1300,7 @@ Distinct = class(
 )
 
 Count = class(
-  'Count', RDBOp,
+  'Count', ReQLOp,
   {
     tt = 43,
     mt = 'count'
@@ -1308,7 +1308,7 @@ Count = class(
 )
 
 Union = class(
-  'Union', RDBOp,
+  'Union', ReQLOp,
   {
     tt = 44,
     mt = 'union'
@@ -1316,7 +1316,7 @@ Union = class(
 )
 
 Nth = class(
-  'Nth', RDBOp,
+  'Nth', ReQLOp,
   {
     tt = 45,
     mt = 'nth'
@@ -1324,7 +1324,7 @@ Nth = class(
 )
 
 ToJson = class(
-  'ToJson', RDBOp,
+  'ToJson', ReQLOp,
   {
     tt = 172,
     st = 'to_json_string'
@@ -1332,7 +1332,7 @@ ToJson = class(
 )
 
 Match = class(
-  'Match', RDBOp,
+  'Match', ReQLOp,
   {
     tt = 97,
     mt = 'match'
@@ -1340,7 +1340,7 @@ Match = class(
 )
 
 Split = class(
-  'Split', RDBOp,
+  'Split', ReQLOp,
   {
     tt = 149,
     mt = 'split'
@@ -1348,7 +1348,7 @@ Split = class(
 )
 
 Upcase = class(
-  'Upcase', RDBOp,
+  'Upcase', ReQLOp,
   {
     tt = 141,
     mt = 'upcase'
@@ -1356,7 +1356,7 @@ Upcase = class(
 )
 
 Downcase = class(
-  'Downcase', RDBOp,
+  'Downcase', ReQLOp,
   {
     tt = 142,
     mt = 'downcase'
@@ -1364,7 +1364,7 @@ Downcase = class(
 )
 
 IsEmpty = class(
-  'IsEmpty', RDBOp,
+  'IsEmpty', ReQLOp,
   {
     tt = 86,
     mt = 'is_empty'
@@ -1372,7 +1372,7 @@ IsEmpty = class(
 )
 
 Group = class(
-  'Group', RDBOp,
+  'Group', ReQLOp,
   {
     tt = 144,
     mt = 'group'
@@ -1380,7 +1380,7 @@ Group = class(
 )
 
 Sum = class(
-  'Sum', RDBOp,
+  'Sum', ReQLOp,
   {
     tt = 145,
     mt = 'sum'
@@ -1388,7 +1388,7 @@ Sum = class(
 )
 
 Avg = class(
-  'Avg', RDBOp,
+  'Avg', ReQLOp,
   {
     tt = 146,
     mt = 'avg'
@@ -1396,7 +1396,7 @@ Avg = class(
 )
 
 Min = class(
-  'Min', RDBOp,
+  'Min', ReQLOp,
   {
     tt = 147,
     mt = 'min'
@@ -1404,7 +1404,7 @@ Min = class(
 )
 
 Max = class(
-  'Max', RDBOp,
+  'Max', ReQLOp,
   {
     tt = 148,
     mt = 'max'
@@ -1412,7 +1412,7 @@ Max = class(
 )
 
 InnerJoin = class(
-  'InnerJoin', RDBOp,
+  'InnerJoin', ReQLOp,
   {
     tt = 48,
     mt = 'inner_join'
@@ -1420,7 +1420,7 @@ InnerJoin = class(
 )
 
 OuterJoin = class(
-  'OuterJoin', RDBOp,
+  'OuterJoin', ReQLOp,
   {
     tt = 49,
     mt = 'outer_join'
@@ -1428,7 +1428,7 @@ OuterJoin = class(
 )
 
 EqJoin = class(
-  'EqJoin', RDBOp,
+  'EqJoin', ReQLOp,
   {
     tt = 50,
     mt = 'eq_join'
@@ -1436,7 +1436,7 @@ EqJoin = class(
 )
 
 Zip = class(
-  'Zip', RDBOp,
+  'Zip', ReQLOp,
   {
     tt = 72,
     mt = 'zip'
@@ -1444,7 +1444,7 @@ Zip = class(
 )
 
 CoerceTo = class(
-  'CoerceTo', RDBOp,
+  'CoerceTo', ReQLOp,
   {
     tt = 51,
     mt = 'coerce_to'
@@ -1452,7 +1452,7 @@ CoerceTo = class(
 )
 
 Ungroup = class(
-  'Ungroup', RDBOp,
+  'Ungroup', ReQLOp,
   {
     tt = 150,
     mt = 'ungroup'
@@ -1460,7 +1460,7 @@ Ungroup = class(
 )
 
 TypeOf = class(
-  'TypeOf', RDBOp,
+  'TypeOf', ReQLOp,
   {
     tt = 52,
     mt = 'type_of'
@@ -1468,7 +1468,7 @@ TypeOf = class(
 )
 
 Info = class(
-  'Info', RDBOp,
+  'Info', ReQLOp,
   {
     tt = 79,
     mt = 'info'
@@ -1476,7 +1476,7 @@ Info = class(
 )
 
 Sample = class(
-  'Sample', RDBOp,
+  'Sample', ReQLOp,
   {
     tt = 81,
     mt = 'sample'
@@ -1484,7 +1484,7 @@ Sample = class(
 )
 
 Update = class(
-  'Update', RDBOp,
+  'Update', ReQLOp,
   {
     tt = 53,
     mt = 'update'
@@ -1492,7 +1492,7 @@ Update = class(
 )
 
 Delete = class(
-  'Delete', RDBOp,
+  'Delete', ReQLOp,
   {
     tt = 54,
     mt = 'delete'
@@ -1500,7 +1500,7 @@ Delete = class(
 )
 
 Replace = class(
-  'Replace', RDBOp,
+  'Replace', ReQLOp,
   {
     tt = 55,
     mt = 'replace'
@@ -1508,7 +1508,7 @@ Replace = class(
 )
 
 Insert = class(
-  'Insert', RDBOp,
+  'Insert', ReQLOp,
   {
     tt = 56,
     mt = 'insert'
@@ -1516,7 +1516,7 @@ Insert = class(
 )
 
 DbCreate = class(
-  'DbCreate', RDBOp,
+  'DbCreate', ReQLOp,
   {
     tt = 57,
     st = 'db_create'
@@ -1524,7 +1524,7 @@ DbCreate = class(
 )
 
 DbDrop = class(
-  'DbDrop', RDBOp,
+  'DbDrop', ReQLOp,
   {
     tt = 58,
     st = 'db_drop'
@@ -1532,7 +1532,7 @@ DbDrop = class(
 )
 
 DbList = class(
-  'DbList', RDBOp,
+  'DbList', ReQLOp,
   {
     tt = 59,
     st = 'db_list'
@@ -1540,7 +1540,7 @@ DbList = class(
 )
 
 TableCreate = class(
-  'TableCreate', RDBOp,
+  'TableCreate', ReQLOp,
   {
     tt = 60,
     mt = 'table_create'
@@ -1548,7 +1548,7 @@ TableCreate = class(
 )
 
 TableDrop = class(
-  'TableDrop', RDBOp,
+  'TableDrop', ReQLOp,
   {
     tt = 61,
     mt = 'table_drop'
@@ -1556,7 +1556,7 @@ TableDrop = class(
 )
 
 TableList = class(
-  'TableList', RDBOp,
+  'TableList', ReQLOp,
   {
     tt = 62,
     mt = 'table_list'
@@ -1564,7 +1564,7 @@ TableList = class(
 )
 
 IndexCreate = class(
-  'IndexCreate', RDBOp,
+  'IndexCreate', ReQLOp,
   {
     tt = 75,
     mt = 'index_create'
@@ -1572,7 +1572,7 @@ IndexCreate = class(
 )
 
 IndexDrop = class(
-  'IndexDrop', RDBOp,
+  'IndexDrop', ReQLOp,
   {
     tt = 76,
     mt = 'index_drop'
@@ -1580,7 +1580,7 @@ IndexDrop = class(
 )
 
 IndexRename = class(
-  'IndexRename', RDBOp,
+  'IndexRename', ReQLOp,
   {
     tt = 156,
     mt = 'index_rename'
@@ -1588,7 +1588,7 @@ IndexRename = class(
 )
 
 IndexList = class(
-  'IndexList', RDBOp,
+  'IndexList', ReQLOp,
   {
     tt = 77,
     mt = 'index_list'
@@ -1596,7 +1596,7 @@ IndexList = class(
 )
 
 IndexStatus = class(
-  'IndexStatus', RDBOp,
+  'IndexStatus', ReQLOp,
   {
     tt = 139,
     mt = 'index_status'
@@ -1604,7 +1604,7 @@ IndexStatus = class(
 )
 
 IndexWait = class(
-  'IndexWait', RDBOp,
+  'IndexWait', ReQLOp,
   {
     tt = 140,
     mt = 'index_wait'
@@ -1612,7 +1612,7 @@ IndexWait = class(
 )
 
 Sync = class(
-  'Sync', RDBOp,
+  'Sync', ReQLOp,
   {
     tt = 138,
     mt = 'sync'
@@ -1620,7 +1620,7 @@ Sync = class(
 )
 
 FunCall = class(
-  'FunCall', RDBOp,
+  'FunCall', ReQLOp,
   {
     tt = 64,
     st = 'do_', -- This is only used by the `nil` argument checker
@@ -1628,7 +1628,7 @@ FunCall = class(
 )
 
 Default = class(
-  'Default', RDBOp,
+  'Default', ReQLOp,
   {
     tt = 92,
     mt = 'default'
@@ -1636,7 +1636,7 @@ Default = class(
 )
 
 Branch = class(
-  'Branch', RDBOp,
+  'Branch', ReQLOp,
   {
     tt = 65,
     st = 'branch'
@@ -1644,7 +1644,7 @@ Branch = class(
 )
 
 Any = class(
-  'Any', RDBOp,
+  'Any', ReQLOp,
   {
     tt = 66,
     mt = 'or_'
@@ -1652,7 +1652,7 @@ Any = class(
 )
 
 All = class(
-  'All', RDBOp,
+  'All', ReQLOp,
   {
     tt = 67,
     mt = 'and_'
@@ -1660,7 +1660,7 @@ All = class(
 )
 
 ForEach = class(
-  'ForEach', RDBOp,
+  'ForEach', ReQLOp,
   {
     tt = 68,
     mt = 'for_each'
@@ -1668,7 +1668,7 @@ ForEach = class(
 )
 
 Func = class(
-  'Func', RDBOp,
+  'Func', ReQLOp,
   {
     next_var_id = 0,
     tt = 69,
@@ -1676,7 +1676,7 @@ Func = class(
 )
 
 Asc = class(
-  'Asc', RDBOp,
+  'Asc', ReQLOp,
   {
     tt = 73,
     st = 'asc'
@@ -1684,7 +1684,7 @@ Asc = class(
 )
 
 Desc = class(
-  'Desc', RDBOp,
+  'Desc', ReQLOp,
   {
     tt = 74,
     st = 'desc'
@@ -1692,7 +1692,7 @@ Desc = class(
 )
 
 Literal = class(
-  'Literal', RDBOp,
+  'Literal', ReQLOp,
   {
     tt = 137,
     st = 'literal'
@@ -1700,7 +1700,7 @@ Literal = class(
 )
 
 ISO8601 = class(
-  'ISO8601', RDBOp,
+  'ISO8601', ReQLOp,
   {
     tt = 99,
     st = 'iso8601'
@@ -1708,7 +1708,7 @@ ISO8601 = class(
 )
 
 ToISO8601 = class(
-  'ToISO8601', RDBOp,
+  'ToISO8601', ReQLOp,
   {
     tt = 100,
     mt = 'to_iso8601'
@@ -1716,7 +1716,7 @@ ToISO8601 = class(
 )
 
 EpochTime = class(
-  'EpochTime', RDBOp,
+  'EpochTime', ReQLOp,
   {
     tt = 101,
     st = 'epoch_time'
@@ -1724,7 +1724,7 @@ EpochTime = class(
 )
 
 ToEpochTime = class(
-  'ToEpochTime', RDBOp,
+  'ToEpochTime', ReQLOp,
   {
     tt = 102,
     mt = 'to_epoch_time'
@@ -1732,7 +1732,7 @@ ToEpochTime = class(
 )
 
 Now = class(
-  'Now', RDBOp,
+  'Now', ReQLOp,
   {
     tt = 103,
     st = 'now'
@@ -1740,7 +1740,7 @@ Now = class(
 )
 
 InTimezone = class(
-  'InTimezone', RDBOp,
+  'InTimezone', ReQLOp,
   {
     tt = 104,
     mt = 'in_timezone'
@@ -1748,7 +1748,7 @@ InTimezone = class(
 )
 
 During = class(
-  'During', RDBOp,
+  'During', ReQLOp,
   {
     tt = 105,
     mt = 'during'
@@ -1756,7 +1756,7 @@ During = class(
 )
 
 ReQLDate = class(
-  'ReQLDate', RDBOp,
+  'ReQLDate', ReQLOp,
   {
     tt = 106,
     mt = 'date'
@@ -1764,7 +1764,7 @@ ReQLDate = class(
 )
 
 TimeOfDay = class(
-  'TimeOfDay', RDBOp,
+  'TimeOfDay', ReQLOp,
   {
     tt = 126,
     mt = 'time_of_day'
@@ -1772,7 +1772,7 @@ TimeOfDay = class(
 )
 
 Timezone = class(
-  'Timezone', RDBOp,
+  'Timezone', ReQLOp,
   {
     tt = 127,
     mt = 'timezone'
@@ -1780,7 +1780,7 @@ Timezone = class(
 )
 
 Year = class(
-  'Year', RDBOp,
+  'Year', ReQLOp,
   {
     tt = 128,
     mt = 'year'
@@ -1788,7 +1788,7 @@ Year = class(
 )
 
 Month = class(
-  'Month', RDBOp,
+  'Month', ReQLOp,
   {
     tt = 129,
     mt = 'month'
@@ -1796,7 +1796,7 @@ Month = class(
 )
 
 Day = class(
-  'Day', RDBOp,
+  'Day', ReQLOp,
   {
     tt = 130,
     mt = 'day'
@@ -1804,7 +1804,7 @@ Day = class(
 )
 
 DayOfWeek = class(
-  'DayOfWeek', RDBOp,
+  'DayOfWeek', ReQLOp,
   {
     tt = 131,
     mt = 'day_of_week'
@@ -1812,7 +1812,7 @@ DayOfWeek = class(
 )
 
 DayOfYear = class(
-  'DayOfYear', RDBOp,
+  'DayOfYear', ReQLOp,
   {
     tt = 132,
     mt = 'day_of_year'
@@ -1820,7 +1820,7 @@ DayOfYear = class(
 )
 
 Hours = class(
-  'Hours', RDBOp,
+  'Hours', ReQLOp,
   {
     tt = 133,
     mt = 'hours'
@@ -1828,7 +1828,7 @@ Hours = class(
 )
 
 Minutes = class(
-  'Minutes', RDBOp,
+  'Minutes', ReQLOp,
   {
     tt = 134,
     mt = 'minutes'
@@ -1836,7 +1836,7 @@ Minutes = class(
 )
 
 Seconds = class(
-  'Seconds', RDBOp,
+  'Seconds', ReQLOp,
   {
     tt = 135,
     mt = 'seconds'
@@ -1844,7 +1844,7 @@ Seconds = class(
 )
 
 Time = class(
-  'Time', RDBOp,
+  'Time', ReQLOp,
   {
     tt = 136,
     st = 'time'
@@ -1852,7 +1852,7 @@ Time = class(
 )
 
 GeoJson = class(
-  'GeoJson', RDBOp,
+  'GeoJson', ReQLOp,
   {
     tt = 157,
     mt = 'geojson'
@@ -1860,7 +1860,7 @@ GeoJson = class(
 )
 
 ToGeoJson = class(
-  'ToGeoJson', RDBOp,
+  'ToGeoJson', ReQLOp,
   {
     tt = 158,
     mt = 'to_geojson'
@@ -1868,7 +1868,7 @@ ToGeoJson = class(
 )
 
 Point = class(
-  'Point', RDBOp,
+  'Point', ReQLOp,
   {
     tt = 159,
     mt = 'point'
@@ -1876,7 +1876,7 @@ Point = class(
 )
 
 Line = class(
-  'Line', RDBOp,
+  'Line', ReQLOp,
   {
     tt = 160,
     mt = 'line'
@@ -1884,7 +1884,7 @@ Line = class(
 )
 
 Polygon = class(
-  'Polygon', RDBOp,
+  'Polygon', ReQLOp,
   {
     tt = 161,
     mt = 'polygon'
@@ -1892,7 +1892,7 @@ Polygon = class(
 )
 
 Distance = class(
-  'Distance', RDBOp,
+  'Distance', ReQLOp,
   {
     tt = 162,
     mt = 'distance'
@@ -1900,7 +1900,7 @@ Distance = class(
 )
 
 Intersects = class(
-  'Intersects', RDBOp,
+  'Intersects', ReQLOp,
   {
     tt = 163,
     mt = 'intersects'
@@ -1908,7 +1908,7 @@ Intersects = class(
 )
 
 Includes = class(
-  'Includes', RDBOp,
+  'Includes', ReQLOp,
   {
     tt = 164,
     mt = 'includes'
@@ -1916,7 +1916,7 @@ Includes = class(
 )
 
 Circle = class(
-  'Circle', RDBOp,
+  'Circle', ReQLOp,
   {
     tt = 165,
     mt = 'circle'
@@ -1924,7 +1924,7 @@ Circle = class(
 )
 
 GetIntersecting = class(
-  'GetIntersecting', RDBOp,
+  'GetIntersecting', ReQLOp,
   {
     tt = 166,
     mt = 'get_intersecting'
@@ -1932,7 +1932,7 @@ GetIntersecting = class(
 )
 
 GetNearest = class(
-  'GetNearest', RDBOp,
+  'GetNearest', ReQLOp,
   {
     tt = 168,
     mt = 'get_nearest'
@@ -1940,7 +1940,7 @@ GetNearest = class(
 )
 
 Fill = class(
-  'Fill', RDBOp,
+  'Fill', ReQLOp,
   {
     tt = 167,
     mt = 'fill'
@@ -1948,7 +1948,7 @@ Fill = class(
 )
 
 PolygonSub = class(
-  'PolygonSub', RDBOp,
+  'PolygonSub', ReQLOp,
   {
     tt = 171,
     st = 'polygon_sub'
@@ -1956,7 +1956,7 @@ PolygonSub = class(
 )
 
 UUID = class(
-  'UUID', RDBOp,
+  'UUID', ReQLOp,
   {
     tt = 169,
     st = 'uuid'
@@ -1976,7 +1976,7 @@ function r.expr(val, nesting_depth)
   if type(nesting_depth) ~= 'number' then
     error(errors.ReQLDriverError('Second argument to `r.expr` must be a number or nil.'))
   end
-  if is_instance(RDBOp, val) then
+  if is_instance(ReQLOp, val) then
     return val
   end
   if type(val) == 'function' then
@@ -2014,7 +2014,7 @@ function r.random(...)
 
   -- Look for opts dict
   local perhaps_opt_dict = limits[limits.n]
-  if (type(perhaps_opt_dict) == 'table') and (not is_instance(RDBOp, perhaps_opt_dict)) then
+  if (type(perhaps_opt_dict) == 'table') and (not is_instance(ReQLOp, perhaps_opt_dict)) then
     opts = perhaps_opt_dict
     limits[limits.n] = nil
   end
@@ -2132,26 +2132,26 @@ function r.time(...)
   return Time({}, ...)
 end
 
-r.monday = class('Monday', RDBOp, {tt = 107})()
-r.tuesday = class('Tuesday', RDBOp, {tt = 108})()
-r.wednesday = class('Wednesday', RDBOp, {tt = 109})()
-r.thursday = class('Thursday', RDBOp, {tt = 110})()
-r.friday = class('Friday', RDBOp, {tt = 111})()
-r.saturday = class('Saturday', RDBOp, {tt = 112})()
-r.sunday = class('Sunday', RDBOp, {tt = 113})()
+r.monday = class('Monday', ReQLOp, {tt = 107})()
+r.tuesday = class('Tuesday', ReQLOp, {tt = 108})()
+r.wednesday = class('Wednesday', ReQLOp, {tt = 109})()
+r.thursday = class('Thursday', ReQLOp, {tt = 110})()
+r.friday = class('Friday', ReQLOp, {tt = 111})()
+r.saturday = class('Saturday', ReQLOp, {tt = 112})()
+r.sunday = class('Sunday', ReQLOp, {tt = 113})()
 
-r.january = class('January', RDBOp, {tt = 114})()
-r.february = class('February', RDBOp, {tt = 115})()
-r.march = class('March', RDBOp, {tt = 116})()
-r.april = class('April', RDBOp, {tt = 117})()
-r.may = class('May', RDBOp, {tt = 118})()
-r.june = class('June', RDBOp, {tt = 119})()
-r.july = class('July', RDBOp, {tt = 120})()
-r.august = class('August', RDBOp, {tt = 121})()
-r.september = class('September', RDBOp, {tt = 122})()
-r.october = class('October', RDBOp, {tt = 123})()
-r.november = class('November', RDBOp, {tt = 124})()
-r.december = class('December', RDBOp, {tt = 125})()
+r.january = class('January', ReQLOp, {tt = 114})()
+r.february = class('February', ReQLOp, {tt = 115})()
+r.march = class('March', ReQLOp, {tt = 116})()
+r.april = class('April', ReQLOp, {tt = 117})()
+r.may = class('May', ReQLOp, {tt = 118})()
+r.june = class('June', ReQLOp, {tt = 119})()
+r.july = class('July', ReQLOp, {tt = 120})()
+r.august = class('August', ReQLOp, {tt = 121})()
+r.september = class('September', ReQLOp, {tt = 122})()
+r.october = class('October', ReQLOp, {tt = 123})()
+r.november = class('November', ReQLOp, {tt = 124})()
+r.december = class('December', ReQLOp, {tt = 125})()
 
 function r.object(...)
   return Object({}, ...)
