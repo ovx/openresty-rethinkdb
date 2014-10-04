@@ -15,16 +15,16 @@ class TestArrayLimits(util.LuaTestCase):
         self.assertEqual(self.run_lua('test_arraylimits_huge'), "100001")
 
     def test_huge_read(self):
-        self.assertEqual(self.run_lua('test_arraylimits_huge_read'), "{'deleted':0.0,'replaced':0.0,'unchanged':0.0,'errors':1.0,'skipped':0.0,'inserted':1,'first_error':Array too large for disk writes (limit 100,000 elements)}")
+        self.assertEqual(self.run_lua('test_arraylimits_huge_read'), "nil")
 
     def test_huge_table(self):
-        self.assertEqual(self.run_lua('test_arraylimits_huge_table'), "{'deleted':0.0,'replaced':0.0,'unchanged':0.0,'errors':1.0,'skipped':0.0,'inserted':1,'first_error':Array too large for disk writes (limit 100,000 elements)}")
+        self.assertEqual(self.run_lua('test_arraylimits_huge_table'), "{deleted: 0, errors: 1, first_error: Array too large for disk writes (limit 100,000 elements), inserted: 1, replaced: 0, skipped: 0, unchanged: 0}")
 
     def test_lessthan(self):
         self.assertEqual(self.run_lua('test_arraylimits_lessthan'), "ReQLRuntimeError Array over size limit `4`. in:\nr({1, 2, 3, 4}):union({5, 6, 7, 8})")
 
     def test_lessthan_read(self):
-        self.assertEqual(self.run_lua('test_arraylimits_lessthan_read'), "{'array':[1,2,3,4,5,6,7,8,9,10],'id':1}")
+        self.assertEqual(self.run_lua('test_arraylimits_lessthan_read'), "{array: {1, 2, 3, 4, 5, 6, 7, 8, 9, 10}, id: 1}")
 
     def test_negative(self):
         self.assertEqual(self.run_lua('test_arraylimits_negative'), "ReQLCompileError Illegal array size limit `-1`. in:\n{1, 2, 3, 4, 5, 6, 7, 8}")
