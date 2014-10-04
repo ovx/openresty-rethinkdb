@@ -787,9 +787,11 @@ DatumTerm = class(
     compose = function(self)
       if type(self.data) == 'string' then
         return '"' .. self.data .. '"'
-      else
-        return '' .. self.data
       end
+      if self.data == nil then
+        return 'nil'
+      end
+      return '' .. self.data
     end,
     build = function(self)
       if type(self.data) == 'number' then
