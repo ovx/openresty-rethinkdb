@@ -127,6 +127,7 @@ Cursor = class(
       if t ~= 3 and t ~= 5 then
         -- We got an error, SUCCESS_SEQUENCE, WAIT_COMPLETE, or a SUCCESS_ATOM
         self._end_flag = true
+        self._conn:_del_query(self._token)
       end
       self._cont_flag = false
     end,
@@ -300,10 +301,19 @@ Connection = class(
       local buf, err, partial
       -- Buffer data, execute return results if need be
       while true do
-        buf, err, partial = self.raw_socket:receive(1024)
+        buf, err, partial = self.raw_socket:receive(
+          math.max(12, response_length)
+        )
         buf = buf or partial
         if (not buf) and err then
-          error(errors.ReQLDriverError('connection returned: ' .. err))
+          return self:_process_response(
+            {
+              t = 16,
+              r = {'connection returned: ' .. err},
+              b = {}
+            },
+            reqest_token
+          )
         end
         self.buffer = self.buffer .. buf
         if response_length > 0 then
@@ -329,17 +339,13 @@ Connection = class(
     end,
     _process_response = function(self, response, token)
       local cursor = self.outstanding_callbacks[token]
-      if cursor then
-        cursor = cursor.cursor
-        if cursor then
-          cursor:_add_response(response)
-          if cursor._end_flag and cursor._outstanding_requests == 0 then
-            return self:_del_query(token)
-          end
-        end
-      else
+      if not cursor then
         -- Unexpected token
         error(errors.ReQLDriverError('Unexpected token ' .. token .. '.'))
+      end
+      cursor = cursor.cursor
+      if cursor then
+        return cursor:_add_response(response)
       end
     end,
     close = function(self, opts_or_callback, callback)

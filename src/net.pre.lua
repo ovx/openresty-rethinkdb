@@ -127,7 +127,7 @@ Cursor = class(
       if t ~= --[[Response.SUCCESS_PARTIAL]] and t ~= --[[Response.SUCCESS_FEED]] then
         -- We got an error, SUCCESS_SEQUENCE, WAIT_COMPLETE, or a SUCCESS_ATOM
         self._end_flag = true
-        self._conn:_del_query(self.token)
+        self._conn:_del_query(self._token)
       end
       self._cont_flag = false
     end,
@@ -301,7 +301,9 @@ Connection = class(
       local buf, err, partial
       -- Buffer data, execute return results if need be
       while true do
-        buf, err, partial = self.raw_socket:receive(1024)
+        buf, err, partial = self.raw_socket:receive(
+          math.max(12, response_length)
+        )
         buf = buf or partial
         if (not buf) and err then
           return self:_process_response(
@@ -309,7 +311,7 @@ Connection = class(
               t = --[[Response.CLIENT_ERROR]],
               r = {'connection returned: ' .. err},
               b = {}
-            }
+            },
             reqest_token
           )
         end
