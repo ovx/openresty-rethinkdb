@@ -78,7 +78,7 @@ def build(args):
         def get_field(self, name, args, kwargs):
             if name.startswith('Term.'):
                 self.terms_found.add(name[5:])
-            return super().get_field(name, args, kwargs)
+            return super(ASTChecker, self).get_field(name, args, kwargs)
 
         def check_unused_args(self, used, args, kwargs):
             expected = {
