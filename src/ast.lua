@@ -631,7 +631,7 @@ ReQLOp = class(
     end,
 
     -- Geo operations
-    to_geojson = function(...)
+    to_geo_json = function(...)
       return ToGeoJson({}, ...)
     end,
     distance = function(self, g, opts)
@@ -933,8 +933,8 @@ Hours = class('Hours', ReQLOp, {tt = 133, st = 'hours'})
 Minutes = class('Minutes', ReQLOp, {tt = 134, st = 'minutes'})
 Seconds = class('Seconds', ReQLOp, {tt = 135, st = 'seconds'})
 Time = class('Time', ReQLOp, {tt = 136, st = 'time'})
-GeoJson = class('GeoJson', ReQLOp, {tt = 157, st = 'geojson'})
-ToGeoJson = class('ToGeoJson', ReQLOp, {tt = 158, st = 'to_geojson'})
+GeoJson = class('GeoJson', ReQLOp, {tt = 157, st = 'geo_json'})
+ToGeoJson = class('ToGeoJson', ReQLOp, {tt = 158, st = 'to_geo_json'})
 Point = class('Point', ReQLOp, {tt = 159, st = 'point'})
 Line = class('Line', ReQLOp, {tt = 160, st = 'line'})
 Polygon = class('Polygon', ReQLOp, {tt = 161, st = 'polygon'})
@@ -1144,7 +1144,7 @@ end
 function r.args(...)
   return Args({}, ...)
 end
-function r.geojson(...)
+function r.geo_json(...)
   return GeoJson({}, ...)
 end
 function r.point(...)

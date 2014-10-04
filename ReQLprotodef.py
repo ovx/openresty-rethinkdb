@@ -104,8 +104,8 @@ class Term:
         REDUCE = 37
         MAP = 38
         FILTER = 39
-        CONCATMAP = 40
-        ORDERBY = 41
+        CONCAT_MAP = 40
+        ORDER_BY = 41
         DISTINCT = 42
         COUNT = 43
         IS_EMPTY = 86
@@ -121,7 +121,7 @@ class Term:
         CHANGE_AT = 84
         SPLICE_AT = 85
         COERCE_TO = 51
-        TYPEOF = 52
+        TYPE_OF = 52
         UPDATE = 53
         DELETE = 54
         REPLACE = 55
@@ -139,11 +139,11 @@ class Term:
         INDEX_STATUS = 139
         INDEX_WAIT = 140
         INDEX_RENAME = 156
-        FUNCALL = 64
+        FUN_CALL = 64
         BRANCH = 65
         ANY = 66
         ALL = 67
-        FOREACH = 68
+        FOR_EACH = 68
         FUNC = 69
         ASC = 73
         DESC = 74
@@ -205,8 +205,8 @@ class Term:
         CHANGES = 152
         ARGS = 154
         BINARY = 155
-        GEOJSON = 157
-        TO_GEOJSON = 158
+        GEO_JSON = 157
+        TO_GEO_JSON = 158
         POINT = 159
         LINE = 160
         POLYGON = 161

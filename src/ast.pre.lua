@@ -281,7 +281,7 @@ ReQLOp = class(
           ' end'
         }
       end
-      if self.tt == --[[Term.FUNCALL]] then
+      if self.tt == --[[Term.FUN_CALL]] then
         if #args > 2 then
           return {
             'r.do_(',
@@ -631,7 +631,7 @@ ReQLOp = class(
     end,
 
     -- Geo operations
-    to_geojson = function(...)
+    to_geo_json = function(...)
       return ToGeoJson({}, ...)
     end,
     distance = function(self, g, opts)
@@ -861,8 +861,8 @@ Between = class(--[[Class.BETWEEN]])
 Reduce = class(--[[Class.REDUCE]])
 Map = class(--[[Class.MAP]])
 Filter = class(--[[Class.FILTER]])
-ConcatMap = class(--[[Class.CONCATMAP]])
-OrderBy = class(--[[Class.ORDERBY]])
+ConcatMap = class(--[[Class.CONCAT_MAP]])
+OrderBy = class(--[[Class.ORDER_BY]])
 Distinct = class(--[[Class.DISTINCT]])
 Count = class(--[[Class.COUNT]])
 Union = class(--[[Class.UNION]])
@@ -884,7 +884,7 @@ EqJoin = class(--[[Class.EQ_JOIN]])
 Zip = class(--[[Class.ZIP]])
 CoerceTo = class(--[[Class.COERCE_TO]])
 Ungroup = class(--[[Class.UNGROUP]])
-TypeOf = class(--[[Class.TYPEOF]])
+TypeOf = class(--[[Class.TYPE_OF]])
 Info = class(--[[Class.INFO]])
 Sample = class(--[[Class.SAMPLE]])
 Update = class(--[[Class.UPDATE]])
@@ -904,12 +904,12 @@ IndexList = class(--[[Class.INDEX_LIST]])
 IndexStatus = class(--[[Class.INDEX_STATUS]])
 IndexWait = class(--[[Class.INDEX_WAIT]])
 Sync = class(--[[Class.SYNC]])
-FunCall = class(--[[Class.FUNCALL]])
+FunCall = class(--[[Class.FUN_CALL]])
 Default = class(--[[Class.DEFAULT]])
 Branch = class(--[[Class.BRANCH]])
 Any = class(--[[Class.ANY]])
 All = class(--[[Class.ALL]])
-ForEach = class(--[[Class.FOREACH]])
+ForEach = class(--[[Class.FOR_EACH]])
 Func = class(--[[Class.FUNC]])
 Asc = class(--[[Class.ASC]])
 Desc = class(--[[Class.DESC]])
@@ -933,8 +933,8 @@ Hours = class(--[[Class.HOURS]])
 Minutes = class(--[[Class.MINUTES]])
 Seconds = class(--[[Class.SECONDS]])
 Time = class(--[[Class.TIME]])
-GeoJson = class(--[[Class.GEOJSON]])
-ToGeoJson = class(--[[Class.TO_GEOJSON]])
+GeoJson = class(--[[Class.GEO_JSON]])
+ToGeoJson = class(--[[Class.TO_GEO_JSON]])
 Point = class(--[[Class.POINT]])
 Line = class(--[[Class.LINE]])
 Polygon = class(--[[Class.POLYGON]])
@@ -1144,7 +1144,7 @@ end
 function r.args(...)
   return Args({}, ...)
 end
-function r.geojson(...)
+function r.geo_json(...)
   return GeoJson({}, ...)
 end
 function r.point(...)

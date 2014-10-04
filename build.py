@@ -94,15 +94,13 @@ def build(args):
                 raise ValueError('Found {} unused terms.'.format(unused))
 
     class LuaClassBuilder:
-        names = re.compile('^\w|_\w')
+        names = re.compile('(^|_)(\w)')
 
         def __getattr__(self, name):
             st = name.lower()
             st = {
-                'bracket': '(...)', 'concatmap': 'concat_map',
-                'foreach': 'for_each', 'funcall': 'do_', 'javascript': 'js',
-                'make_array': '{...}', 'not': 'not_', 'orderby': 'order_by',
-                'typeof': 'type_of'
+                'bracket': '(...)', 'fun_call': 'do_', 'javascript': 'js',
+                'make_array': '{...}', 'not': 'not_'
             }.get(st, st)
             return '\'{}\', ReQLOp, {{tt = {}, st = \'{}\'}}'.format(
                 self.get_class_name(name),
@@ -112,17 +110,12 @@ def build(args):
 
         def get_class_name(self, name):
             cls = {
-                'CONCATMAP': 'ConcatMap', 'FOREACH': 'ForEach',
-                'FUNCALL': 'FunCall', 'GEOJSON': 'GeoJson',
                 'ISO8601': 'ISO8601', 'JAVASCRIPT': 'JavaScript',
-                'ORDERBY': 'OrderBy', 'TO_GEOJSON': 'ToGeoJson',
-                'TO_ISO8601': 'ToISO8601', 'TYPEOF': 'TypeOf', 'UUID': 'UUID'
+                'TO_ISO8601': 'ToISO8601', 'UUID': 'UUID'
             }.get(name)
             if cls:
                 return cls
-            return self.names.sub(
-                lambda m: m.group(0).replace('_', '').upper(), name.lower()
-            )
+            return self.names.sub(lambda m: m.group(2).upper(), name.lower())
 
     print('building ast.lua')
 
