@@ -126,7 +126,7 @@ def install(args):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Process some integers.')
+    parser = argparse.ArgumentParser(description='Build Lua-ReQL.')
 
     parser.add_argument('action', nargs='?', default='test')
     parser.add_argument('-f', action='store_true')
