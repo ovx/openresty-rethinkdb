@@ -2,7 +2,6 @@ local json = require('json')
 local mime = require('mime')
 
 local errors = require('./errors')
-local net = require('./net')
 local util = require('./util')
 
 -- Import some names to this namespace for convienience
@@ -119,7 +118,7 @@ RDBOp = class(
         end
       end
 
-      if not net.is_connection(connection) then
+      if type(connection._start) ~= 'function' then
         if callback then
           return callback(errors.ReQLDriverError('First argument to `run` must be an open connection.'))
         end

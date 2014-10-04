@@ -4,6 +4,7 @@ local socket = require('socket')
 
 local errors = require('./errors')
 local util = require('./util')
+local r = require('./ast')
 
 -- Import some names to this namespace for convienience
 local is_instance = util.is_instance
@@ -405,22 +406,14 @@ Connection = class(
       local token = self.next_token
       self.next_token = self.next_token + 1
 
+      -- Save cursor
+      local cursor = Cursor(self, token, {})
+
+      -- Save cursor
+      self.outstanding_callbacks[token] = {cursor = cursor}
+
       -- Construct query
-      local query = { }
-      query.type = 4
-      query.token = token
-
-      -- Save callback
-      local cursor = Cursor(self, token, query.global_optargs, term)
-
-      -- Save callback
-      do
-        local callback = {
-          cursor = cursor
-        }
-        self.outstanding_callbacks[token] = callback
-      end
-      self:_send_query(query)
+      self:_write_query(token, '[' .. 4 .. ']')
 
       if type(cb) == 'function' then
         local res = cb(nil, cursor)
@@ -492,26 +485,26 @@ Connection = class(
       local token = self.next_token
       self.next_token = self.next_token + 1
 
-      -- Construct query
-      local query = { }
-      query.global_optargs = opts
-      query.type = 1
-      query.query = term:build()
-      query.token = token
-      -- Set global options
-      if self.db then
-        query.global_optargs.db = {14, {self.db}}
+      for k, v in pairs(opts) do
+        if k == 'use_outdated' or k == 'noreply' or k == 'profile' then
+          v = not not v
+        end
+        opts[k] = r(v):build()
       end
 
-      local cursor = Cursor(self, token, query.global_optargs, term)
+      -- Set global options
+      if self.db then
+        opts.db = r.DB(self.db):build()
+      end
 
-      -- Save callback
-      self.outstanding_callbacks[token] = {
-      root = term,
-        opts = opts,
-        cursor = cursor
-      }
-      self:_send_query(query)
+      -- Construct query
+      local query = {1, term:build(), opts}
+
+      local cursor = Cursor(self, token, opts, term)
+
+      -- Save cursor
+      self.outstanding_callbacks[token] = {cursor = cursor}
+      self:_send_query(token, query)
       if type(cb) == 'function' and not opts.noreply then
         local res = cb(nil, cursor)
         cursor:close()
@@ -519,21 +512,13 @@ Connection = class(
       end
     end,
     _continue_query = function(self, token)
-      return self:_write_query(token, json.encode({2}))
+      return self:_write_query(token, '[' .. 2 .. ']')
     end,
     _end_query = function(self, token)
-      return self:_write_query(token, json.encode({3}))
+      return self:_write_query(token, '[' .. 3 .. ']')
     end,
-    _send_query = function(self, query)
-      -- Serialize query to JSON
-      local data = {query.type}
-      if query.query then
-        data[2] = query.query
-        if #query.global_optargs > 0 then
-          data[3] = query.global_optargs
-        end
-      end
-      self:_write_query(query.token, json.encode(data))
+    _send_query = function(self, token, query)
+      return self:_write_query(token, json.encode(query))
     end
   }
 )
