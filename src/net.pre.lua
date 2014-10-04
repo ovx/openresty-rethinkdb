@@ -304,7 +304,14 @@ Connection = class(
         buf, err, partial = self.raw_socket:receive(1024)
         buf = buf or partial
         if (not buf) and err then
-          error(errors.ReQLDriverError('connection returned: ' .. err))
+          return self:_process_response(
+            {
+              t = --[[Response.CLIENT_ERROR]],
+              r = {'connection returned: ' .. err},
+              b = {}
+            }
+            reqest_token
+          )
         end
         self.buffer = self.buffer .. buf
         if response_length > 0 then
