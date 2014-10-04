@@ -9,24 +9,24 @@ Rethinkdb driver in Lua
 
 ## Testing
 - Linux:
-  1. sudo apt-get install liblua5.1-dev luarocks python3 pip3 rethinkdb
+  1. sudo apt-get install luarocks pip3 rethinkdb
   - sudo luarocks install luasocket luajson
-  - pip3 install rethinkdb
+  - sudo pip3 install rethinkdb
   - cd *Lua-ReQL directory*
-  - python3 build.py test
+  - python3 build.py
 - Mac:
-  1. brew install lua luarocks python3 rethinkdb
+  1. brew install luarocks python3 rethinkdb
   - luarocks install luasocket luajson
-  - pip3 install rethinkdb
+  - sudo pip3 install rethinkdb
   - cd *Lua-ReQL directory*
-  - python3 build.py test
+  - python3 build.py
 
 ## Installing from source
 - Linux:
-  1. sudo apt-get install liblua5.1-dev luarocks
+  1. sudo apt-get install luarocks
   - cd *Lua-ReQL directory*
   - sudo luarocks make
 - Mac:
-  1. brew install lua luarocks
+  1. brew install luarocks
   - cd *Lua-ReQL directory*
   - luarocks make
