@@ -1,13 +1,14 @@
 import argparse
 import subprocess
-import time
-import string
 
 
 def test(args):
     if not args.f:
         lint(args)
+
     import unittest
+    import time
+
     res = unittest.TestResult()
     io = subprocess.Popen(['rethinkdb'], cwd='tests')
     time.sleep(4)
@@ -40,7 +41,9 @@ def clean(args):
 def lint(args):
     if not args.f:
         build(args)
+
     print('linting src:')
+
     returncode = subprocess.call([
         'luac', 'ast.lua', 'errors.lua', 'net.lua', 'rethinkdb.lua', 'util.lua'
     ], cwd='src')
@@ -48,13 +51,18 @@ def lint(args):
         print('`luac ast.lua errors.lua net.lua rethinkdb.lua util.lua` '
               'returned:', returncode)
         exit(returncode)
+
     print('linting successful')
 
 
 def build(args):
-    print('building templates:')
-    import ReQLprotodef as protodef
     import re
+    import string
+
+    import ReQLprotodef as protodef
+
+    print('building templates:')
+
     class BuildFormat(string.Formatter):
         fspec = re.compile('--\[\[(.+?)\]\]')
 
@@ -74,7 +82,7 @@ def build(args):
 
         def check_unused_args(self, used, args, kwargs):
             expected = {
-                term for term in dir(kwargs['Term'])
+                term for term in dir(protodef.Term.TermType)
                 if not term.startswith('__')
             } - {'DATUM'}
             unused = expected - self.terms_found
@@ -82,6 +90,7 @@ def build(args):
                 raise ValueError('Found {} unused terms.'.format(unused))
 
     print('building ast.lua')
+
     with open('src/ast.pre.lua') as io:
         s = io.read()
     s = ASTChecker().vformat(s, (), {
@@ -89,7 +98,9 @@ def build(args):
     })
     with open('src/ast.lua', 'w') as io:
         io.write(s)
+
     print('building net.lua')
+
     with open('src/net.pre.lua') as io:
         s = io.read()
     s = BuildFormat().vformat(s, (), {
@@ -101,8 +112,8 @@ def build(args):
     })
     with open('src/net.lua', 'w') as io:
         io.write(s)
-    print('build successful')
 
+    print('building successful')
 
 
 def install(args):
