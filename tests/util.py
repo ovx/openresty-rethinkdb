@@ -1,3 +1,4 @@
+import json
 import os
 import subprocess
 import unittest
@@ -26,27 +27,36 @@ class LuaTestCase(unittest.TestCase):
         self.tables.append(table)
         return table
 
-    def run_lua(self, file, **kwargs):
-        return self.run_cmd(
-            ['lua', file + '.lua'],
-            env=dict(
-                os.environ,
-                LUA_PATH='../src/?.lua;;'
-            ), **kwargs
-        )
+    def deep_sort(self, res):
+        if isinstance(res, dict):
+            return {k: self.deep_sort(v) for k, v in res.items()}
+        if isinstance(res, list):
+            res = list(map(self.deep_sort, res))
+            res.sort()
+        return res
 
-    def run_cmd(self, cmd, **kwargs):
+    def expect(self, lua, expected, **kwargs):
         try:
-            return subprocess.check_output(
-                cmd, stderr=subprocess.STDOUT, timeout=10, cwd='tests', **kwargs
-            ).decode().strip()
+            res = subprocess.check_output(
+                ['lua', lua + '.lua'],
+                env=dict(
+                    os.environ,
+                    LUA_PATH='../src/?.lua;;'
+                ), stderr=subprocess.STDOUT, timeout=10, cwd='tests',
+                **kwargs
+            )
         except subprocess.SubprocessError as e:
             print(e.output.decode())
-            return e.output.decode().strip()
+            res = e.output
+        res = res.decode()
+        try:
+            output = json.loads(res)
+        except:
+            output = res.strip()
+        self.assertEqual(self.deep_sort(output), expected)
 
     def tearDown(self):
-        if not self.tables:
-            return
-        with r.connect() as c:
-            for table in self.tables:
-                table.delete().run(c)
+        if self.tables:
+            with r.connect() as c:
+                for table in self.tables:
+                    table.delete().run(c)

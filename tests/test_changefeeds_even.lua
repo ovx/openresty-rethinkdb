@@ -1,4 +1,5 @@
-r = require('rethinkdb')
+local r = require('rethinkdb')
+local json = require('json')
 
 r.connect({timeout = 1}, function(err, c)
   r.db('changefeeds'):table('watched'):changes():filter(
@@ -16,14 +17,7 @@ r.connect({timeout = 1}, function(err, c)
         if err then error(err.message) end
         table.insert(res, row.new_val.id)
       end)
-      table.sort(res)
-      local s = "{"
-      local sep = ""
-      for _, e in ipairs(res) do
-        s = s .. sep .. e
-        sep = ", "
-      end
-      print(s .. "}")
+      print(json.encode(res))
     end
   )
 end)

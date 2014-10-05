@@ -3,7 +3,7 @@ import util
 
 class TestConnection(util.LuaTestCase):
     def test_basic(self):
-        self.assertEqual(self.run_lua('test_connection_basic'), 'SUCCESS')
+        self.expect('test_connection_basic', 'SUCCESS')
 
 
 if __name__ == '__main__':
