@@ -17,10 +17,6 @@ dependencies = {
 build = {
   type = 'builtin',
   modules = {
-    ast = 'src/ast.lua',
-    errors = 'src/errors.lua',
-    net = 'src/net.lua',
-    rethinkdb = 'src/rethinkdb.lua',
-    util = 'src/util.lua'
+    rethinkdb = 'src/rethinkdb.lua'
   }
 }

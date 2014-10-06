@@ -42,13 +42,11 @@ def lint(args):
     if not args.f:
         build(args)
 
-    print('linting src:')
+    print('linting rethinkdb.lua')
 
-    returncode = subprocess.call([
-        'luac', 'ast.lua', 'errors.lua', 'net.lua', 'rethinkdb.lua', 'util.lua'
-    ], cwd='src')
+    returncode = subprocess.call(['luac', 'rethinkdb.lua'], cwd='src')
     if returncode:
-        print('`luac ast.lua errors.lua net.lua rethinkdb.lua util.lua` '
+        print('`luac rethinkdb.lua` '
               'returned:', returncode)
         exit(returncode)
 
@@ -61,10 +59,11 @@ def build(args):
 
     import ReQLprotodef as protodef
 
-    print('building templates:')
+    print('building rethinkdb.lua')
 
     class BuildFormat(string.Formatter):
         fspec = re.compile('--\[\[(.+?)\]\]')
+        terms_found = set()
 
         def parse(self, string):
             last = 0
@@ -73,16 +72,12 @@ def build(args):
                 last = match.end()
             yield string[last:], None, None, None
 
-    class ASTChecker(BuildFormat):
-        terms_found = set()
-
-
         def get_field(self, name, args, kwargs):
             if name.startswith('Term.'):
                 self.terms_found.add(name[5:])
             if name.startswith('Class.'):
                 self.terms_found.add(name[6:])
-            return super(ASTChecker, self).get_field(name, args, kwargs)
+            return super(BuildFormat, self).get_field(name, args, kwargs)
 
         def check_unused_args(self, used, args, kwargs):
             expected = {
@@ -102,7 +97,7 @@ def build(args):
                 'bracket': '(...)', 'fun_call': 'do_', 'javascript': 'js',
                 'make_array': '{...}', 'not': 'not_'
             }.get(st, st)
-            return '\'{}\', ReQLOp, {{tt = {}, st = \'{}\'}}'.format(
+            return '\'{}\', {{tt = {}, st = \'{}\'}}'.format(
                 self.get_class_name(name),
                 getattr(protodef.Term.TermType, name),
                 st
@@ -117,29 +112,17 @@ def build(args):
                 return cls
             return self.names.sub(lambda m: m.group(2).upper(), name.lower())
 
-    print('building ast.lua')
-
-    with open('src/ast.pre.lua') as io:
-        s = io.read()
-    s = ASTChecker().vformat(s, (), {
-        'Class': LuaClassBuilder(),
-        'Term': protodef.Term.TermType
-    })
-    with open('src/ast.lua', 'w') as io:
-        io.write(s)
-
-    print('building net.lua')
-
-    with open('src/net.pre.lua') as io:
+    with open('src/rethinkdb.pre.lua') as io:
         s = io.read()
     s = BuildFormat().vformat(s, (), {
+        'Class': LuaClassBuilder(),
         'Protocol': protodef.VersionDummy.Protocol,
         'Query': protodef.Query.QueryType,
         'Response': protodef.Response.ResponseType,
         'Term': protodef.Term.TermType,
         'Version': protodef.VersionDummy.Version
     })
-    with open('src/net.lua', 'w') as io:
+    with open('src/rethinkdb.lua', 'w') as io:
         io.write(s)
 
     print('building successful')

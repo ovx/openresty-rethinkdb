@@ -246,7 +246,7 @@ ReQLOp = class(
       optargs = optargs or {}
       self.args = {...}
       local first = self.args[1]
-      if self.tt == 69 then
+      if self.tt == --[[Term.FUNC]] then
         local args = {}
         local arg_nums = {}
         for i=1, optargs.arity or 1 do
@@ -260,16 +260,16 @@ ReQLOp = class(
         end
         optargs.arity = nil
         self.args = {MakeArray({}, arg_nums), r.expr(first)}
-      elseif self.tt == 155 then
+      elseif self.tt == --[[Term.BINARY]] then
         if is_instance(ReQLOp, first) then
         elseif type(first) == 'string' then
           self.base64_data = mime.b64(first)
         else
           error('Parameter to `r.binary` must be a string or ReQL query.')
         end
-      elseif self.tt == 2 then
+      elseif self.tt == --[[Term.MAKE_ARRAY]] then
         self.args = first
-      elseif self.tt == 3 then
+      elseif self.tt == --[[Term.MAKE_OBJ]] then
       else
         for i, a in ipairs(self.args) do
           self.args[i] = r.expr(a)
@@ -278,13 +278,13 @@ ReQLOp = class(
       self.optargs = optargs
     end,
     build = function(self)
-      if self.tt == 155 and (not self.args[1]) then
+      if self.tt == --[[Term.BINARY]] and (not self.args[1]) then
         return {
           ['$reql_type$'] = 'BINARY',
           data = self.base64_data
         }
       end
-      if self.tt == 2 then
+      if self.tt == --[[Term.MAKE_ARRAY]] then
         local args = {}
         for i, arg in ipairs(self.args) do
           if is_instance(ReQLOp, arg) then
@@ -295,7 +295,7 @@ ReQLOp = class(
         end
         return {self.tt, args}
       end
-      if self.tt == 3 then
+      if self.tt == --[[Term.MAKE_OBJ]] then
         local res = {}
         for key, val in pairs(self.optargs) do
           res[key] = val:build()
@@ -317,24 +317,24 @@ ReQLOp = class(
       return res
     end,
     compose = function(self, args, optargs)
-      if self.tt == 2 then
+      if self.tt == --[[Term.MAKE_ARRAY]] then
         return {
           '{',
           intsp(args),
           '}'
         }
       end
-      if self.tt == 3 then
+      if self.tt == --[[Term.MAKE_OBJ]] then
         return kved(optargs)
       end
-      if self.tt == 10 then
+      if self.tt == --[[Term.VAR]] then
         if not args then return {} end
         for i, v in ipairs(args) do
           args[i] = 'var_' .. v
         end
         return args
       end
-      if self.tt == 155 then
+      if self.tt == --[[Term.BINARY]] then
         if self.args[1] then
           return {
             'r.binary(',
@@ -345,12 +345,12 @@ ReQLOp = class(
           return 'r.binary(<data>)'
         end
       end
-      if self.tt == 13 then
+      if self.tt == --[[Term.IMPLICIT_VAR]] then
         return {
           'r.row'
         }
       end
-      if self.tt == 15 then
+      if self.tt == --[[Term.TABLE]] then
         if is_instance(Db, self.args[1]) then
           return {
             args[1],
@@ -372,7 +372,7 @@ ReQLOp = class(
           }
         end
       end
-      if self.tt == 170 then
+      if self.tt == --[[Term.BRACKET]] then
         return {
           args[1],
           '(',
@@ -380,7 +380,7 @@ ReQLOp = class(
           ')'
         }
       end
-      if self.tt == 69 then
+      if self.tt == --[[Term.FUNC]] then
         if ivar_scan(self.args[2]) then
           return {
             args[2]
@@ -402,7 +402,7 @@ ReQLOp = class(
           ' end'
         }
       end
-      if self.tt == 64 then
+      if self.tt == --[[Term.FUN_CALL]] then
         if #args > 2 then
           return {
             'r.do_(',
@@ -953,149 +953,149 @@ DatumTerm = ast(
   }
 )
 
-MakeArray = ast('MakeArray', {tt = 2, st = '{...}'})
-MakeObj = ast('MakeObj', {tt = 3, st = 'make_obj'})
-Var = ast('Var', {tt = 10, st = 'var'})
-JavaScript = ast('JavaScript', {tt = 11, st = 'js'})
-Http = ast('Http', {tt = 153, st = 'http'})
-Json = ast('Json', {tt = 98, st = 'json'})
-Binary = ast('Binary', {tt = 155, st = 'binary'})
-Args = ast('Args', {tt = 154, st = 'args'})
-Error = ast('Error', {tt = 12, st = 'error'})
-Random = ast('Random', {tt = 151, st = 'random'})
-Db = ast('Db', {tt = 14, st = 'db'})
-Table = ast('Table', {tt = 15, st = 'table'})
-Get = ast('Get', {tt = 16, st = 'get'})
-GetAll = ast('GetAll', {tt = 78, st = 'get_all'})
-Eq = ast('Eq', {tt = 17, st = 'eq'})
-Ne = ast('Ne', {tt = 18, st = 'ne'})
-Lt = ast('Lt', {tt = 19, st = 'lt'})
-Le = ast('Le', {tt = 20, st = 'le'})
-Gt = ast('Gt', {tt = 21, st = 'gt'})
-Ge = ast('Ge', {tt = 22, st = 'ge'})
-Not = ast('Not', {tt = 23, st = 'not_'})
-Add = ast('Add', {tt = 24, st = 'add'})
-Sub = ast('Sub', {tt = 25, st = 'sub'})
-Mul = ast('Mul', {tt = 26, st = 'mul'})
-Div = ast('Div', {tt = 27, st = 'div'})
-Mod = ast('Mod', {tt = 28, st = 'mod'})
-Append = ast('Append', {tt = 29, st = 'append'})
-Prepend = ast('Prepend', {tt = 80, st = 'prepend'})
-Difference = ast('Difference', {tt = 95, st = 'difference'})
-SetInsert = ast('SetInsert', {tt = 88, st = 'set_insert'})
-SetUnion = ast('SetUnion', {tt = 90, st = 'set_union'})
-SetIntersection = ast('SetIntersection', {tt = 89, st = 'set_intersection'})
-SetDifference = ast('SetDifference', {tt = 91, st = 'set_difference'})
-Slice = ast('Slice', {tt = 30, st = 'slice'})
-Skip = ast('Skip', {tt = 70, st = 'skip'})
-Limit = ast('Limit', {tt = 71, st = 'limit'})
-GetField = ast('GetField', {tt = 31, st = 'get_field'})
-Bracket = ast('Bracket', {tt = 170, st = '(...)'})
-Contains = ast('Contains', {tt = 93, st = 'contains'})
-InsertAt = ast('InsertAt', {tt = 82, st = 'insert_at'})
-SpliceAt = ast('SpliceAt', {tt = 85, st = 'splice_at'})
-DeleteAt = ast('DeleteAt', {tt = 83, st = 'delete_at'})
-ChangeAt = ast('ChangeAt', {tt = 84, st = 'change_at'})
-Contains = ast('Contains', {tt = 93, st = 'contains'})
-HasFields = ast('HasFields', {tt = 32, st = 'has_fields'})
-WithFields = ast('WithFields', {tt = 96, st = 'with_fields'})
-Keys = ast('Keys', {tt = 94, st = 'keys'})
-Changes = ast('Changes', {tt = 152, st = 'changes'})
-Object = ast('Object', {tt = 143, st = 'object'})
-Pluck = ast('Pluck', {tt = 33, st = 'pluck'})
-IndexesOf = ast('IndexesOf', {tt = 87, st = 'indexes_of'})
-Without = ast('Without', {tt = 34, st = 'without'})
-Merge = ast('Merge', {tt = 35, st = 'merge'})
-Between = ast('Between', {tt = 36, st = 'between'})
-Reduce = ast('Reduce', {tt = 37, st = 'reduce'})
-Map = ast('Map', {tt = 38, st = 'map'})
-Filter = ast('Filter', {tt = 39, st = 'filter'})
-ConcatMap = ast('ConcatMap', {tt = 40, st = 'concat_map'})
-OrderBy = ast('OrderBy', {tt = 41, st = 'order_by'})
-Distinct = ast('Distinct', {tt = 42, st = 'distinct'})
-Count = ast('Count', {tt = 43, st = 'count'})
-Union = ast('Union', {tt = 44, st = 'union'})
-Nth = ast('Nth', {tt = 45, st = 'nth'})
-ToJsonString = ast('ToJsonString', {tt = 172, st = 'to_json_string'})
-Match = ast('Match', {tt = 97, st = 'match'})
-Split = ast('Split', {tt = 149, st = 'split'})
-Upcase = ast('Upcase', {tt = 141, st = 'upcase'})
-Downcase = ast('Downcase', {tt = 142, st = 'downcase'})
-IsEmpty = ast('IsEmpty', {tt = 86, st = 'is_empty'})
-Group = ast('Group', {tt = 144, st = 'group'})
-Sum = ast('Sum', {tt = 145, st = 'sum'})
-Avg = ast('Avg', {tt = 146, st = 'avg'})
-Min = ast('Min', {tt = 147, st = 'min'})
-Max = ast('Max', {tt = 148, st = 'max'})
-InnerJoin = ast('InnerJoin', {tt = 48, st = 'inner_join'})
-OuterJoin = ast('OuterJoin', {tt = 49, st = 'outer_join'})
-EqJoin = ast('EqJoin', {tt = 50, st = 'eq_join'})
-Zip = ast('Zip', {tt = 72, st = 'zip'})
-CoerceTo = ast('CoerceTo', {tt = 51, st = 'coerce_to'})
-Ungroup = ast('Ungroup', {tt = 150, st = 'ungroup'})
-TypeOf = ast('TypeOf', {tt = 52, st = 'type_of'})
-Info = ast('Info', {tt = 79, st = 'info'})
-Sample = ast('Sample', {tt = 81, st = 'sample'})
-Update = ast('Update', {tt = 53, st = 'update'})
-Delete = ast('Delete', {tt = 54, st = 'delete'})
-Replace = ast('Replace', {tt = 55, st = 'replace'})
-Insert = ast('Insert', {tt = 56, st = 'insert'})
-DbCreate = ast('DbCreate', {tt = 57, st = 'db_create'})
-DbDrop = ast('DbDrop', {tt = 58, st = 'db_drop'})
-DbList = ast('DbList', {tt = 59, st = 'db_list'})
-TableCreate = ast('TableCreate', {tt = 60, st = 'table_create'})
-TableDrop = ast('TableDrop', {tt = 61, st = 'table_drop'})
-TableList = ast('TableList', {tt = 62, st = 'table_list'})
-IndexCreate = ast('IndexCreate', {tt = 75, st = 'index_create'})
-IndexDrop = ast('IndexDrop', {tt = 76, st = 'index_drop'})
-IndexRename = ast('IndexRename', {tt = 156, st = 'index_rename'})
-IndexList = ast('IndexList', {tt = 77, st = 'index_list'})
-IndexStatus = ast('IndexStatus', {tt = 139, st = 'index_status'})
-IndexWait = ast('IndexWait', {tt = 140, st = 'index_wait'})
-Sync = ast('Sync', {tt = 138, st = 'sync'})
-FunCall = ast('FunCall', {tt = 64, st = 'do_'})
-Default = ast('Default', {tt = 92, st = 'default'})
-Branch = ast('Branch', {tt = 65, st = 'branch'})
-Any = ast('Any', {tt = 66, st = 'any'})
-All = ast('All', {tt = 67, st = 'all'})
-ForEach = ast('ForEach', {tt = 68, st = 'for_each'})
-Func = ast('Func', {tt = 69, st = 'func'})
-Asc = ast('Asc', {tt = 73, st = 'asc'})
-Desc = ast('Desc', {tt = 74, st = 'desc'})
-Literal = ast('Literal', {tt = 137, st = 'literal'})
-ISO8601 = ast('ISO8601', {tt = 99, st = 'iso8601'})
-ToISO8601 = ast('ToISO8601', {tt = 100, st = 'to_iso8601'})
-EpochTime = ast('EpochTime', {tt = 101, st = 'epoch_time'})
-ToEpochTime = ast('ToEpochTime', {tt = 102, st = 'to_epoch_time'})
-Now = ast('Now', {tt = 103, st = 'now'})
-InTimezone = ast('InTimezone', {tt = 104, st = 'in_timezone'})
-During = ast('During', {tt = 105, st = 'during'})
-Date = ast('Date', {tt = 106, st = 'date'})
-TimeOfDay = ast('TimeOfDay', {tt = 126, st = 'time_of_day'})
-Timezone = ast('Timezone', {tt = 127, st = 'timezone'})
-Year = ast('Year', {tt = 128, st = 'year'})
-Month = ast('Month', {tt = 129, st = 'month'})
-Day = ast('Day', {tt = 130, st = 'day'})
-DayOfWeek = ast('DayOfWeek', {tt = 131, st = 'day_of_week'})
-DayOfYear = ast('DayOfYear', {tt = 132, st = 'day_of_year'})
-Hours = ast('Hours', {tt = 133, st = 'hours'})
-Minutes = ast('Minutes', {tt = 134, st = 'minutes'})
-Seconds = ast('Seconds', {tt = 135, st = 'seconds'})
-Time = ast('Time', {tt = 136, st = 'time'})
-GeoJson = ast('GeoJson', {tt = 157, st = 'geo_json'})
-ToGeoJson = ast('ToGeoJson', {tt = 158, st = 'to_geo_json'})
-Point = ast('Point', {tt = 159, st = 'point'})
-Line = ast('Line', {tt = 160, st = 'line'})
-Polygon = ast('Polygon', {tt = 161, st = 'polygon'})
-Distance = ast('Distance', {tt = 162, st = 'distance'})
-Intersects = ast('Intersects', {tt = 163, st = 'intersects'})
-Includes = ast('Includes', {tt = 164, st = 'includes'})
-Circle = ast('Circle', {tt = 165, st = 'circle'})
-GetIntersecting = ast('GetIntersecting', {tt = 166, st = 'get_intersecting'})
-GetNearest = ast('GetNearest', {tt = 168, st = 'get_nearest'})
-Fill = ast('Fill', {tt = 167, st = 'fill'})
-PolygonSub = ast('PolygonSub', {tt = 171, st = 'polygon_sub'})
-UUID = ast('UUID', {tt = 169, st = 'uuid'})
+MakeArray = ast(--[[Class.MAKE_ARRAY]])
+MakeObj = ast(--[[Class.MAKE_OBJ]])
+Var = ast(--[[Class.VAR]])
+JavaScript = ast(--[[Class.JAVASCRIPT]])
+Http = ast(--[[Class.HTTP]])
+Json = ast(--[[Class.JSON]])
+Binary = ast(--[[Class.BINARY]])
+Args = ast(--[[Class.ARGS]])
+Error = ast(--[[Class.ERROR]])
+Random = ast(--[[Class.RANDOM]])
+Db = ast(--[[Class.DB]])
+Table = ast(--[[Class.TABLE]])
+Get = ast(--[[Class.GET]])
+GetAll = ast(--[[Class.GET_ALL]])
+Eq = ast(--[[Class.EQ]])
+Ne = ast(--[[Class.NE]])
+Lt = ast(--[[Class.LT]])
+Le = ast(--[[Class.LE]])
+Gt = ast(--[[Class.GT]])
+Ge = ast(--[[Class.GE]])
+Not = ast(--[[Class.NOT]])
+Add = ast(--[[Class.ADD]])
+Sub = ast(--[[Class.SUB]])
+Mul = ast(--[[Class.MUL]])
+Div = ast(--[[Class.DIV]])
+Mod = ast(--[[Class.MOD]])
+Append = ast(--[[Class.APPEND]])
+Prepend = ast(--[[Class.PREPEND]])
+Difference = ast(--[[Class.DIFFERENCE]])
+SetInsert = ast(--[[Class.SET_INSERT]])
+SetUnion = ast(--[[Class.SET_UNION]])
+SetIntersection = ast(--[[Class.SET_INTERSECTION]])
+SetDifference = ast(--[[Class.SET_DIFFERENCE]])
+Slice = ast(--[[Class.SLICE]])
+Skip = ast(--[[Class.SKIP]])
+Limit = ast(--[[Class.LIMIT]])
+GetField = ast(--[[Class.GET_FIELD]])
+Bracket = ast(--[[Class.BRACKET]])
+Contains = ast(--[[Class.CONTAINS]])
+InsertAt = ast(--[[Class.INSERT_AT]])
+SpliceAt = ast(--[[Class.SPLICE_AT]])
+DeleteAt = ast(--[[Class.DELETE_AT]])
+ChangeAt = ast(--[[Class.CHANGE_AT]])
+Contains = ast(--[[Class.CONTAINS]])
+HasFields = ast(--[[Class.HAS_FIELDS]])
+WithFields = ast(--[[Class.WITH_FIELDS]])
+Keys = ast(--[[Class.KEYS]])
+Changes = ast(--[[Class.CHANGES]])
+Object = ast(--[[Class.OBJECT]])
+Pluck = ast(--[[Class.PLUCK]])
+IndexesOf = ast(--[[Class.INDEXES_OF]])
+Without = ast(--[[Class.WITHOUT]])
+Merge = ast(--[[Class.MERGE]])
+Between = ast(--[[Class.BETWEEN]])
+Reduce = ast(--[[Class.REDUCE]])
+Map = ast(--[[Class.MAP]])
+Filter = ast(--[[Class.FILTER]])
+ConcatMap = ast(--[[Class.CONCAT_MAP]])
+OrderBy = ast(--[[Class.ORDER_BY]])
+Distinct = ast(--[[Class.DISTINCT]])
+Count = ast(--[[Class.COUNT]])
+Union = ast(--[[Class.UNION]])
+Nth = ast(--[[Class.NTH]])
+ToJsonString = ast(--[[Class.TO_JSON_STRING]])
+Match = ast(--[[Class.MATCH]])
+Split = ast(--[[Class.SPLIT]])
+Upcase = ast(--[[Class.UPCASE]])
+Downcase = ast(--[[Class.DOWNCASE]])
+IsEmpty = ast(--[[Class.IS_EMPTY]])
+Group = ast(--[[Class.GROUP]])
+Sum = ast(--[[Class.SUM]])
+Avg = ast(--[[Class.AVG]])
+Min = ast(--[[Class.MIN]])
+Max = ast(--[[Class.MAX]])
+InnerJoin = ast(--[[Class.INNER_JOIN]])
+OuterJoin = ast(--[[Class.OUTER_JOIN]])
+EqJoin = ast(--[[Class.EQ_JOIN]])
+Zip = ast(--[[Class.ZIP]])
+CoerceTo = ast(--[[Class.COERCE_TO]])
+Ungroup = ast(--[[Class.UNGROUP]])
+TypeOf = ast(--[[Class.TYPE_OF]])
+Info = ast(--[[Class.INFO]])
+Sample = ast(--[[Class.SAMPLE]])
+Update = ast(--[[Class.UPDATE]])
+Delete = ast(--[[Class.DELETE]])
+Replace = ast(--[[Class.REPLACE]])
+Insert = ast(--[[Class.INSERT]])
+DbCreate = ast(--[[Class.DB_CREATE]])
+DbDrop = ast(--[[Class.DB_DROP]])
+DbList = ast(--[[Class.DB_LIST]])
+TableCreate = ast(--[[Class.TABLE_CREATE]])
+TableDrop = ast(--[[Class.TABLE_DROP]])
+TableList = ast(--[[Class.TABLE_LIST]])
+IndexCreate = ast(--[[Class.INDEX_CREATE]])
+IndexDrop = ast(--[[Class.INDEX_DROP]])
+IndexRename = ast(--[[Class.INDEX_RENAME]])
+IndexList = ast(--[[Class.INDEX_LIST]])
+IndexStatus = ast(--[[Class.INDEX_STATUS]])
+IndexWait = ast(--[[Class.INDEX_WAIT]])
+Sync = ast(--[[Class.SYNC]])
+FunCall = ast(--[[Class.FUN_CALL]])
+Default = ast(--[[Class.DEFAULT]])
+Branch = ast(--[[Class.BRANCH]])
+Any = ast(--[[Class.ANY]])
+All = ast(--[[Class.ALL]])
+ForEach = ast(--[[Class.FOR_EACH]])
+Func = ast(--[[Class.FUNC]])
+Asc = ast(--[[Class.ASC]])
+Desc = ast(--[[Class.DESC]])
+Literal = ast(--[[Class.LITERAL]])
+ISO8601 = ast(--[[Class.ISO8601]])
+ToISO8601 = ast(--[[Class.TO_ISO8601]])
+EpochTime = ast(--[[Class.EPOCH_TIME]])
+ToEpochTime = ast(--[[Class.TO_EPOCH_TIME]])
+Now = ast(--[[Class.NOW]])
+InTimezone = ast(--[[Class.IN_TIMEZONE]])
+During = ast(--[[Class.DURING]])
+Date = ast(--[[Class.DATE]])
+TimeOfDay = ast(--[[Class.TIME_OF_DAY]])
+Timezone = ast(--[[Class.TIMEZONE]])
+Year = ast(--[[Class.YEAR]])
+Month = ast(--[[Class.MONTH]])
+Day = ast(--[[Class.DAY]])
+DayOfWeek = ast(--[[Class.DAY_OF_WEEK]])
+DayOfYear = ast(--[[Class.DAY_OF_YEAR]])
+Hours = ast(--[[Class.HOURS]])
+Minutes = ast(--[[Class.MINUTES]])
+Seconds = ast(--[[Class.SECONDS]])
+Time = ast(--[[Class.TIME]])
+GeoJson = ast(--[[Class.GEO_JSON]])
+ToGeoJson = ast(--[[Class.TO_GEO_JSON]])
+Point = ast(--[[Class.POINT]])
+Line = ast(--[[Class.LINE]])
+Polygon = ast(--[[Class.POLYGON]])
+Distance = ast(--[[Class.DISTANCE]])
+Intersects = ast(--[[Class.INTERSECTS]])
+Includes = ast(--[[Class.INCLUDES]])
+Circle = ast(--[[Class.CIRCLE]])
+GetIntersecting = ast(--[[Class.GET_INTERSECTING]])
+GetNearest = ast(--[[Class.GET_NEAREST]])
+Fill = ast(--[[Class.FILL]])
+PolygonSub = ast(--[[Class.POLYGON_SUB]])
+UUID = ast(--[[Class.UUID]])
 
 -- All top level exported functions
 
@@ -1266,26 +1266,26 @@ function r.time(...)
   return Time({}, ...)
 end
 
-r.monday = ast('Monday', {tt = 107, st = 'monday'})()
-r.tuesday = ast('Tuesday', {tt = 108, st = 'tuesday'})()
-r.wednesday = ast('Wednesday', {tt = 109, st = 'wednesday'})()
-r.thursday = ast('Thursday', {tt = 110, st = 'thursday'})()
-r.friday = ast('Friday', {tt = 111, st = 'friday'})()
-r.saturday = ast('Saturday', {tt = 112, st = 'saturday'})()
-r.sunday = ast('Sunday', {tt = 113, st = 'sunday'})()
+r.monday = ast(--[[Class.MONDAY]])()
+r.tuesday = ast(--[[Class.TUESDAY]])()
+r.wednesday = ast(--[[Class.WEDNESDAY]])()
+r.thursday = ast(--[[Class.THURSDAY]])()
+r.friday = ast(--[[Class.FRIDAY]])()
+r.saturday = ast(--[[Class.SATURDAY]])()
+r.sunday = ast(--[[Class.SUNDAY]])()
 
-r.january = ast('January', {tt = 114, st = 'january'})()
-r.february = ast('February', {tt = 115, st = 'february'})()
-r.march = ast('March', {tt = 116, st = 'march'})()
-r.april = ast('April', {tt = 117, st = 'april'})()
-r.may = ast('May', {tt = 118, st = 'may'})()
-r.june = ast('June', {tt = 119, st = 'june'})()
-r.july = ast('July', {tt = 120, st = 'july'})()
-r.august = ast('August', {tt = 121, st = 'august'})()
-r.september = ast('September', {tt = 122, st = 'september'})()
-r.october = ast('October', {tt = 123, st = 'october'})()
-r.november = ast('November', {tt = 124, st = 'november'})()
-r.december = ast('December', {tt = 125, st = 'december'})()
+r.january = ast(--[[Class.JANUARY]])()
+r.february = ast(--[[Class.FEBRUARY]])()
+r.march = ast(--[[Class.MARCH]])()
+r.april = ast(--[[Class.APRIL]])()
+r.may = ast(--[[Class.MAY]])()
+r.june = ast(--[[Class.JUNE]])()
+r.july = ast(--[[Class.JULY]])()
+r.august = ast(--[[Class.AUGUST]])()
+r.september = ast(--[[Class.SEPTEMBER]])()
+r.october = ast(--[[Class.OCTOBER]])()
+r.november = ast(--[[Class.NOVEMBER]])()
+r.december = ast(--[[Class.DECEMBER]])()
 
 function r.object(...)
   return Object({}, ...)
@@ -1427,10 +1427,10 @@ Cursor = class(
     _add_response = function(self, response)
       local t = response.t
       if not self._type then self._type = t end
-      if response.r[1] or t == 4 then
+      if response.r[1] or t == --[[Response.WAIT_COMPLETE]] then
         table.insert(self._responses, response)
       end
-      if t ~= 3 and t ~= 5 then
+      if t ~= --[[Response.SUCCESS_PARTIAL]] and t ~= --[[Response.SUCCESS_FEED]] then
         -- We got an error, SUCCESS_SEQUENCE, WAIT_COMPLETE, or a SUCCESS_ATOM
         self._end_flag = true
         self._conn:_del_query(self._token)
@@ -1459,7 +1459,7 @@ Cursor = class(
       -- Behavior varies considerably based on response type
       -- Error responses are not discarded, and the error will be sent to all future callbacks
       local t = response.t
-      if t == 1 or t == 3 or t == 5 or t == 2 then
+      if t == --[[Response.SUCCESS_ATOM]] or t == --[[Response.SUCCESS_PARTIAL]] or t == --[[Response.SUCCESS_FEED]] or t == --[[Response.SUCCESS_SEQUENCE]] then
         local row = recursively_convert_pseudotype(response.r[self._response_index], self._opts)
         self._response_index = self._response_index + 1
 
@@ -1469,13 +1469,13 @@ Cursor = class(
           self._response_index = 1
         end
         return cb(nil, row)
-      elseif t == 17 then
+      elseif t == --[[Response.COMPILE_ERROR]] then
         return cb(ReQLCompileError(response.r[1], self._root, response.b))
-      elseif t == 16 then
+      elseif t == --[[Response.CLIENT_ERROR]] then
         return cb(ReQLClientError(response.r[1], self._root, response.b))
-      elseif t == 18 then
+      elseif t == --[[Response.RUNTIME_ERROR]] then
         return cb(ReQLRuntimeError(response.r[1], self._root, response.b))
-      elseif t == 4 then
+      elseif t == --[[Response.WAIT_COMPLETE]] then
         return cb(nil, nil)
       end
       return cb(ReQLDriverError('Unknown response type ' .. t))
@@ -1510,7 +1510,7 @@ Cursor = class(
     end,
     to_array = function(self, cb)
       if not self._type then self:_prompt_cont() end
-      if self._type == 5 then
+      if self._type == --[[Response.SUCCESS_FEED]] then
         return cb(ReQLDriverError('`to_array` is not available for feeds.'))
       end
       local arr = {}
@@ -1563,10 +1563,10 @@ Connection = class(
       if status then
         -- Initialize connection with magic number to validate version
         self.raw_socket:send(
-          int_to_bytes(1601562686, 4) ..
+          int_to_bytes(--[[Version.V0_3]], 4) ..
           int_to_bytes(self.auth_key:len(), 4) ..
           self.auth_key ..
-          int_to_bytes(2120839367, 4)
+          int_to_bytes(--[[Protocol.JSON]], 4)
         )
 
         -- Now we have to wait for a response from the server
@@ -1614,7 +1614,7 @@ Connection = class(
         if (not buf) and err then
           return self:_process_response(
             {
-              t = 16,
+              t = --[[Response.CLIENT_ERROR]],
               r = {'connection returned: ' .. err},
               b = {}
             },
@@ -1720,7 +1720,7 @@ Connection = class(
       self.outstanding_callbacks[token] = {cursor = cursor}
 
       -- Construct query
-      self:_write_query(token, '[' .. 4 .. ']')
+      self:_write_query(token, '[' .. --[[Query.NOREPLY_WAIT]] .. ']')
 
       return callback(nil, cursor)
     end,
@@ -1786,7 +1786,7 @@ Connection = class(
       end
 
       -- Construct query
-      local query = {1, term:build(), opts}
+      local query = {--[[Query.START]], term:build(), opts}
 
       local cursor = Cursor(self, token, opts, term)
 
@@ -1800,10 +1800,10 @@ Connection = class(
       end
     end,
     _continue_query = function(self, token)
-      return self:_write_query(token, '[' .. 2 .. ']')
+      return self:_write_query(token, '[' .. --[[Query.CONTINUE]] .. ']')
     end,
     _end_query = function(self, token)
-      return self:_write_query(token, '[' .. 3 .. ']')
+      return self:_write_query(token, '[' .. --[[Query.STOP]] .. ']')
     end,
     _send_query = function(self, token, query)
       return self:_write_query(token, json.encode(query))
