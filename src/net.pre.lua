@@ -7,7 +7,6 @@ local util = require('./util')
 local r = require('./ast')
 
 -- Import some names to this namespace for convienience
-local is_instance = util.is_instance
 local class = util.class
 
 local Connection, Cursor
@@ -505,19 +504,12 @@ Connection = class(
   }
 )
 
-return {
-  is_connection = function(connection)
-    return is_instance(Connection, connection)
-  end,
-
-  -- The main function of this module
-  connect = function(host_or_callback, callback)
-    local host = {}
-    if type(host_or_callback) == 'function' then
-      callback = host_or_callback
-    else
-      host = host_or_callback
-    end
-    return Connection(host, callback)
+return function(host_or_callback, callback)
+  local host = {}
+  if type(host_or_callback) == 'function' then
+    callback = host_or_callback
+  else
+    host = host_or_callback
   end
-}
+  return Connection(host, callback)
+end

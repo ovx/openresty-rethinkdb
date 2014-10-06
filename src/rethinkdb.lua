@@ -1,6 +1,6 @@
 return (function(rethinkdb)
   -- Add connect from net module
-  rethinkdb.connect = require('./net').connect
+  rethinkdb.connect = require('./net')
 
   -- Export ReQL Errors
   rethinkdb.error = require('./errors')
