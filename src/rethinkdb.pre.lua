@@ -33,7 +33,7 @@ local GetIntersecting, GetNearest, Fill, UUID, Monday, Tuesday, Wednesday
 local Thursday, Friday, Saturday, Sunday, January, February, March, April, May
 local June, July, August, September, October, November, December, ToJsonString
 local ReQLDriverError, ReQLServerError, ReQLRuntimeError, ReQLCompileError
-local ReQLClientError, ReQLQueryPrinter
+local ReQLClientError, ReQLQueryPrinter, ReQLError
 
 function class(name, parent, base)
   local index, init
@@ -146,8 +146,8 @@ function should_wrap(arg)
   return is_instance(DatumTerm, arg) or is_instance(MakeArray, arg) or is_instance(MakeObj, arg)
 end
 
-ReQLDriverError = class(
-  'ReQLDriverError',
+ReQLError = class(
+  'ReQLError',
   function(self, msg, term, frames)
     self.msg = msg
     self.message = self.__class.__name .. ' ' .. msg
@@ -157,7 +157,9 @@ ReQLDriverError = class(
   end
 )
 
-ReQLServerError = class('ReQLServerError', ReQLDriverError, {})
+ReQLDriverError = class('ReQLDriverError', ReQLError, {})
+
+ReQLServerError = class('ReQLServerError', ReQLError, {})
 
 ReQLRuntimeError = class('ReQLRuntimeError', ReQLServerError, {})
 ReQLCompileError = class('ReQLCompileError', ReQLServerError, {})
@@ -1825,7 +1827,9 @@ end
 
 -- Export ReQL Errors
 r.error = {
+  ReQLError = ReQLError,
   ReQLDriverError = ReQLDriverError,
+  ReQLServerError = ReQLServerError,
   ReQLRuntimeError = ReQLRuntimeError,
   ReQLCompileError = ReQLCompileError,
   ReQLClientError = ReQLClientError
