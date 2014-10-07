@@ -1532,15 +1532,25 @@ Cursor = class(
 Connection = class(
   'Connection',
   {
-    __init = function(self, host, callback)
-      if not host then
-        host = {}
+    __init = function(self, host_or_callback, callback)
+      local host = {}
+      if type(host_or_callback) == 'function' then
+        callback = host_or_callback
       else
-        if type(host) == 'string' then
-          host = {
-            host = host
-          }
+        host = host_or_callback
+      end
+      if type(host) == 'string' then
+        host = {
+          host = host
+        }
+      end
+      function cb(err, conn)
+        if callback then
+          local res = callback(err, conn)
+          conn:close({noreply_wait = false})
+          return res
         end
+        return conn, err
       end
       self.host = host.host or self.DEFAULT_HOST
       self.port = host.port or self.DEFAULT_PORT
@@ -1561,6 +1571,7 @@ Connection = class(
       self.raw_socket:settimeout(self.timeout)
       local status, err = self.raw_socket:connect(self.host, self.port)
       if status then
+        local buf, err, partial
         -- Initialize connection with magic number to validate version
         self.raw_socket:send(
           int_to_bytes(--[[Version.V0_3]], 4) ..
@@ -1575,7 +1586,7 @@ Connection = class(
           buf, err, partial = self.raw_socket:receive(8)
           buf = buf or partial
           if not buf then
-            return callback(ReQLDriverError('Server dropped connection with message: ' .. err))
+            return cb(ReQLDriverError('Server dropped connection with message:  \'' .. status_str .. '\'\n' .. err))
           end
           self.buffer = self.buffer .. buf
           i, j = buf:find('\0')
@@ -1585,17 +1596,13 @@ Connection = class(
             if status_str == 'SUCCESS' then
               -- We're good, finish setting up the connection
               self.open = true
-              local res = callback(nil, self)
-              self:close({noreply_wait = false})
-              return res
-            else
-              return callback(ReQLDriverError('Server dropped connection with message: \'' .. status_str .. '\''))
+              return cb(nil, self)
             end
+            return cb(ReQLDriverError('Server dropped connection with message: \'' .. status_str .. '\''))
           end
         end
-      else
-        return callback(ReQLDriverError('Could not connect to ' .. self.host .. ':' .. self.port .. '.\n' .. err))
       end
+      return cb(ReQLDriverError('Could not connect to ' .. self.host .. ':' .. self.port .. '.\n' .. err))
     end,
     DEFAULT_HOST = 'localhost',
     DEFAULT_PORT = 28015,
@@ -1812,14 +1819,8 @@ Connection = class(
 )
 
 -- Add connect
-r.connect = function(host_or_callback, callback)
-  local host = {}
-  if type(host_or_callback) == 'function' then
-    callback = host_or_callback
-  else
-    host = host_or_callback
-  end
-  return Connection(host, callback)
+r.connect = function(...)
+  return Connection(...)
 end
 
 -- Export ReQL Errors
