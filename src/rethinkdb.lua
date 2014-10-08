@@ -2,14 +2,9 @@ local json = require('json')
 local mime = require('mime')
 local socket = require('socket')
 
--- r is both the main export object for the module
--- and a function that shortcuts `r.expr`.
+-- r is both the main export table for the module
+-- and a function that wraps a native Lua value in an ReQL datum
 local r = {}
-setmetatable(r, {
-  __call = function(cls, ...)
-    return r.expr(...)
-  end
-})
 
 local Connection, Cursor
 local DatumTerm, ReQLOp, MakeArray, MakeObj, Var, PolygonSub
@@ -34,6 +29,38 @@ local Thursday, Friday, Saturday, Sunday, January, February, March, April, May
 local June, July, August, September, October, November, December, ToJsonString
 local ReQLDriverError, ReQLServerError, ReQLRuntimeError, ReQLCompileError
 local ReQLClientError, ReQLQueryPrinter, ReQLError
+
+setmetatable(r, {
+  __call = function(cls, val, nesting_depth)
+    if nesting_depth == nil then
+      nesting_depth = 20
+    end
+    if type(nesting_depth) ~= 'number' then
+      error('Second argument to `r(val, nesting_depth)` must be a number.')
+    end
+    if nesting_depth <= 0 then
+      error('Nesting depth limit exceeded')
+    end
+    if is_instance(val, ReQLOp) then
+      return val
+    end
+    if type(val) == 'function' then
+      return Func({}, val)
+    end
+    if type(val) == 'table' then
+      local array = true
+      for k, v in pairs(val) do
+        if type(k) ~= 'number' then array = false end
+        val[k] = r(v, nesting_depth - 1)
+      end
+      if array then
+        return MakeArray({}, unpack(val))
+      end
+      return MakeObj(val)
+    end
+    return DatumTerm(val)
+  end
+})
 
 function class(name, parent, base)
   local index, init
@@ -1101,36 +1128,6 @@ UUID = ast('UUID', {tt = 169, st = 'uuid'})
 
 -- All top level exported functions
 
--- Wrap a native Lua value in an ReQL datum
-function r.expr(val, nesting_depth)
-  if nesting_depth == nil then
-    nesting_depth = 20
-  end
-  if nesting_depth <= 0 then
-    error(ReQLDriverError('Nesting depth limit exceeded'))
-  end
-  if type(nesting_depth) ~= 'number' then
-    error(ReQLDriverError('Second argument to `r.expr` must be a number or nil.'))
-  end
-  if is_instance(ReQLOp, val) then
-    return val
-  end
-  if type(val) == 'function' then
-    return Func({}, val)
-  end
-  if type(val) == 'table' then
-    local array = true
-    for k, v in pairs(val) do
-      if type(k) ~= 'number' then array = false end
-      val[k] = r.expr(v, nesting_depth - 1)
-    end
-    if array then
-      return MakeArray({}, val)
-    end
-    return MakeObj(val)
-  end
-  return DatumTerm(val)
-end
 function r.js(jssrc, opts)
   return JavaScript(opts, jssrc)
 end
