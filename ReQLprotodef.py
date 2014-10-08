@@ -139,7 +139,7 @@ class Term:
         INDEX_STATUS = 139
         INDEX_WAIT = 140
         INDEX_RENAME = 156
-        FUN_CALL = 64
+        FUNCALL = 64
         BRANCH = 65
         ANY = 66
         ALL = 67
@@ -205,8 +205,8 @@ class Term:
         CHANGES = 152
         ARGS = 154
         BINARY = 155
-        GEO_JSON = 157
-        TO_GEO_JSON = 158
+        GEOJSON = 157
+        TO_GEOJSON = 158
         POINT = 159
         LINE = 160
         POLYGON = 161
