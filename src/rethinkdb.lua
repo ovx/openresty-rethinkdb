@@ -7,26 +7,26 @@ local socket = require('socket')
 local r = {}
 
 local Connection, Cursor
-local DatumTerm, ReQLOp, MakeArray, MakeObj, Var, PolygonSub
-local JavaScript, Http, Json, Binary, Args, Error, Random, Db
-local Table, Get, GetAll, Eq, Ne, Lt, Le, Gt, Ge, Not, Add, Sub, Mul, Div, Mod
-local Append, Prepend, Difference, SetInsert, SetUnion, SetIntersection
-local SetDifference, Slice, Skip, Limit, GetField, Bracket, Contains, InsertAt
-local SpliceAt, DeleteAt, ChangeAt, HasFields, WithFields, Keys, Changes
-local Object, Pluck, IndexesOf, Without, Merge, Between, Reduce, Map, Filter
-local ConcatMap, OrderBy, Distinct, Count, Union, Nth, Match, Split, Upcase
-local Downcase, IsEmpty, Group, Sum, Avg, Min, Max, InnerJoin, OuterJoin
-local EqJoin, Zip, CoerceTo, Ungroup, TypeOf, Info, Sample, Update, Delete
-local Replace, Insert, DbCreate, DbDrop, DbList, TableCreate, TableDrop
-local TableList, IndexCreate, IndexDrop, IndexRename, IndexList, IndexStatus
-local IndexWait, Sync, FunCall, Default, Branch, Any, All, ForEach, Func, Asc
-local Desc, Literal, ISO8601, ToISO8601, EpochTime, ToEpochTime, Now
-local InTimezone, During, Date, TimeOfDay, Timezone, Year, Month, Day
-local DayOfWeek, DayOfYear, Hours, Minutes, Seconds, Time, GeoJson, ToGeoJson
-local Point, Line, Polygon, Distance, Intersects, Includes, Circle
-local GetIntersecting, GetNearest, Fill, UUID, Monday, Tuesday, Wednesday
-local Thursday, Friday, Saturday, Sunday, January, February, March, April, May
-local June, July, August, September, October, November, December, ToJsonString
+local DatumTerm, ReQLOp
+local Add, All, Any, Append, April, Args, Asc, August, Avg, Between, Binary
+local Bracket, Branch, ChangeAt, Changes, Circle, CoerceTo, ConcatMap
+local Contains, Count, Date, Day, DayOfWeek, DayOfYear, Db, DbCreate, DbDrop
+local DbList, December, Default, Delete, DeleteAt, Desc, Difference, Distance
+local Distinct, Div, Do, Downcase, During, EpochTime, Eq, EqJoin, Error
+local February, Fill, Filter, ForEach, Friday, Func, Ge, Geojson, Get, GetAll
+local GetField, GetIntersecting, GetNearest, Group, Gt, HasFields, Hours, Http
+local ISO8601, InTimezone, Includes, IndexCreate, IndexDrop, IndexList
+local IndexRename, IndexStatus, IndexWait, IndexesOf, Info, InnerJoin, Insert
+local InsertAt, Intersects, IsEmpty, January, JavaScript, Json, July, June
+local Keys, Le, Limit, Line, Literal, Lt, MakeArray, MakeObj, Map, March
+local Match, Max, May, Merge, Min, Minutes, Mod, Monday, Month, Mul, Ne, Not
+local November, Now, Nth, Object, October, OrderBy, OuterJoin, Pluck, Point
+local Polygon, PolygonSub, Prepend, Random, Reduce, Replace, Sample, Saturday
+local Seconds, September, SetDifference, SetInsert, SetIntersection, SetUnion
+local Skip, Slice, SpliceAt, Split, Sub, Sum, Sunday, Sync, Table, TableCreate
+local TableDrop, TableList, Thursday, Time, TimeOfDay, Timezone, ToEpochTime
+local ToGeojson, ToISO8601, ToJsonString, Tuesday, TypeOf, UUID, Ungroup
+local Union, Upcase, Update, Var, Wednesday, WithFields, Without, Year, Zip
 local ReQLDriverError, ReQLServerError, ReQLRuntimeError, ReQLCompileError
 local ReQLClientError, ReQLQueryPrinter, ReQLError
 
@@ -107,21 +107,31 @@ function class(name, parent, base)
   base.__class = _class_0
 
   if parent and parent.__inherited then
-    parent.__inherited(parent, _class_0)
+    parent:__inherited(_class_0)
   end
 
   return _class_0
 end
 
-function is_instance(class, obj)
-  if type(obj) ~= 'table' then return false end
+function is_instance(obj, ...)
+  local class_list = {...}
 
-  local obj_cls = obj.__class
-  while obj_cls do
-    if obj_cls.__name == class.__name then
+  for _, class in ipairs(class_list) do
+    if type(class) == 'string' and type(obj) == class then
       return true
+    else
+      class = class.__name
     end
-    obj_cls = obj_cls.__parent
+
+    if type(obj) == 'table' then
+      local obj_cls = obj.__class
+      while obj_cls do
+        if obj_cls.__name == class then
+          return true
+        end
+        obj_cls = obj_cls.__parent
+      end
+    end
   end
 
   return false
@@ -170,7 +180,109 @@ function intspallargs(args, optargs)
 end
 
 function should_wrap(arg)
-  return is_instance(DatumTerm, arg) or is_instance(MakeArray, arg) or is_instance(MakeObj, arg)
+  return is_instance(arg, DatumTerm, MakeArray, MakeObj)
+end
+
+function get_opts(...)
+  local args = {...}
+  local opt = {}
+  local pos_opt = args[-1]
+  if (type(pos_opt) == 'table') and (not is_instance(pos_opt, ReQLOp)) then
+    opt = pos_opt
+    args[-1] = nil
+  end
+  return opt, unpack(args)
+end
+
+function bytes_to_int(str)
+  local t = {str:byte(1,-1)}
+  local n = 0
+  for k=1,#t do
+    n = n + t[k] * 2 ^ ((k - 1) * 8)
+  end
+  return n
+end
+
+function div_mod(num, den)
+  return math.floor(num / den), math.fmod(num, den)
+end
+
+function int_to_bytes(num, bytes)
+  local res = {}
+  local mul = 0
+  for k=bytes,1,-1 do
+    res[k], num = div_mod(num, 2 ^ (8 * (k - 1)))
+  end
+  return string.char(unpack(res))
+end
+
+function convert_pseudotype(obj, opts)
+  -- An R_OBJECT may be a regular table or a 'pseudo-type' so we need a
+  -- second layer of type switching here on the obfuscated field '$reql_type$'
+  local reql_type = obj['$reql_type$']
+  if 'TIME' == reql_type then
+    local time_format = opts.time_format
+    if 'native' == time_format or not time_format then
+      if not (obj['epoch_time']) then
+        error(ReQLDriverError('pseudo-type TIME ' .. obj .. ' table missing expected field `epoch_time`.'))
+      end
+
+      -- We ignore the timezone field of the pseudo-type TIME table. JS dates do not support timezones.
+      -- By converting to a native date table we are intentionally throwing out timezone information.
+
+      -- field 'epoch_time' is in seconds but the Date constructor expects milliseconds
+      return obj['epoch_time']
+    elseif 'raw' == time_format then
+      return obj
+    else
+      error(ReQLDriverError('Unknown time_format run option ' .. opts.time_format .. '.'))
+    end
+  elseif 'GROUPED_DATA' == reql_type then
+    local group_format = opts.group_format
+    if 'native' == group_format or not group_format then
+      -- Don't convert the data into a map, because the keys could be tables which doesn't work in JS
+      -- Instead, we have the following format:
+      -- [ { 'group': <group>, 'reduction': <value(s)> } }, ... ]
+      res = {}
+      for i, v in ipairs(obj['data']) do
+        res[i] = {
+          group = i,
+          reduction = v
+        }
+      end
+      obj = res
+    elseif 'raw' == group_format then
+      return obj
+    else
+      error(ReQLDriverError('Unknown group_format run option ' .. opts.group_format .. '.'))
+    end
+  elseif 'BINARY' == reql_type then
+    local binary_format = opts.binary_format
+    if 'native' == binary_format or not binary_format then
+      if not obj.data then
+        error(ReQLDriverError('pseudo-type BINARY table missing expected field `data`.'))
+      end
+      return mime.unb64(obj.data)
+    elseif 'raw' == binary_format then
+      return obj
+    else
+      error(ReQLDriverError('Unknown binary_format run option ' .. opts.binary_format .. '.'))
+    end
+  else
+    -- Regular table or unknown pseudo type
+    return obj
+  end
+end
+
+function recursively_convert_pseudotype(obj, opts)
+  if type(obj) == 'table' then
+    for key, value in pairs(obj) do
+      obj[key] = recursively_convert_pseudotype(value, opts)
+    end
+    obj = convert_pseudotype(obj, opts)
+  end
+  if obj == json.util.null then return nil end
+  return obj
 end
 
 ReQLError = class(
@@ -266,197 +378,356 @@ ReQLQueryPrinter = class(
   }
 )
 
--- AST classes
+ast_methods = {
+  run = function(self, connection, options, callback)
+    -- Valid syntaxes are
+    -- connection
+    -- connection, callback
+    -- connection, options, callback
+    -- connection, nil, callback
 
-ReQLOp = class(
-  'ReQLOp',
-  {
-    __init = function(self, optargs, ...)
-      optargs = optargs or {}
-      self.args = {...}
-      local first = self.args[1]
-      if self.tt == 69 then
-        local args = {}
-        local arg_nums = {}
-        for i=1, optargs.arity or 1 do
-          table.insert(arg_nums, ReQLOp.next_var_id)
-          table.insert(args, Var({}, ReQLOp.next_var_id))
-          ReQLOp.next_var_id = ReQLOp.next_var_id + 1
-        end
-        first = first(unpack(args))
-        if first == nil then
-          error(ReQLDriverError('Anonymous function returned `nil`. Did you forget a `return`?'))
-        end
-        optargs.arity = nil
-        self.args = {MakeArray({}, arg_nums), r.expr(first)}
-      elseif self.tt == 155 then
-        if is_instance(ReQLOp, first) then
-        elseif type(first) == 'string' then
-          self.base64_data = mime.b64(first)
-        else
-          error('Parameter to `r.binary` must be a string or ReQL query.')
-        end
-      elseif self.tt == 2 then
-        self.args = first
-      elseif self.tt == 3 then
-      else
-        for i, a in ipairs(self.args) do
-          self.args[i] = r.expr(a)
-        end
+    -- Handle run(connection, callback)
+    if type(options) == 'function' then
+      if callback then
+        return error('Second argument to `run` cannot be a function if a third argument is provided.')
       end
-      self.optargs = optargs
-    end,
-    build = function(self)
-      if self.tt == 155 and (not self.args[1]) then
-        return {
-          ['$reql_type$'] = 'BINARY',
-          data = self.base64_data
-        }
+      callback = options
+      options = {}
+    end
+    -- else we suppose that we have run(connection[, options][, callback])
+    if not is_instance(connection, 'Connection') then
+      if callback then
+        return callback(ReQLDriverError('First argument to `run` must be a connection.'))
       end
-      if self.tt == 2 then
-        local args = {}
-        for i, arg in ipairs(self.args) do
-          if is_instance(ReQLOp, arg) then
-            args[i] = arg:build()
-          else
-            args[i] = arg
-          end
-        end
-        return {self.tt, args}
-      end
-      if self.tt == 3 then
-        local res = {}
-        for key, val in pairs(self.optargs) do
-          res[key] = val:build()
-        end
-        return res
-      end
+      error('First argument to `run` must be a connection.')
+    end
+    return connection:_start(self, callback, options or {})
+  end,
+  add = function(...) return Add({}, ...) end,
+  all = function(...) return All({}, ...) end,
+  any = function(...) return Any({}, ...) end,
+  append = function(...) return Append({}, ...) end,
+  april = function(...) return April({}, ...) end,
+  args = function(...) return Args({}, ...) end,
+  array = function(...) return MakeArray({}, ...) end,
+  asc = function(...) return Asc({}, ...) end,
+  august = function(...) return August({}, ...) end,
+  avg = function(...) return Avg({}, ...) end,
+  between = function(...) return Between(get_opts(...)) end,
+  binary = function(...) return Binary({}, ...) end,
+  branch = function(...) return Branch({}, ...) end,
+  change_at = function(...) return ChangeAt({}, ...) end,
+  changes = function(...) return Changes({}, ...) end,
+  circle = function(...) return Circle(get_opts(...)) end,
+  coerce_to = function(...) return CoerceTo({}, ...) end,
+  concat_map = function(...) return ConcatMap({}, ...) end,
+  contains = function(...) return Contains({}, ...) end,
+  count = function(...) return Count({}, ...) end,
+  date = function(...) return Date({}, ...) end,
+  day = function(...) return Day({}, ...) end,
+  day_of_week = function(...) return DayOfWeek({}, ...) end,
+  day_of_year = function(...) return DayOfYear({}, ...) end,
+  db = function(...) return Db({}, ...) end,
+  db_create = function(...) return DbCreate({}, ...) end,
+  db_drop = function(...) return DbDrop({}, ...) end,
+  db_list = function(...) return DbList({}, ...) end,
+  december = function(...) return December({}, ...) end,
+  default = function(...) return Default({}, ...) end,
+  delete = function(...) return Delete(get_opts(...)) end,
+  delete_at = function(...) return DeleteAt({}, ...) end,
+  desc = function(...) return Desc({}, ...) end,
+  difference = function(...) return Difference({}, ...) end,
+  distance = function(...) return Distance(get_opts(...)) end,
+  distinct = function(...) return Distinct(get_opts(...)) end,
+  div = function(...) return Div({}, ...) end,
+  do_ = function(...) return Do({}, ...) end,
+  downcase = function(...) return Downcase({}, ...) end,
+  during = function(...) return During(get_opts(...)) end,
+  epoch_time = function(...) return EpochTime({}, ...) end,
+  eq = function(...) return Eq({}, ...) end,
+  eq_join = function(...) return EqJoin(get_opts(...)) end,
+  error = function(...) return Error({}, ...) end,
+  february = function(...) return February({}, ...) end,
+  fill = function(...) return Fill({}, ...) end,
+  filter = function(...) return Filter(get_opts(...)) end,
+  for_each = function(...) return ForEach({}, ...) end,
+  friday = function(...) return Friday({}, ...) end,
+  func = function(...) return Func({}, ...) end,
+  ge = function(...) return Ge({}, ...) end,
+  geojson = function(...) return Geojson({}, ...) end,
+  get = function(...) return Get({}, ...) end,
+  get_all = function(...) return GetAll(get_opts(...)) end,
+  get_field = function(...) return GetField({}, ...) end,
+  get_intersecting = function(...) return GetIntersecting(get_opts(...)) end,
+  get_nearest = function(...) return GetNearest(get_opts(...)) end,
+  group = function(...) return Group(get_opts(...)) end,
+  gt = function(...) return Gt({}, ...) end,
+  has_fields = function(...) return HasFields({}, ...) end,
+  hours = function(...) return Hours({}, ...) end,
+  http = function(...) return Http(get_opts(...)) end,
+  in_timezone = function(...) return InTimezone({}, ...) end,
+  includes = function(...) return Includes({}, ...) end,
+  index = function(...) return Bracket({}, ...) end,
+  index_create = function(...) return IndexCreate(get_opts(...)) end,
+  index_drop = function(...) return IndexDrop({}, ...) end,
+  index_list = function(...) return IndexList({}, ...) end,
+  index_rename = function(...) return IndexRename(get_opts(...)) end,
+  index_status = function(...) return IndexStatus({}, ...) end,
+  index_wait = function(...) return IndexWait({}, ...) end,
+  indexes_of = function(...) return IndexesOf({}, ...) end,
+  info = function(...) return Info({}, ...) end,
+  inner_join = function(...) return InnerJoin({}, ...) end,
+  insert = function(...) return Insert(get_opts(...)) end,
+  insert_at = function(...) return InsertAt({}, ...) end,
+  intersects = function(...) return Intersects({}, ...) end,
+  is_empty = function(...) return IsEmpty({}, ...) end,
+  iso8601 = function(...) return ISO8601(get_opts(...)) end,
+  january = function(...) return January({}, ...) end,
+  js = function(...) return JavaScript(get_opts(...)) end,
+  json = function(...) return Json({}, ...) end,
+  july = function(...) return July({}, ...) end,
+  june = function(...) return June({}, ...) end,
+  keys = function(...) return Keys({}, ...) end,
+  le = function(...) return Le({}, ...) end,
+  limit = function(...) return Limit({}, ...) end,
+  line = function(...) return Line({}, ...) end,
+  literal = function(...) return Literal({}, ...) end,
+  lt = function(...) return Lt({}, ...) end,
+  make_obj = function(...) return MakeObj({}, ...) end,
+  map = function(...) return Map({}, ...) end,
+  march = function(...) return March({}, ...) end,
+  match = function(...) return Match({}, ...) end,
+  max = function(...) return Max({}, ...) end,
+  may = function(...) return May({}, ...) end,
+  merge = function(...) return Merge({}, ...) end,
+  min = function(...) return Min({}, ...) end,
+  minutes = function(...) return Minutes({}, ...) end,
+  mod = function(...) return Mod({}, ...) end,
+  monday = function(...) return Monday({}, ...) end,
+  month = function(...) return Month({}, ...) end,
+  mul = function(...) return Mul({}, ...) end,
+  ne = function(...) return Ne({}, ...) end,
+  not_ = function(...) return Not({}, ...) end,
+  november = function(...) return November({}, ...) end,
+  now = function(...) return Now({}, ...) end,
+  nth = function(...) return Nth({}, ...) end,
+  object = function(...) return Object({}, ...) end,
+  october = function(...) return October({}, ...) end,
+  order_by = function(...) return OrderBy(get_opts(...)) end,
+  outer_join = function(...) return OuterJoin({}, ...) end,
+  pluck = function(...) return Pluck({}, ...) end,
+  point = function(...) return Point({}, ...) end,
+  polygon = function(...) return Polygon({}, ...) end,
+  polygon_sub = function(...) return PolygonSub({}, ...) end,
+  prepend = function(...) return Prepend({}, ...) end,
+  random = function(...) return Random(get_opts(...)) end,
+  reduce = function(...) return Reduce({}, ...) end,
+  replace = function(...) return Replace(get_opts(...)) end,
+  sample = function(...) return Sample({}, ...) end,
+  saturday = function(...) return Saturday({}, ...) end,
+  seconds = function(...) return Seconds({}, ...) end,
+  september = function(...) return September({}, ...) end,
+  set_difference = function(...) return SetDifference({}, ...) end,
+  set_insert = function(...) return SetInsert({}, ...) end,
+  set_intersection = function(...) return SetIntersection({}, ...) end,
+  set_union = function(...) return SetUnion({}, ...) end,
+  skip = function(...) return Skip({}, ...) end,
+  slice = function(...) return Slice(get_opts(...)) end,
+  splice_at = function(...) return SpliceAt({}, ...) end,
+  split = function(...) return Split({}, ...) end,
+  sub = function(...) return Sub({}, ...) end,
+  sum = function(...) return Sum({}, ...) end,
+  sunday = function(...) return Sunday({}, ...) end,
+  sync = function(...) return Sync({}, ...) end,
+  table = function(...) return Table(get_opts(...)) end,
+  table_create = function(...) return TableCreate(get_opts(...)) end,
+  table_drop = function(...) return TableDrop({}, ...) end,
+  table_list = function(...) return TableList({}, ...) end,
+  thursday = function(...) return Thursday({}, ...) end,
+  time = function(...) return Time({}, ...) end,
+  time_of_day = function(...) return TimeOfDay({}, ...) end,
+  timezone = function(...) return Timezone({}, ...) end,
+  to_epoch_time = function(...) return ToEpochTime({}, ...) end,
+  to_geojson = function(...) return ToGeojson({}, ...) end,
+  to_iso8601 = function(...) return ToISO8601({}, ...) end,
+  to_json_string = function(...) return ToJsonString({}, ...) end,
+  tuesday = function(...) return Tuesday({}, ...) end,
+  type_of = function(...) return TypeOf({}, ...) end,
+  ungroup = function(...) return Ungroup({}, ...) end,
+  union = function(...) return Union({}, ...) end,
+  upcase = function(...) return Upcase({}, ...) end,
+  update = function(...) return Update(get_opts(...)) end,
+  uuid = function(...) return UUID({}, ...) end,
+  var = function(...) return Var({}, ...) end,
+  wednesday = function(...) return Wednesday({}, ...) end,
+  with_fields = function(...) return WithFields({}, ...) end,
+  without = function(...) return Without({}, ...) end,
+  year = function(...) return Year({}, ...) end,
+  zip = function(...) return Zip({}, ...) end
+}
+
+class_methods = {
+  __init = function(self, optargs, ...)
+    optargs = optargs or {}
+    self.args = {...}
+    local first = self.args[1]
+    if self.tt == 69 then
       local args = {}
-      for i, arg in ipairs(self.args) do
-        args[i] = arg:build()
+      local arg_nums = {}
+      for i=1, optargs.arity or 1 do
+        table.insert(arg_nums, ReQLOp.next_var_id)
+        table.insert(args, Var({}, ReQLOp.next_var_id))
+        ReQLOp.next_var_id = ReQLOp.next_var_id + 1
       end
-      res = {self.tt, args}
-      if #self.optargs > 0 then
-        local opts = {}
-        for key, val in pairs(self.optargs) do
-          opts[key] = val:build()
-        end
-        table.insert(res, opts)
+      first = first(unpack(args))
+      if first == nil then
+        error('Anonymous function returned `nil`. Did you forget a `return`?')
+      end
+      optargs.arity = nil
+      self.args = {MakeArray({}, unpack(arg_nums)), r(first)}
+    elseif self.tt == 155 then
+      if is_instance(first, ReQLOp) then
+      elseif type(first) == 'string' then
+        self.base64_data = mime.b64(first)
+      else
+        error('Parameter to `r.binary` must be a string or ReQL query.')
+      end
+    elseif self.tt == 64 then
+      self.args[-1] = Func({arity = args.n - 1}, self.args[-1])
+      table.insert(self.args, table.remove(self.args, -1), 1)
+      for i, a in ipairs(self.args) do
+        self.args[i] = r(a)
+      end
+    elseif self.tt == 37 then
+      self.args[-1] = Func({arity = 2}, self.args[-1])
+      for i, a in ipairs(self.args) do
+        self.args[i] = r(a)
+      end
+    else
+      for i, a in ipairs(self.args) do
+        self.args[i] = r(a)
+      end
+    end
+    self.optargs = optargs
+  end,
+  build = function(self)
+    if self.tt == 155 and (not self.args[1]) then
+      return {
+        ['$reql_type$'] = 'BINARY',
+        data = self.base64_data
+      }
+    end
+    if self.tt == 3 then
+      local res = {}
+      for key, val in pairs(self.optargs) do
+        res[key] = val:build()
       end
       return res
-    end,
-    compose = function(self, args, optargs)
-      if self.tt == 2 then
+    end
+    local args = {}
+    for i, arg in ipairs(self.args) do
+      args[i] = arg:build()
+    end
+    res = {self.tt, args}
+    if #self.optargs > 0 then
+      local opts = {}
+      for key, val in pairs(self.optargs) do
+        opts[key] = val:build()
+      end
+      table.insert(res, opts)
+    end
+    return res
+  end,
+  compose = function(self, args, optargs)
+    if self.tt == 2 then
+      return {
+        '{',
+        intsp(args),
+        '}'
+      }
+    end
+    if self.tt == 3 then
+      return kved(optargs)
+    end
+    if self.tt == 10 then
+      if not args then return {} end
+      for i, v in ipairs(args) do
+        args[i] = 'var_' .. v
+      end
+      return args
+    end
+    if self.tt == 155 then
+      if self.args[1] then
         return {
-          '{',
-          intsp(args),
-          '}'
+          'r.binary(',
+          intspallargs(args, optargs),
+          ')'
         }
+      else
+        return 'r.binary(<data>)'
       end
-      if self.tt == 3 then
-        return kved(optargs)
-      end
-      if self.tt == 10 then
-        if not args then return {} end
-        for i, v in ipairs(args) do
-          args[i] = 'var_' .. v
-        end
-        return args
-      end
-      if self.tt == 155 then
-        if self.args[1] then
-          return {
-            'r.binary(',
-            intspallargs(args, optargs),
-            ')'
-          }
-        else
-          return 'r.binary(<data>)'
-        end
-      end
-      if self.tt == 13 then
-        return {
-          'r.row'
-        }
-      end
-      if self.tt == 15 then
-        if is_instance(Db, self.args[1]) then
-          return {
-            args[1],
-            ':table(',
-            intspallargs((function()
-              local _accum_0 = {}
-              for _index_0 = 2, #args do
-                _accum_0[_index_0 - 1] = args[_index_0]
-              end
-              return _accum_0
-            end)(), optargs),
-            ')'
-          }
-        else
-          return {
-            'r.table(',
-            intspallargs(args, optargs),
-            ')'
-          }
-        end
-      end
-      if self.tt == 170 then
+    end
+    if self.tt == 13 then
+      return {
+        'r.row'
+      }
+    end
+    if self.tt == 15 then
+      if is_instance(self.args[1], Db) then
         return {
           args[1],
-          '(',
-          args[2],
+          ':table(',
+          intspallargs((function()
+            local _accum_0 = {}
+            for _index_0 = 2, #args do
+              _accum_0[_index_0 - 1] = args[_index_0]
+            end
+            return _accum_0
+          end)(), optargs),
+          ')'
+        }
+      else
+        return {
+          'r.table(',
+          intspallargs(args, optargs),
           ')'
         }
       end
-      if self.tt == 69 then
-        if ivar_scan(self.args[2]) then
-          return {
-            args[2]
-          }
-        end
-        local var_str = ''
-        for i, arg in ipairs(args[1][2]) do -- ['0', ', ', '1']
-          if i % 2 == 0 then
-            var_str = var_str .. Var.compose(arg)
-          else
-            var_str = var_str .. arg
-          end
-        end
+    end
+    if self.tt == 170 then
+      return {
+        args[1],
+        '(',
+        args[2],
+        ')'
+      }
+    end
+    if self.tt == 69 then
+      if ivar_scan(self.args[2]) then
         return {
-          'function(',
-          var_str,
-          ') return ',
-          args[1],
-          ' end'
+          args[2]
         }
       end
-      if self.tt == 64 then
-        if #args > 2 then
-          return {
-            'r.do_(',
-            intsp((function()
-              local _accum_0 = {}
-              for _index_0 = 2, #args do
-                _accum_0[_index_0 - 1] = args[_index_0]
-              end
-              return _accum_0
-            end)()),
-            ', ',
-            args[1],
-            ')'
-          }
-        end
-        if should_wrap(self.args[1]) then
-          args[1] = {
-            'r(',
-            args[1],
-            ')'
-          }
-        end
+      return {
+        'function(',
+        intsp(args[1]),
+        ') return ',
+        args[2],
+        ' end'
+      }
+    end
+    if self.tt == 64 then
+      if #args > 2 then
         return {
-          args[2],
-          '.do_(',
+          'r.do_(',
+          intsp((function()
+            local _accum_0 = {}
+            for i = 2, #args do
+              _accum_0[i - 1] = args[i]
+            end
+            return _accum_0
+          end)()),
+          ', ',
           args[1],
           ')'
         }
@@ -469,461 +740,46 @@ ReQLOp = class(
         }
       end
       return {
+        args[2],
+        '.do_(',
         args[1],
-        ':',
-        self.st,
-        '(',
-        intspallargs((function()
-          local _accum_0 = {}
-          for _index_0 = 2, #args do
-            _accum_0[_index_0 - 1] = args[_index_0]
-          end
-          return _accum_0
-        end)(), optargs),
         ')'
       }
-    end,
-    run = function(self, connection, options, callback)
-      -- Valid syntaxes are
-      -- connection, callback
-      -- connection, options, callback
-      -- connection, nil, callback
-
-      -- Handle run(connection, callback)
-      if type(options) == 'function' then
-        if not callback then
-          callback = options
-          options = {}
-        else
-          return options(ReQLDriverError('Second argument to `run` cannot be a function if a third argument is provided.'))
-        end
-      end
-      -- else we suppose that we have run(connection[, options][, callback])
-      options = options or {}
-
-      if type(connection._start) ~= 'function' then
-        if callback then
-          return callback(ReQLDriverError('First argument to `run` must be an open connection.'))
-        end
-        return
-      end
-
-      return connection:_start(self, callback, options)
-    end,
-    next_var_id = 0,
-    eq = function(...)
-      return Eq({}, ...)
-    end,
-    ne = function(...)
-      return Ne({}, ...)
-    end,
-    lt = function(...)
-      return Lt({}, ...)
-    end,
-    le = function(...)
-      return Le({}, ...)
-    end,
-    gt = function(...)
-      return Gt({}, ...)
-    end,
-    ge = function(...)
-      return Ge({}, ...)
-    end,
-    not_ = function(...)
-      return Not({}, ...)
-    end,
-    add = function(...)
-      return Add({}, ...)
-    end,
-    sub = function(...)
-      return Sub({}, ...)
-    end,
-    mul = function(...)
-      return Mul({}, ...)
-    end,
-    div = function(...)
-      return Div({}, ...)
-    end,
-    mod = function(...)
-      return Mod({}, ...)
-    end,
-    append = function(...)
-      return Append({}, ...)
-    end,
-    prepend = function(...)
-      return Prepend({}, ...)
-    end,
-    difference = function(...)
-      return Difference({}, ...)
-    end,
-    set_insert = function(...)
-      return SetInsert({}, ...)
-    end,
-    set_union = function(...)
-      return SetUnion({}, ...)
-    end,
-    set_intersection = function(...)
-      return SetIntersection({}, ...)
-    end,
-    set_difference = function(...)
-      return SetDifference({}, ...)
-    end,
-    slice = function(self, left, right_or_opts, opts)
-      if opts then
-        return Slice(opts, self, left, right_or_opts)
-      end
-      if right_or_opts then
-        if (type(right_or_opts) == 'table') and (not is_instance(ReQLOp, right_or_opts)) then
-          return Slice(right_or_opts, self, left)
-        end
-        return Slice({}, self, left, right_or_opts)
-      end
-      return Slice({}, self, left)
-    end,
-    skip = function(...)
-      return Skip({}, ...)
-    end,
-    limit = function(...)
-      return Limit({}, ...)
-    end,
-    get_field = function(...)
-      return GetField({}, ...)
-    end,
-    contains = function(...)
-      return Contains({}, ...)
-    end,
-    insert_at = function(...)
-      return InsertAt({}, ...)
-    end,
-    splice_at = function(...)
-      return SpliceAt({}, ...)
-    end,
-    delete_at = function(...)
-      return DeleteAt({}, ...)
-    end,
-    change_at = function(...)
-      return ChangeAt({}, ...)
-    end,
-    indexes_of = function(...)
-      return IndexesOf({}, ...)
-    end,
-    has_fields = function(...)
-      return HasFields({}, ...)
-    end,
-    with_fields = function(...)
-      return WithFields({}, ...)
-    end,
-    keys = function(...)
-      return Keys({}, ...)
-    end,
-    changes = function(...)
-      return Changes({}, ...)
-    end,
-
-    -- pluck and without on zero fields are allowed
-    pluck = function(...)
-      return Pluck({}, ...)
-    end,
-    without = function(...)
-      return Without({}, ...)
-    end,
-    merge = function(...)
-      return Merge({}, ...)
-    end,
-    between = function(self, left, right, opts)
-      return Between(opts, self, left, right)
-    end,
-    reduce = function(...)
-      return Reduce({arity = 2}, ...)
-    end,
-    map = function(...)
-      return Map({}, ...)
-    end,
-    filter = function(self, predicate, opts)
-      return Filter(opts, self, predicate)
-    end,
-    concat_map = function(...)
-      return ConcatMap({}, ...)
-    end,
-    distinct = function(self, opts)
-      return Distinct(opts, self)
-    end,
-    count = function(...)
-      return Count({}, ...)
-    end,
-    union = function(...)
-      return Union({}, ...)
-    end,
-    nth = function(...)
-      return Nth({}, ...)
-    end,
-    to_json = function(...)
-      return ToJsonString({}, ...)
-    end,
-    match = function(...)
-      return Match({}, ...)
-    end,
-    split = function(...)
-      return Split({}, ...)
-    end,
-    upcase = function(...)
-      return Upcase({}, ...)
-    end,
-    downcase = function(...)
-      return Downcase({}, ...)
-    end,
-    is_empty = function(...)
-      return IsEmpty({}, ...)
-    end,
-    inner_join = function(...)
-      return InnerJoin({}, ...)
-    end,
-    outer_join = function(...)
-      return OuterJoin({}, ...)
-    end,
-    eq_join = function(self, left_attr, right, opts)
-      return EqJoin(opts, self, r.expr(left_attr), right)
-    end,
-    zip = function(...)
-      return Zip({}, ...)
-    end,
-    coerce_to = function(...)
-      return CoerceTo({}, ...)
-    end,
-    ungroup = function(...)
-      return Ungroup({}, ...)
-    end,
-    type_of = function(...)
-      return TypeOf({}, ...)
-    end,
-    update = function(self, func, opts)
-      return Update(opts, self, Func({}, func))
-    end,
-    delete = function(self, opts)
-      return Delete(opts, self)
-    end,
-    replace = function(self, func, opts)
-      return Replace(opts, self, Func({}, func))
-    end,
-    do_ = function(self, ...)
-      local args = {...}
-      local func = Func({arity = args.n - 1}, args[args.n])
-      args[args.n] = nil
-      return FunCall({}, func, self, unpack(args))
-    end,
-    default = function(...)
-      return Default({}, ...)
-    end,
-    any = function(...)
-      return Any({}, ...)
-    end,
-    all = function(...)
-      return All({}, ...)
-    end,
-    for_each = function(...)
-      return ForEach({}, ...)
-    end,
-    sum = function(...)
-      return Sum({}, ...)
-    end,
-    avg = function(...)
-      return Avg({}, ...)
-    end,
-    min = function(...)
-      return Min({}, ...)
-    end,
-    max = function(...)
-      return Max({}, ...)
-    end,
-    info = function(...)
-      return Info({}, ...)
-    end,
-    sample = function(...)
-      return Sample({}, ...)
-    end,
-    group = function(self, ...)
-      -- Default if no opts dict provided
-      local opts = {}
-      local fields = {...}
-
-      -- Look for opts dict
-      if fields.n > 0 then
-        local perhaps_opt_dict = fields[fields.n]
-        if (type(perhaps_opt_dict) == 'table') and not (is_instance(ReQLOp, perhaps_opt_dict)) then
-          opts = perhaps_opt_dict
-          fields[fields.n] = nil
-          fields.n = fields.n - 1
-        end
-      end
-      for i=1, fields.n do
-        fields[i] = r.expr(fields[i])
-      end
-      return Group(opts, self, unpack(fields))
-    end,
-    order_by = function(self, ...)
-      -- Default if no opts dict provided
-      local opts = {}
-      local attrs = {...}
-
-      -- Look for opts dict
-      local perhaps_opt_dict = attrs[attrs.n]
-      if (type(perhaps_opt_dict) == 'table') and not is_instance(ReQLOp, perhaps_opt_dict) then
-        opts = perhaps_opt_dict
-        attrs[attrs.n] = nil
-        attrs.n = attrs.n - 1
-      end
-      for i, attr in ipairs(attrs) do
-        if not (is_instance(Asc, attr) or is_instance(Desc, attr)) then
-          attrs[i] = r.expr(attr)
-        end
-      end
-      return OrderBy(opts, self, unpack(attrs))
-    end,
-
-    -- Geo operations
-    to_geo_json = function(...)
-      return ToGeoJson({}, ...)
-    end,
-    distance = function(self, g, opts)
-      return Distance(opts, self, g)
-    end,
-    intersects = function(...)
-      return Intersects({}, ...)
-    end,
-    includes = function(...)
-      return Includes({}, ...)
-    end,
-    fill = function(...)
-      return Fill({}, ...)
-    end,
-    polygon_sub = function(...)
-      return PolygonSub({}, ...)
-    end,
-
-    -- Database operations
-
-    table_create = function(self, tbl_name, opts)
-      return TableCreate(opts, self, tbl_name)
-    end,
-    table_drop = function(...)
-      return TableDrop({}, ...)
-    end,
-    table_list = function(...)
-      return TableList({}, ...)
-    end,
-    table = function(self, tbl_name, opts)
-      return Table(opts, self, tbl_name)
-    end,
-
-    -- Table operations
-
-    get = function(...)
-      return Get({}, ...)
-    end,
-    get_all = function(self, ...)
-      -- Default if no opts dict provided
-      local opts = {}
-      local keys = {...}
-
-      -- Look for opts dict
-      if keys.n > 1 then
-        local perhaps_opt_dict = keys[keys.n]
-        if (type(perhaps_opt_dict) == 'table') and (not is_instance(ReQLOp, perhaps_opt_dict)) then
-          opts = perhaps_opt_dict
-          keys[keys.n] = nil
-        end
-      end
-      return GetAll(opts, self, unpack(keys))
-    end,
-    insert = function(self, doc, opts)
-      return Insert(opts, self, r.expr(doc))
-    end,
-    index_create = function(self, name, defun_or_opts, opts)
-      if opts then
-        return IndexCreate(opts, self, name, r.expr(defun_or_opts))
-      end
-      if defun_or_opts then
-        if (type(defun_or_opts) == 'table') and (not is_instance(ReQLOp, defun_or_opts)) then
-          return IndexCreate(defun_or_opts, self, name)
-        end
-        return IndexCreate({}, self, name, r.expr(defun_or_opts))
-      end
-      return IndexCreate({}, self, name)
-    end,
-    index_drop = function(...)
-      return IndexDrop({}, ...)
-    end,
-    index_list = function(...)
-      return IndexList({}, ...)
-    end,
-    index_status = function(...)
-      return IndexStatus({}, ...)
-    end,
-    index_wait = function(...)
-      return IndexWait({}, ...)
-    end,
-    index_rename = function(self, old_name, new_name, opts)
-      return IndexRename(opts, self, old_name, new_name)
-    end,
-    sync = function(...)
-      return Sync({}, ...)
-    end,
-    to_iso8601 = function(...)
-      return ToISO8601({}, ...)
-    end,
-    to_epoch_time = function(...)
-      return ToEpochTime({}, ...)
-    end,
-    in_timezone = function(...)
-      return InTimezone({}, ...)
-    end,
-    during = function(self, t2, t3, opts)
-      return During(opts, self, t2, t3)
-    end,
-    date = function(...)
-      return Date({}, ...)
-    end,
-    time_of_day = function(...)
-      return TimeOfDay({}, ...)
-    end,
-    timezone = function(...)
-      return Timezone({}, ...)
-    end,
-    year = function(...)
-      return Year({}, ...)
-    end,
-    month = function(...)
-      return Month({}, ...)
-    end,
-    day = function(...)
-      return Day({}, ...)
-    end,
-    day_of_week = function(...)
-      return DayOfWeek({}, ...)
-    end,
-    day_of_year = function(...)
-      return DayOfYear({}, ...)
-    end,
-    hours = function(...)
-      return Hours({}, ...)
-    end,
-    minutes = function(...)
-      return Minutes({}, ...)
-    end,
-    seconds = function(...)
-      return Seconds({}, ...)
-    end,
-    uuid = function(...)
-      return UUID({}, ...)
-    end,
-    get_intersecting = function(self, g, opts)
-      return GetIntersecting(opts, self, g)
-    end,
-    get_nearest = function(self, g, opts)
-      return GetNearest(opts, self, g)
     end
-  }
-)
+    if should_wrap(self.args[1]) then
+      args[1] = {
+        'r(',
+        args[1],
+        ')'
+      }
+    end
+    return {
+      args[1],
+      ':',
+      self.st,
+      '(',
+      intspallargs((function()
+        local _accum_0 = {}
+        for _index_0 = 2, #args do
+          _accum_0[_index_0 - 1] = args[_index_0]
+        end
+        return _accum_0
+      end)(), optargs),
+      ')'
+    }
+  end,
+  next_var_id = 0,
+}
+
+for name, meth in pairs(ast_methods) do
+  class_methods[name] = meth
+  r[name] = meth
+end
+
+-- AST classes
+
+ReQLOp = class('ReQLOp', class_methods)
+
 
 local meta = {
   __call = function(...)
@@ -957,6 +813,11 @@ DatumTerm = ast(
   'DatumTerm',
   {
     __init = function(self, val)
+      if type(val) == 'number' then
+        if math.abs(val) == math.huge or val == math.huge * 0 then
+          error('Illegal non-finite number `' .. val .. '`.')
+        end
+      end
       self.data = val
     end,
     args = {},
@@ -971,168 +832,181 @@ DatumTerm = ast(
       return '' .. self.data
     end,
     build = function(self)
-      if type(self.data) == 'number' then
-        if math.abs(self.data) == 1/0 or self.data == ((1/0) * 0) then
-          error('Illegal non-finite number `' .. self.data .. '`.')
-        end
-      end
       if self.data == nil then return json.util.null end
       return self.data
     end
   }
 )
 
-MakeArray = ast('MakeArray', {tt = 2, st = '{...}'})
-MakeObj = ast('MakeObj', {tt = 3, st = 'make_obj'})
-Var = ast('Var', {tt = 10, st = 'var'})
-JavaScript = ast('JavaScript', {tt = 11, st = 'js'})
-Http = ast('Http', {tt = 153, st = 'http'})
-Json = ast('Json', {tt = 98, st = 'json'})
-Binary = ast('Binary', {tt = 155, st = 'binary'})
-Args = ast('Args', {tt = 154, st = 'args'})
-Error = ast('Error', {tt = 12, st = 'error'})
-Random = ast('Random', {tt = 151, st = 'random'})
-Db = ast('Db', {tt = 14, st = 'db'})
-Table = ast('Table', {tt = 15, st = 'table'})
-Get = ast('Get', {tt = 16, st = 'get'})
-GetAll = ast('GetAll', {tt = 78, st = 'get_all'})
-Eq = ast('Eq', {tt = 17, st = 'eq'})
-Ne = ast('Ne', {tt = 18, st = 'ne'})
-Lt = ast('Lt', {tt = 19, st = 'lt'})
-Le = ast('Le', {tt = 20, st = 'le'})
-Gt = ast('Gt', {tt = 21, st = 'gt'})
-Ge = ast('Ge', {tt = 22, st = 'ge'})
-Not = ast('Not', {tt = 23, st = 'not_'})
 Add = ast('Add', {tt = 24, st = 'add'})
-Sub = ast('Sub', {tt = 25, st = 'sub'})
-Mul = ast('Mul', {tt = 26, st = 'mul'})
-Div = ast('Div', {tt = 27, st = 'div'})
-Mod = ast('Mod', {tt = 28, st = 'mod'})
-Append = ast('Append', {tt = 29, st = 'append'})
-Prepend = ast('Prepend', {tt = 80, st = 'prepend'})
-Difference = ast('Difference', {tt = 95, st = 'difference'})
-SetInsert = ast('SetInsert', {tt = 88, st = 'set_insert'})
-SetUnion = ast('SetUnion', {tt = 90, st = 'set_union'})
-SetIntersection = ast('SetIntersection', {tt = 89, st = 'set_intersection'})
-SetDifference = ast('SetDifference', {tt = 91, st = 'set_difference'})
-Slice = ast('Slice', {tt = 30, st = 'slice'})
-Skip = ast('Skip', {tt = 70, st = 'skip'})
-Limit = ast('Limit', {tt = 71, st = 'limit'})
-GetField = ast('GetField', {tt = 31, st = 'get_field'})
-Bracket = ast('Bracket', {tt = 170, st = '(...)'})
-Contains = ast('Contains', {tt = 93, st = 'contains'})
-InsertAt = ast('InsertAt', {tt = 82, st = 'insert_at'})
-SpliceAt = ast('SpliceAt', {tt = 85, st = 'splice_at'})
-DeleteAt = ast('DeleteAt', {tt = 83, st = 'delete_at'})
-ChangeAt = ast('ChangeAt', {tt = 84, st = 'change_at'})
-Contains = ast('Contains', {tt = 93, st = 'contains'})
-HasFields = ast('HasFields', {tt = 32, st = 'has_fields'})
-WithFields = ast('WithFields', {tt = 96, st = 'with_fields'})
-Keys = ast('Keys', {tt = 94, st = 'keys'})
-Changes = ast('Changes', {tt = 152, st = 'changes'})
-Object = ast('Object', {tt = 143, st = 'object'})
-Pluck = ast('Pluck', {tt = 33, st = 'pluck'})
-IndexesOf = ast('IndexesOf', {tt = 87, st = 'indexes_of'})
-Without = ast('Without', {tt = 34, st = 'without'})
-Merge = ast('Merge', {tt = 35, st = 'merge'})
-Between = ast('Between', {tt = 36, st = 'between'})
-Reduce = ast('Reduce', {tt = 37, st = 'reduce'})
-Map = ast('Map', {tt = 38, st = 'map'})
-Filter = ast('Filter', {tt = 39, st = 'filter'})
-ConcatMap = ast('ConcatMap', {tt = 40, st = 'concat_map'})
-OrderBy = ast('OrderBy', {tt = 41, st = 'order_by'})
-Distinct = ast('Distinct', {tt = 42, st = 'distinct'})
-Count = ast('Count', {tt = 43, st = 'count'})
-Union = ast('Union', {tt = 44, st = 'union'})
-Nth = ast('Nth', {tt = 45, st = 'nth'})
-ToJsonString = ast('ToJsonString', {tt = 172, st = 'to_json_string'})
-Match = ast('Match', {tt = 97, st = 'match'})
-Split = ast('Split', {tt = 149, st = 'split'})
-Upcase = ast('Upcase', {tt = 141, st = 'upcase'})
-Downcase = ast('Downcase', {tt = 142, st = 'downcase'})
-IsEmpty = ast('IsEmpty', {tt = 86, st = 'is_empty'})
-Group = ast('Group', {tt = 144, st = 'group'})
-Sum = ast('Sum', {tt = 145, st = 'sum'})
-Avg = ast('Avg', {tt = 146, st = 'avg'})
-Min = ast('Min', {tt = 147, st = 'min'})
-Max = ast('Max', {tt = 148, st = 'max'})
-InnerJoin = ast('InnerJoin', {tt = 48, st = 'inner_join'})
-OuterJoin = ast('OuterJoin', {tt = 49, st = 'outer_join'})
-EqJoin = ast('EqJoin', {tt = 50, st = 'eq_join'})
-Zip = ast('Zip', {tt = 72, st = 'zip'})
-CoerceTo = ast('CoerceTo', {tt = 51, st = 'coerce_to'})
-Ungroup = ast('Ungroup', {tt = 150, st = 'ungroup'})
-TypeOf = ast('TypeOf', {tt = 52, st = 'type_of'})
-Info = ast('Info', {tt = 79, st = 'info'})
-Sample = ast('Sample', {tt = 81, st = 'sample'})
-Update = ast('Update', {tt = 53, st = 'update'})
-Delete = ast('Delete', {tt = 54, st = 'delete'})
-Replace = ast('Replace', {tt = 55, st = 'replace'})
-Insert = ast('Insert', {tt = 56, st = 'insert'})
-DbCreate = ast('DbCreate', {tt = 57, st = 'db_create'})
-DbDrop = ast('DbDrop', {tt = 58, st = 'db_drop'})
-DbList = ast('DbList', {tt = 59, st = 'db_list'})
-TableCreate = ast('TableCreate', {tt = 60, st = 'table_create'})
-TableDrop = ast('TableDrop', {tt = 61, st = 'table_drop'})
-TableList = ast('TableList', {tt = 62, st = 'table_list'})
-IndexCreate = ast('IndexCreate', {tt = 75, st = 'index_create'})
-IndexDrop = ast('IndexDrop', {tt = 76, st = 'index_drop'})
-IndexRename = ast('IndexRename', {tt = 156, st = 'index_rename'})
-IndexList = ast('IndexList', {tt = 77, st = 'index_list'})
-IndexStatus = ast('IndexStatus', {tt = 139, st = 'index_status'})
-IndexWait = ast('IndexWait', {tt = 140, st = 'index_wait'})
-Sync = ast('Sync', {tt = 138, st = 'sync'})
-FunCall = ast('FunCall', {tt = 64, st = 'do_'})
-Default = ast('Default', {tt = 92, st = 'default'})
-Branch = ast('Branch', {tt = 65, st = 'branch'})
-Any = ast('Any', {tt = 66, st = 'any'})
 All = ast('All', {tt = 67, st = 'all'})
-ForEach = ast('ForEach', {tt = 68, st = 'for_each'})
-Func = ast('Func', {tt = 69, st = 'func'})
+Any = ast('Any', {tt = 66, st = 'any'})
+Append = ast('Append', {tt = 29, st = 'append'})
+April = ast('April', {tt = 117, st = 'april'})
+Args = ast('Args', {tt = 154, st = 'args'})
 Asc = ast('Asc', {tt = 73, st = 'asc'})
-Desc = ast('Desc', {tt = 74, st = 'desc'})
-Literal = ast('Literal', {tt = 137, st = 'literal'})
-ISO8601 = ast('ISO8601', {tt = 99, st = 'iso8601'})
-ToISO8601 = ast('ToISO8601', {tt = 100, st = 'to_iso8601'})
-EpochTime = ast('EpochTime', {tt = 101, st = 'epoch_time'})
-ToEpochTime = ast('ToEpochTime', {tt = 102, st = 'to_epoch_time'})
-Now = ast('Now', {tt = 103, st = 'now'})
-InTimezone = ast('InTimezone', {tt = 104, st = 'in_timezone'})
-During = ast('During', {tt = 105, st = 'during'})
+August = ast('August', {tt = 121, st = 'august'})
+Avg = ast('Avg', {tt = 146, st = 'avg'})
+Between = ast('Between', {tt = 36, st = 'between'})
+Binary = ast('Binary', {tt = 155, st = 'binary'})
+Bracket = ast('Bracket', {tt = 170, st = 'index'})
+Branch = ast('Branch', {tt = 65, st = 'branch'})
+ChangeAt = ast('ChangeAt', {tt = 84, st = 'change_at'})
+Changes = ast('Changes', {tt = 152, st = 'changes'})
+Circle = ast('Circle', {tt = 165, st = 'circle'})
+CoerceTo = ast('CoerceTo', {tt = 51, st = 'coerce_to'})
+ConcatMap = ast('ConcatMap', {tt = 40, st = 'concat_map'})
+Contains = ast('Contains', {tt = 93, st = 'contains'})
+Count = ast('Count', {tt = 43, st = 'count'})
 Date = ast('Date', {tt = 106, st = 'date'})
-TimeOfDay = ast('TimeOfDay', {tt = 126, st = 'time_of_day'})
-Timezone = ast('Timezone', {tt = 127, st = 'timezone'})
-Year = ast('Year', {tt = 128, st = 'year'})
-Month = ast('Month', {tt = 129, st = 'month'})
 Day = ast('Day', {tt = 130, st = 'day'})
 DayOfWeek = ast('DayOfWeek', {tt = 131, st = 'day_of_week'})
 DayOfYear = ast('DayOfYear', {tt = 132, st = 'day_of_year'})
-Hours = ast('Hours', {tt = 133, st = 'hours'})
-Minutes = ast('Minutes', {tt = 134, st = 'minutes'})
-Seconds = ast('Seconds', {tt = 135, st = 'seconds'})
-Time = ast('Time', {tt = 136, st = 'time'})
-GeoJson = ast('GeoJson', {tt = 157, st = 'geo_json'})
-ToGeoJson = ast('ToGeoJson', {tt = 158, st = 'to_geo_json'})
-Point = ast('Point', {tt = 159, st = 'point'})
-Line = ast('Line', {tt = 160, st = 'line'})
-Polygon = ast('Polygon', {tt = 161, st = 'polygon'})
+Db = ast('Db', {tt = 14, st = 'db'})
+DbCreate = ast('DbCreate', {tt = 57, st = 'db_create'})
+DbDrop = ast('DbDrop', {tt = 58, st = 'db_drop'})
+DbList = ast('DbList', {tt = 59, st = 'db_list'})
+December = ast('December', {tt = 125, st = 'december'})
+Default = ast('Default', {tt = 92, st = 'default'})
+Delete = ast('Delete', {tt = 54, st = 'delete'})
+DeleteAt = ast('DeleteAt', {tt = 83, st = 'delete_at'})
+Desc = ast('Desc', {tt = 74, st = 'desc'})
+Difference = ast('Difference', {tt = 95, st = 'difference'})
 Distance = ast('Distance', {tt = 162, st = 'distance'})
-Intersects = ast('Intersects', {tt = 163, st = 'intersects'})
-Includes = ast('Includes', {tt = 164, st = 'includes'})
-Circle = ast('Circle', {tt = 165, st = 'circle'})
+Distinct = ast('Distinct', {tt = 42, st = 'distinct'})
+Div = ast('Div', {tt = 27, st = 'div'})
+Do = ast('Do', {tt = 64, st = 'do_'})
+Downcase = ast('Downcase', {tt = 142, st = 'downcase'})
+During = ast('During', {tt = 105, st = 'during'})
+EpochTime = ast('EpochTime', {tt = 101, st = 'epoch_time'})
+Eq = ast('Eq', {tt = 17, st = 'eq'})
+EqJoin = ast('EqJoin', {tt = 50, st = 'eq_join'})
+Error = ast('Error', {tt = 12, st = 'error'})
+February = ast('February', {tt = 115, st = 'february'})
+Fill = ast('Fill', {tt = 167, st = 'fill'})
+Filter = ast('Filter', {tt = 39, st = 'filter'})
+ForEach = ast('ForEach', {tt = 68, st = 'for_each'})
+Friday = ast('Friday', {tt = 111, st = 'friday'})
+Func = ast('Func', {tt = 69, st = 'func'})
+Ge = ast('Ge', {tt = 22, st = 'ge'})
+Geojson = ast('Geojson', {tt = 157, st = 'geojson'})
+Get = ast('Get', {tt = 16, st = 'get'})
+GetAll = ast('GetAll', {tt = 78, st = 'get_all'})
+GetField = ast('GetField', {tt = 31, st = 'get_field'})
 GetIntersecting = ast('GetIntersecting', {tt = 166, st = 'get_intersecting'})
 GetNearest = ast('GetNearest', {tt = 168, st = 'get_nearest'})
-Fill = ast('Fill', {tt = 167, st = 'fill'})
+Group = ast('Group', {tt = 144, st = 'group'})
+Gt = ast('Gt', {tt = 21, st = 'gt'})
+HasFields = ast('HasFields', {tt = 32, st = 'has_fields'})
+Hours = ast('Hours', {tt = 133, st = 'hours'})
+Http = ast('Http', {tt = 153, st = 'http'})
+ISO8601 = ast('ISO8601', {tt = 99, st = 'iso8601'})
+InTimezone = ast('InTimezone', {tt = 104, st = 'in_timezone'})
+Includes = ast('Includes', {tt = 164, st = 'includes'})
+IndexCreate = ast('IndexCreate', {tt = 75, st = 'index_create'})
+IndexDrop = ast('IndexDrop', {tt = 76, st = 'index_drop'})
+IndexList = ast('IndexList', {tt = 77, st = 'index_list'})
+IndexRename = ast('IndexRename', {tt = 156, st = 'index_rename'})
+IndexStatus = ast('IndexStatus', {tt = 139, st = 'index_status'})
+IndexWait = ast('IndexWait', {tt = 140, st = 'index_wait'})
+IndexesOf = ast('IndexesOf', {tt = 87, st = 'indexes_of'})
+Info = ast('Info', {tt = 79, st = 'info'})
+InnerJoin = ast('InnerJoin', {tt = 48, st = 'inner_join'})
+Insert = ast('Insert', {tt = 56, st = 'insert'})
+InsertAt = ast('InsertAt', {tt = 82, st = 'insert_at'})
+Intersects = ast('Intersects', {tt = 163, st = 'intersects'})
+IsEmpty = ast('IsEmpty', {tt = 86, st = 'is_empty'})
+January = ast('January', {tt = 114, st = 'january'})
+JavaScript = ast('JavaScript', {tt = 11, st = 'js'})
+Json = ast('Json', {tt = 98, st = 'json'})
+July = ast('July', {tt = 120, st = 'july'})
+June = ast('June', {tt = 119, st = 'june'})
+Keys = ast('Keys', {tt = 94, st = 'keys'})
+Le = ast('Le', {tt = 20, st = 'le'})
+Limit = ast('Limit', {tt = 71, st = 'limit'})
+Line = ast('Line', {tt = 160, st = 'line'})
+Literal = ast('Literal', {tt = 137, st = 'literal'})
+Lt = ast('Lt', {tt = 19, st = 'lt'})
+MakeArray = ast('MakeArray', {tt = 2, st = 'array'})
+MakeObj = ast('MakeObj', {tt = 3, st = 'make_obj'})
+Map = ast('Map', {tt = 38, st = 'map'})
+March = ast('March', {tt = 116, st = 'march'})
+Match = ast('Match', {tt = 97, st = 'match'})
+Max = ast('Max', {tt = 148, st = 'max'})
+May = ast('May', {tt = 118, st = 'may'})
+Merge = ast('Merge', {tt = 35, st = 'merge'})
+Min = ast('Min', {tt = 147, st = 'min'})
+Minutes = ast('Minutes', {tt = 134, st = 'minutes'})
+Mod = ast('Mod', {tt = 28, st = 'mod'})
+Monday = ast('Monday', {tt = 107, st = 'monday'})
+Month = ast('Month', {tt = 129, st = 'month'})
+Mul = ast('Mul', {tt = 26, st = 'mul'})
+Ne = ast('Ne', {tt = 18, st = 'ne'})
+Not = ast('Not', {tt = 23, st = 'not_'})
+November = ast('November', {tt = 124, st = 'november'})
+Now = ast('Now', {tt = 103, st = 'now'})
+Nth = ast('Nth', {tt = 45, st = 'nth'})
+Object = ast('Object', {tt = 143, st = 'object'})
+October = ast('October', {tt = 123, st = 'october'})
+OrderBy = ast('OrderBy', {tt = 41, st = 'order_by'})
+OuterJoin = ast('OuterJoin', {tt = 49, st = 'outer_join'})
+Pluck = ast('Pluck', {tt = 33, st = 'pluck'})
+Point = ast('Point', {tt = 159, st = 'point'})
+Polygon = ast('Polygon', {tt = 161, st = 'polygon'})
 PolygonSub = ast('PolygonSub', {tt = 171, st = 'polygon_sub'})
+Prepend = ast('Prepend', {tt = 80, st = 'prepend'})
+Random = ast('Random', {tt = 151, st = 'random'})
+Reduce = ast('Reduce', {tt = 37, st = 'reduce'})
+Replace = ast('Replace', {tt = 55, st = 'replace'})
+Sample = ast('Sample', {tt = 81, st = 'sample'})
+Saturday = ast('Saturday', {tt = 112, st = 'saturday'})
+Seconds = ast('Seconds', {tt = 135, st = 'seconds'})
+September = ast('September', {tt = 122, st = 'september'})
+SetDifference = ast('SetDifference', {tt = 91, st = 'set_difference'})
+SetInsert = ast('SetInsert', {tt = 88, st = 'set_insert'})
+SetIntersection = ast('SetIntersection', {tt = 89, st = 'set_intersection'})
+SetUnion = ast('SetUnion', {tt = 90, st = 'set_union'})
+Skip = ast('Skip', {tt = 70, st = 'skip'})
+Slice = ast('Slice', {tt = 30, st = 'slice'})
+SpliceAt = ast('SpliceAt', {tt = 85, st = 'splice_at'})
+Split = ast('Split', {tt = 149, st = 'split'})
+Sub = ast('Sub', {tt = 25, st = 'sub'})
+Sum = ast('Sum', {tt = 145, st = 'sum'})
+Sunday = ast('Sunday', {tt = 113, st = 'sunday'})
+Sync = ast('Sync', {tt = 138, st = 'sync'})
+Table = ast('Table', {tt = 15, st = 'table'})
+TableCreate = ast('TableCreate', {tt = 60, st = 'table_create'})
+TableDrop = ast('TableDrop', {tt = 61, st = 'table_drop'})
+TableList = ast('TableList', {tt = 62, st = 'table_list'})
+Thursday = ast('Thursday', {tt = 110, st = 'thursday'})
+Time = ast('Time', {tt = 136, st = 'time'})
+TimeOfDay = ast('TimeOfDay', {tt = 126, st = 'time_of_day'})
+Timezone = ast('Timezone', {tt = 127, st = 'timezone'})
+ToEpochTime = ast('ToEpochTime', {tt = 102, st = 'to_epoch_time'})
+ToGeojson = ast('ToGeojson', {tt = 158, st = 'to_geojson'})
+ToISO8601 = ast('ToISO8601', {tt = 100, st = 'to_iso8601'})
+ToJsonString = ast('ToJsonString', {tt = 172, st = 'to_json_string'})
+Tuesday = ast('Tuesday', {tt = 108, st = 'tuesday'})
+TypeOf = ast('TypeOf', {tt = 52, st = 'type_of'})
 UUID = ast('UUID', {tt = 169, st = 'uuid'})
+Ungroup = ast('Ungroup', {tt = 150, st = 'ungroup'})
+Union = ast('Union', {tt = 44, st = 'union'})
+Upcase = ast('Upcase', {tt = 141, st = 'upcase'})
+Update = ast('Update', {tt = 53, st = 'update'})
+Var = ast('Var', {tt = 10, st = 'var'})
+Wednesday = ast('Wednesday', {tt = 109, st = 'wednesday'})
+WithFields = ast('WithFields', {tt = 96, st = 'with_fields'})
+Without = ast('Without', {tt = 34, st = 'without'})
+Year = ast('Year', {tt = 128, st = 'year'})
+Zip = ast('Zip', {tt = 72, st = 'zip'})
 
 -- All top level exported functions
 
-function r.js(jssrc, opts)
-  return JavaScript(opts, jssrc)
+function r.js(...)
+  return JavaScript(get_opts(...))
 end
-function r.http(url, opts)
-  return Http(opts, url)
+function r.http(...)
+  return Http(get_opts(...))
 end
 function r.json(...)
   return Json({}, ...)
@@ -1141,23 +1015,13 @@ function r.error(...)
   return Error({}, ...)
 end
 function r.random(...)
-  -- Default if no opts dict provided
-  local opts = {}
-  local limits = {...}
-
-  -- Look for opts dict
-  local perhaps_opt_dict = limits[limits.n]
-  if (type(perhaps_opt_dict) == 'table') and (not is_instance(ReQLOp, perhaps_opt_dict)) then
-    opts = perhaps_opt_dict
-    limits[limits.n] = nil
-  end
-  return Random(opts, unpack(limits))
+  return Random(get_opts(...))
 end
-function r.binary(data)
-  return Binary(data)
+function r.binary(...)
+  return Binary({}, ...)
 end
-function r.table(tbl_name, opts)
-  return Table(opts, tbl_name)
+function r.table(...)
+  return Table(get_opts(...))
 end
 function r.db(...)
   return Db({}, ...)
@@ -1171,8 +1035,8 @@ end
 function r.db_list(...)
   return DbList({}, ...)
 end
-function r.table_create(tbl_name, opts)
-  return TableCreate(opts, tbl_name)
+function r.table_create(...)
+  return TableCreate(get_opts(...))
 end
 function r.table_drop(...)
   return TableDrop({}, ...)
@@ -1181,10 +1045,7 @@ function r.table_list(...)
   return TableList({}, ...)
 end
 function r.do_(...)
-  args = {...}
-  func = Func({arity = args.n - 1}, args[args.n])
-  args[args.n] = nil
-  return FunCall({}, func, unpack(args))
+  return FunCall({}, ...)
 end
 function r.branch(...)
   return Branch({}, ...)
@@ -1213,14 +1074,8 @@ end
 function r.ge(...)
   return Ge({}, ...)
 end
-function r.or_(...)
-  return Any({}, ...)
-end
 function r.any(...)
   return Any({}, ...)
-end
-function r.and_(...)
-  return All({}, ...)
 end
 function r.all(...)
   return All({}, ...)
@@ -1252,8 +1107,8 @@ end
 function r.literal(...)
   return Literal({}, ...)
 end
-function r.iso8601(str, opts)
-  return ISO8601(opts, str)
+function r.iso8601(...)
+  return ISO8601(get_opts(...))
 end
 function r.epoch_time(...)
   return EpochTime({}, ...)
@@ -1265,26 +1120,26 @@ function r.time(...)
   return Time({}, ...)
 end
 
-r.monday = ast('Monday', {tt = 107, st = 'monday'})()
-r.tuesday = ast('Tuesday', {tt = 108, st = 'tuesday'})()
-r.wednesday = ast('Wednesday', {tt = 109, st = 'wednesday'})()
-r.thursday = ast('Thursday', {tt = 110, st = 'thursday'})()
-r.friday = ast('Friday', {tt = 111, st = 'friday'})()
-r.saturday = ast('Saturday', {tt = 112, st = 'saturday'})()
-r.sunday = ast('Sunday', {tt = 113, st = 'sunday'})()
+r.monday = Monday()
+r.tuesday = Tuesday()
+r.wednesday = Wednesday()
+r.thursday = Thursday()
+r.friday = Friday()
+r.saturday = Saturday()
+r.sunday = Sunday()
 
-r.january = ast('January', {tt = 114, st = 'january'})()
-r.february = ast('February', {tt = 115, st = 'february'})()
-r.march = ast('March', {tt = 116, st = 'march'})()
-r.april = ast('April', {tt = 117, st = 'april'})()
-r.may = ast('May', {tt = 118, st = 'may'})()
-r.june = ast('June', {tt = 119, st = 'june'})()
-r.july = ast('July', {tt = 120, st = 'july'})()
-r.august = ast('August', {tt = 121, st = 'august'})()
-r.september = ast('September', {tt = 122, st = 'september'})()
-r.october = ast('October', {tt = 123, st = 'october'})()
-r.november = ast('November', {tt = 124, st = 'november'})()
-r.december = ast('December', {tt = 125, st = 'december'})()
+r.january = January()
+r.february = February()
+r.march = March()
+r.april = April()
+r.may = May()
+r.june = June()
+r.july = July()
+r.august = August()
+r.september = September()
+r.october = October()
+r.november = November()
+r.december = December()
 
 function r.object(...)
   return Object({}, ...)
@@ -1307,108 +1162,14 @@ end
 function r.intersects(...)
   return Intersects({}, ...)
 end
-function r.distance(g1, g2, opts)
-  return Distance(opts, g1, g2)
+function r.distance(...)
+  return Distance(get_opts(...))
 end
-function r.circle(cen, rad, opts)
-  return Circle(opts, cen, rad)
+function r.circle(...)
+  return Circle(get_opts(...))
 end
 function r.uuid(...)
   return UUID({}, ...)
-end
-
-function bytes_to_int(str)
-  local t = {str:byte(1,-1)}
-  local n = 0
-  for k=1,#t do
-    n = n + t[k] * 2 ^ ((k - 1) * 8)
-  end
-  return n
-end
-
-function div_mod(num, den)
-  return math.floor(num / den), math.fmod(num, den)
-end
-
-function int_to_bytes(num, bytes)
-  local res = {}
-  local mul = 0
-  for k=bytes,1,-1 do
-    res[k], num = div_mod(num, 2 ^ (8 * (k - 1)))
-  end
-  return string.char(unpack(res))
-end
-
-function convert_pseudotype(obj, opts)
-  -- An R_OBJECT may be a regular object or a 'pseudo-type' so we need a
-  -- second layer of type switching here on the obfuscated field '$reql_type$'
-  local _exp_0 = obj['$reql_type$']
-  if 'TIME' == _exp_0 then
-    local _exp_1 = opts.time_format
-    if 'native' == _exp_1 or not _exp_1 then
-      if not (obj['epoch_time']) then
-        error(err.ReQLDriverError('pseudo-type TIME ' .. tostring(obj) .. ' object missing expected field `epoch_time`.'))
-      end
-
-      -- We ignore the timezone field of the pseudo-type TIME object. JS dates do not support timezones.
-      -- By converting to a native date object we are intentionally throwing out timezone information.
-
-      -- field 'epoch_time' is in seconds but the Date constructor expects milliseconds
-      return (Date(obj['epoch_time'] * 1000))
-    elseif 'raw' == _exp_1 then
-      -- Just return the raw (`{'$reql_type$'...}`) object
-      return obj
-    else
-      error(err.ReQLDriverError('Unknown time_format run option ' .. tostring(opts.time_format) .. '.'))
-    end
-  elseif 'GROUPED_DATA' == _exp_0 then
-    local _exp_1 = opts.group_format
-    if 'native' == _exp_1 or not _exp_1 then
-      -- Don't convert the data into a map, because the keys could be objects which doesn't work in JS
-      -- Instead, we have the following format:
-      -- [ { 'group': <group>, 'reduction': <value(s)> } }, ... ]
-      res = {}
-      j = 1
-      for i, v in ipairs(obj['data']) do
-        res[j] = {
-          group = i,
-          reduction = v
-        }
-        j = j + 1
-      end
-      obj = res
-    elseif 'raw' == _exp_1 then
-      return obj
-    else
-      error(err.ReQLDriverError('Unknown group_format run option ' .. tostring(opts.group_format) .. '.'))
-    end
-  elseif 'BINARY' == _exp_0 then
-    local _exp_1 = opts.binary_format
-    if 'native' == _exp_1 or not _exp_1 then
-      if not obj.data then
-        error(err.ReQLDriverError('pseudo-type BINARY object missing expected field `data`.'))
-      end
-      return (mime.unb64(obj.data))
-    elseif 'raw' == _exp_1 then
-      return obj
-    else
-      error(err.ReQLDriverError('Unknown binary_format run option ' .. tostring(opts.binary_format) .. '.'))
-    end
-  else
-    -- Regular object or unknown pseudo type
-    return obj
-  end
-end
-
-function recursively_convert_pseudotype(obj, opts)
-  if type(obj) == 'table' then
-    for key, value in pairs(obj) do
-      obj[key] = recursively_convert_pseudotype(value, opts)
-    end
-    obj = convert_pseudotype(obj, opts)
-  end
-  if obj == json.util.null then return nil end
-  return obj
 end
 
 Cursor = class(
@@ -1446,7 +1207,7 @@ Cursor = class(
       self._conn:_get_response(self._token)
     end,
     -- Implement IterableResult
-    next = function(self, cb)
+    next = function(self, callback)
       -- Try to get a row out of the responses
       while not self._responses[1] do
         if self._end_flag then
@@ -1459,7 +1220,12 @@ Cursor = class(
       -- Error responses are not discarded, and the error will be sent to all future callbacks
       local t = response.t
       if t == 1 or t == 3 or t == 5 or t == 2 then
-        local row = recursively_convert_pseudotype(response.r[self._response_index], self._opts)
+        local row, err = pcall(
+          recursively_convert_pseudotype,
+          response.r[self._response_index],
+          self._opts
+        )
+        if err then row = response.r[self._response_index] end
         self._response_index = self._response_index + 1
 
         -- If we're done with this response, discard it
@@ -1467,7 +1233,8 @@ Cursor = class(
           table.remove(self._responses, 1)
           self._response_index = 1
         end
-        return cb(nil, row)
+
+        return cb(err, row)
       elseif t == 17 then
         return cb(ReQLCompileError(response.r[1], self._root, response.b))
       elseif t == 16 then
@@ -1479,49 +1246,46 @@ Cursor = class(
       end
       return cb(ReQLDriverError('Unknown response type ' .. t))
     end,
-    close = function(self, cb)
+    close = function(self, callback)
       if not self._end_flag then
         self._conn:_end_query(self._token)
       end
       if cb then return cb() end
     end,
-    each = function(self, cb, on_finished)
+    each = function(self, callback, on_finished)
       if type(cb) ~= 'function' then
-        error(ReQLDriverError('First argument to each must be a function.'))
+        error('First argument to each must be a function.')
       end
       if on_finished and type(on_finished) ~= 'function' then
-        error(ReQLDriverError('Optional second argument to each must be a function.'))
+        error('Optional second argument to each must be a function.')
       end
       function next_cb(err, data)
         if err then
-          if err.message ~= 'ReQLDriverError No more rows in the cursor.' then
-            return cb(err)
+          if err.message == 'ReQLDriverError No more rows in the cursor.' then
+            err = nil
           end
           if on_finished then
-            return on_finished()
+            return on_finished(err)
           end
         else
-          cb(nil, data)
+          cb(data)
           return self:next(next_cb)
         end
       end
       return self:next(next_cb)
     end,
-    to_array = function(self, cb)
+    to_array = function(self, callback)
       if not self._type then self:_prompt_cont() end
       if self._type == 5 then
         return cb(ReQLDriverError('`to_array` is not available for feeds.'))
       end
       local arr = {}
       return self:each(
-        function(err, row)
-          if err then
-            return cb(err)
-          end
+        function(row)
           table.insert(arr, row)
         end,
-        function()
-          return cb(nil, arr)
+        function(err)
+          return cb(err, arr)
         end
       )
     end,
@@ -1653,7 +1417,7 @@ Connection = class(
       local cursor = self.outstanding_callbacks[token]
       if not cursor then
         -- Unexpected token
-        error(ReQLDriverError('Unexpected token ' .. token .. '.'))
+        error('Unexpected token ' .. token .. '.')
       end
       cursor = cursor.cursor
       if cursor then
@@ -1665,31 +1429,24 @@ Connection = class(
       local cb
       if callback then
         if type(opts_or_callback) ~= 'table' then
-          error(ReQLDriverError('First argument to two-argument `close` must be an object.'))
+          error('First argument to two-argument `close` must be a table.')
         end
         opts = opts_or_callback
         cb = callback
-      else
-        if type(opts_or_callback) == 'table' then
+      elseif type(opts_or_callback) == 'table' then
           opts = opts_or_callback
-        else
-          if type(opts_or_callback) == 'function' then
-            cb = opts_or_callback
-          end
-        end
+      elseif type(opts_or_callback) == 'function' then
+        cb = opts_or_callback
       end
 
-      if cb and type(cb) ~= 'function' then
-        error(ReQLDriverError('First argument to two-argument `close` must be an object.'))
-      end
-
-      local wrapped_cb = function(...)
+      function wrapped_cb(err)
         self.open = false
         self.raw_socket:shutdown()
         self.raw_socket:close()
         if cb then
-          return cb(...)
+          return cb(err)
         end
+        return nil, err
       end
 
       local noreply_wait = opts.noreply_wait and self.open
@@ -1699,15 +1456,13 @@ Connection = class(
       end
       return wrapped_cb()
     end,
-    noreply_wait = function(self, cb)
+    noreply_wait = function(self, callback)
       if type(cb) ~= 'function' then
-        cb = function() end
+        cb = function(err) return nil, err end
       end
       function callback(err, cur)
         if cur then
-          local res = cur.next(function(err) return cb(err) end)
-          cur:close()
-          return res
+          return cur.next(function(err) return cb(err) end)
         end
         return cb(err)
       end
@@ -1737,35 +1492,30 @@ Connection = class(
         data
       )
     end,
-    cancel = function(self)
-      self.raw_socket.destroy()
-      self.outstanding_callbacks = {}
-    end,
     reconnect = function(self, opts_or_callback, callback)
-      local opts, cb
+      local opts
       if callback then
         opts = opts_or_callback
-        cb = callback
+      elseif type(opts_or_callback) == 'function' then
+        opts = {}
+        callback = opts_or_callback
       else
-        if type(opts_or_callback) == 'function' then
-          opts = {}
-          cb = opts_or_callback
-        else
-          if opts_or_callback then
-            opts = opts_or_callback
-          else
-            opts = {}
-          end
-          cb = callback
-        end
+        opts = opts_or_callback or {}
       end
-      local close_cb = function(err)
+      function cb(err, conn)
+        if callback then
+          local res = callback(err, conn)
+          conn:close({noreply_wait = false})
+          return res
+        end
+        return conn, err
+      end
+      return self:close(opts, function(err)
         if err then
           return cb(err)
         end
         return Connection(self, cb)
-      end
-      return self:close(opts, close_cb)
+      end)
     end,
     use = function(self, db)
       self.db = db
@@ -1799,16 +1549,18 @@ Connection = class(
       -- Save cursor
       self.outstanding_callbacks[token] = {cursor = cursor}
       self:_send_query(token, query)
+      local res
       if type(cb) == 'function' and not opts.noreply then
-        local res = cb(nil, cursor)
-        cursor:close()
-        return res
+        res = cb(nil, cursor)
       end
+      cursor:close()
+      return res
     end,
     _continue_query = function(self, token)
       return self:_write_query(token, '[' .. 2 .. ']')
     end,
     _end_query = function(self, token)
+      self:_del_query(token)
       return self:_write_query(token, '[' .. 3 .. ']')
     end,
     _send_query = function(self, token, query)

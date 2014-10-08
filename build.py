@@ -61,9 +61,69 @@ def build(args):
 
     print('building rethinkdb.lua')
 
+    name_re = re.compile('(^|_)(\w)')
+    ast_constants = {
+        term for term in dir(protodef.Term.TermType)
+        if not term.startswith('__')
+    } - {'DATUM', 'IMPLICIT_VAR'}
+    ast_class_names = {
+        name: {
+            'FUNCALL': 'Do', 'ISO8601': 'ISO8601',
+            'JAVASCRIPT': 'JavaScript', 'TO_ISO8601': 'ToISO8601',
+            'UUID': 'UUID'
+        }.get(name, name_re.sub(lambda m: m.group(2).upper(), name.lower()))
+        for name in ast_constants
+    }
+    ast_method_names = {
+        name: {
+            'BRACKET': 'index', 'FUNCALL': 'do_', 'JAVASCRIPT': 'js',
+            'MAKE_ARRAY': 'array', 'NOT': 'not_'
+        }.get(name, name.lower())
+        for name in ast_constants
+    }
+    ast_classes = [
+        '{0} = ast(\'{0}\', {{tt = {1}, st = \'{2}\'}})'.format(
+            ast_class_names[name],
+            getattr(protodef.Term.TermType, name),
+            ast_method_names[name]
+        ) for name in ast_constants
+    ]
+    ast_methods_w_opt = {
+        name: '{} = function(...) return {}(get_opts(...)) end'
+        for name in (
+            'BETWEEN', 'CIRCLE', 'DELETE', 'DISTANCE', 'DISTANCE', 'DISTINCT',
+            'DURING', 'EQ_JOIN', 'FILTER', 'GET_ALL', 'GET_INTERSECTING',
+            'GET_NEAREST', 'GROUP', 'HTTP', 'INDEX_CREATE', 'INDEX_RENAME',
+            'INSERT', 'ISO8601', 'JAVASCRIPT', 'ORDER_BY', 'RANDOM', 'REPLACE',
+            'SLICE', 'TABLE', 'TABLE', 'TABLE_CREATE', 'TABLE_CREATE', 'UPDATE'
+        )
+    }
+    ast_methods = [
+        ast_methods_w_opt.get(
+            name,
+            '{} = function(...) return {}({{}}, ...) end'
+        ).format(
+            ast_method_names[name],
+            ast_class_names[name]
+        ) for name in ast_constants
+    ]
+
+    ast_class_names = list(ast_class_names.values())
+    ast_class_names.sort(reverse=True)
+
+    lines = ['local {}'.format(ast_class_names.pop())]
+    while ast_class_names:
+        name = ast_class_names.pop()
+        if len(lines[-1]) + len(name) < 77:
+            lines[-1] += ', {}'.format(name)
+        else:
+            lines.append('local {}'.format(name))
+
+    ast_classes.sort()
+    ast_methods.sort()
+
     class BuildFormat(string.Formatter):
         fspec = re.compile('--\[\[(.+?)\]\]')
-        terms_found = set()
 
         def parse(self, string):
             last = 0
@@ -72,50 +132,12 @@ def build(args):
                 last = match.end()
             yield string[last:], None, None, None
 
-        def get_field(self, name, args, kwargs):
-            if name.startswith('Term.'):
-                self.terms_found.add(name[5:])
-            if name.startswith('Class.'):
-                self.terms_found.add(name[6:])
-            return super(BuildFormat, self).get_field(name, args, kwargs)
-
-        def check_unused_args(self, used, args, kwargs):
-            expected = {
-                term for term in dir(protodef.Term.TermType)
-                if not term.startswith('__')
-            } - {'DATUM', 'IMPLICIT_VAR'}
-            unused = expected - self.terms_found
-            if unused:
-                raise ValueError('Found {} unused terms.'.format(unused))
-
-    class LuaClassBuilder:
-        names = re.compile('(^|_)(\w)')
-
-        def __getattr__(self, name):
-            st = name.lower()
-            st = {
-                'bracket': '(...)', 'fun_call': 'do_', 'javascript': 'js',
-                'make_array': '{...}', 'not': 'not_'
-            }.get(st, st)
-            return '\'{}\', {{tt = {}, st = \'{}\'}}'.format(
-                self.get_class_name(name),
-                getattr(protodef.Term.TermType, name),
-                st
-            )
-
-        def get_class_name(self, name):
-            cls = {
-                'ISO8601': 'ISO8601', 'JAVASCRIPT': 'JavaScript',
-                'TO_ISO8601': 'ToISO8601', 'UUID': 'UUID'
-            }.get(name)
-            if cls:
-                return cls
-            return self.names.sub(lambda m: m.group(2).upper(), name.lower())
-
     with open('src/rethinkdb.pre.lua') as io:
         s = io.read()
     s = BuildFormat().vformat(s, (), {
-        'Class': LuaClassBuilder(),
+        'AstClasses': '\n'.join(ast_classes),
+        'AstMethods': ',\n  '.join(ast_methods),
+        'AstNames': '\n'.join(lines),
         'Protocol': protodef.VersionDummy.Protocol,
         'Query': protodef.Query.QueryType,
         'Response': protodef.Response.ResponseType,
