@@ -1010,20 +1010,19 @@ Connection = class(
       local token = self.next_token
       self.next_token = self.next_token + 1
 
+      -- Set global options
+      local global_opts = {}
+
       for k, v in pairs(opts) do
-        if k == 'use_outdated' or k == 'noreply' or k == 'profile' then
-          v = not not v
-        end
-        opts[k] = r(v):build()
+        global_opts[k] = r(v):build()
       end
 
-      -- Set global options
-      if self.db then
-        opts.db = r.db(self.db):build()
+      if self.db and not opts.db then
+        global_opts.db = r.db(self.db):build()
       end
 
       -- Construct query
-      local query = {--[[Query.START]], term:build(), opts}
+      local query = {--[[Query.START]], term:build(), global_opts}
 
       local cursor = Cursor(self, token, opts, term)
 
