@@ -1224,7 +1224,7 @@ Connection = class(
         end
         self.buffer = self.buffer .. buf
         if response_length > 0 then
-          if string.len(self.buffer) >= response_length then
+          if #self.buffer >= response_length then
             local response_buffer = string.sub(self.buffer, 1, response_length)
             self.buffer = string.sub(self.buffer, response_length + 1)
             response_length = 0
@@ -1232,7 +1232,7 @@ Connection = class(
             if token == reqest_token then return end
           end
         else
-          if string.len(self.buffer) >= 12 then
+          if #self.buffer >= 12 then
             token = bytes_to_int(self.buffer:sub(1, 8))
             response_length = bytes_to_int(self.buffer:sub(9, 12))
             self.buffer = self.buffer:sub(13)
