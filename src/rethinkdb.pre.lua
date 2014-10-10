@@ -23,7 +23,7 @@ setmetatable(r, {
     if nesting_depth <= 0 then
       error('Nesting depth limit exceeded')
     end
-    if is_instance(val, ReQLOp) then
+    if is_instance(val, 'ReQLOp') then
       return val
     end
     if type(val) == 'function' then
@@ -169,7 +169,7 @@ function get_opts(...)
   local args = {...}
   local opt = {}
   local pos_opt = args[-1]
-  if (type(pos_opt) == 'table') and (not is_instance(pos_opt, ReQLOp)) then
+  if (type(pos_opt) == 'table') and (not is_instance(pos_opt, 'ReQLOp')) then
     opt = pos_opt
     args[-1] = nil
   end
@@ -410,7 +410,7 @@ class_methods = {
       optargs.arity = nil
       self.args = {MakeArray({}, unpack(arg_nums)), r(first)}
     elseif self.tt == --[[Term.BINARY]] then
-      if is_instance(first, ReQLOp) then
+      if is_instance(first, 'ReQLOp') then
       elseif type(first) == 'string' then
         self.base64_data = mime.b64(first)
       else
@@ -497,7 +497,7 @@ class_methods = {
       }
     end
     if self.tt == --[[Term.TABLE]] then
-      if is_instance(self.args[1], Db) then
+      if is_instance(self.args[1], 'Db') then
         return {
           args[1],
           ':table(',
@@ -603,7 +603,6 @@ end
 -- AST classes
 
 ReQLOp = class('ReQLOp', class_methods)
-
 
 local meta = {
   __call = function(...)
