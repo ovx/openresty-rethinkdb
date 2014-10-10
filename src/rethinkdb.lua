@@ -1312,16 +1312,9 @@ Connection = class(
       self.outstanding_callbacks[token] = {cursor = cursor}
 
       -- Construct query
-      self:_write_query(token, '[' .. 4 .. ']')
+      self:_send_query(token, {4})
 
       return callback(nil, cursor)
-    end,
-    _write_query = function(self, token, data)
-      self.raw_socket:send(
-        int_to_bytes(token, 8) ..
-        int_to_bytes(#data, 4) ..
-        data
-      )
     end,
     reconnect = function(self, opts_or_callback, callback)
       local opts
@@ -1388,14 +1381,19 @@ Connection = class(
       return res
     end,
     _continue_query = function(self, token)
-      return self:_write_query(token, '[' .. 2 .. ']')
+      self:_send_query(token, {2})
     end,
     _end_query = function(self, token)
       self:_del_query(token)
-      return self:_write_query(token, '[' .. 3 .. ']')
+      self:_send_query(token, {3})
     end,
     _send_query = function(self, token, query)
-      return self:_write_query(token, json.encode(query))
+      local data = json.encode(query)
+      self.raw_socket:send(
+        int_to_bytes(token, 8) ..
+        int_to_bytes(#data, 4) ..
+        data
+      )
     end
   }
 )
