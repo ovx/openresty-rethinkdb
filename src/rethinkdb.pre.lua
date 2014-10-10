@@ -12,6 +12,30 @@ local DatumTerm, ReQLOp
 local ReQLDriverError, ReQLServerError, ReQLRuntimeError, ReQLCompileError
 local ReQLClientError, ReQLQueryPrinter, ReQLError
 
+function is_instance(obj, ...)
+  local class_list = {...}
+
+  for _, class in ipairs(class_list) do
+    if type(class) == 'string' and type(obj) == class then
+      return true
+    else
+      class = class.__name
+    end
+
+    if type(obj) == 'table' then
+      local obj_cls = obj.__class
+      while obj_cls do
+        if obj_cls.__name == class then
+          return true
+        end
+        obj_cls = obj_cls.__parent
+      end
+    end
+  end
+
+  return false
+end
+
 setmetatable(r, {
   __call = function(cls, val, nesting_depth)
     if nesting_depth == nil then
@@ -43,6 +67,10 @@ setmetatable(r, {
     return DatumTerm(val)
   end
 })
+
+function should_wrap(arg)
+  return is_instance(arg, 'DatumTerm', 'MakeArray', 'MakeObj')
+end
 
 function class(name, parent, base)
   local index, init
@@ -95,30 +123,6 @@ function class(name, parent, base)
   return _class_0
 end
 
-function is_instance(obj, ...)
-  local class_list = {...}
-
-  for _, class in ipairs(class_list) do
-    if type(class) == 'string' and type(obj) == class then
-      return true
-    else
-      class = class.__name
-    end
-
-    if type(obj) == 'table' then
-      local obj_cls = obj.__class
-      while obj_cls do
-        if obj_cls.__name == class then
-          return true
-        end
-        obj_cls = obj_cls.__parent
-      end
-    end
-  end
-
-  return false
-end
-
 function intsp(seq)
   if seq[1] == nil then
     return {}
@@ -159,10 +163,6 @@ function intspallargs(args, optargs)
     table.insert(argrepr, kved(optargs))
   end
   return argrepr
-end
-
-function should_wrap(arg)
-  return is_instance(arg, DatumTerm, MakeArray, MakeObj)
 end
 
 function get_opts(...)
