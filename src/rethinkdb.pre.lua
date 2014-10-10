@@ -927,7 +927,7 @@ Connection = class(
         opts = opts_or_callback
         cb = callback
       elseif type(opts_or_callback) == 'table' then
-          opts = opts_or_callback
+        opts = opts_or_callback
       elseif type(opts_or_callback) == 'function' then
         cb = opts_or_callback
       end
