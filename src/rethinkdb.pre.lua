@@ -1001,10 +1001,10 @@ Connection = class(
         local buf, err, partial
         -- Initialize connection with magic number to validate version
         self.raw_socket:send(
-          int_to_bytes(--[[Version.V0_3]], 4) ..
+          --[[Version]] ..
           int_to_bytes(self.auth_key:len(), 4) ..
           self.auth_key ..
-          int_to_bytes(--[[Protocol.JSON]], 4)
+          --[[Protocol]]
         )
 
         -- Now we have to wait for a response from the server

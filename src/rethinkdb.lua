@@ -1337,10 +1337,10 @@ Connection = class(
         local buf, err, partial
         -- Initialize connection with magic number to validate version
         self.raw_socket:send(
-          int_to_bytes(1601562686, 4) ..
+          '\62\232\117\95' ..
           int_to_bytes(self.auth_key:len(), 4) ..
           self.auth_key ..
-          int_to_bytes(2120839367, 4)
+          '\199\112\105\126'
         )
 
         -- Now we have to wait for a response from the server

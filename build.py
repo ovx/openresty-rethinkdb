@@ -1,4 +1,5 @@
 import argparse
+import struct
 import subprocess
 
 
@@ -122,6 +123,11 @@ def build(args):
     ast_classes.sort()
     ast_methods.sort()
 
+    def encode_magic(num):
+        return "'\\{}'".format('\\'.join(map(str, struct.pack(
+            "<L", num
+        ))))
+
     class BuildFormat(string.Formatter):
         fspec = re.compile('--\[\[(.+?)\]\]')
 
@@ -138,11 +144,11 @@ def build(args):
         'AstClasses': '\n'.join(ast_classes),
         'AstMethods': ',\n  '.join(ast_methods),
         'AstNames': '\n'.join(lines),
-        'Protocol': protodef.VersionDummy.Protocol,
+        'Protocol': encode_magic(protodef.VersionDummy.Protocol.JSON),
         'Query': protodef.Query.QueryType,
         'Response': protodef.Response.ResponseType,
         'Term': protodef.Term.TermType,
-        'Version': protodef.VersionDummy.Version
+        'Version': encode_magic(protodef.VersionDummy.Version.V0_3)
     })
     with open('src/rethinkdb.lua', 'w') as io:
         io.write(s)
