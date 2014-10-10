@@ -378,6 +378,8 @@ ReQLQueryPrinter = class(
   }
 )
 
+-- All top level exported functions
+
 ast_methods = {
   run = function(self, connection, options, callback)
     -- Valid syntaxes are
@@ -782,7 +784,6 @@ end
 
 ReQLOp = class('ReQLOp', class_methods)
 
-
 local meta = {
   __call = function(...)
     return Bracket({}, ...)
@@ -1001,178 +1002,6 @@ WithFields = ast('WithFields', {tt = 96, st = 'with_fields'})
 Without = ast('Without', {tt = 34, st = 'without'})
 Year = ast('Year', {tt = 128, st = 'year'})
 Zip = ast('Zip', {tt = 72, st = 'zip'})
-
--- All top level exported functions
-
-function r.js(...)
-  return JavaScript(get_opts(...))
-end
-function r.http(...)
-  return Http(get_opts(...))
-end
-function r.json(...)
-  return Json({}, ...)
-end
-function r.error(...)
-  return Error({}, ...)
-end
-function r.random(...)
-  return Random(get_opts(...))
-end
-function r.binary(...)
-  return Binary({}, ...)
-end
-function r.table(...)
-  return Table(get_opts(...))
-end
-function r.db(...)
-  return Db({}, ...)
-end
-function r.db_create(...)
-  return DbCreate({}, ...)
-end
-function r.db_drop(...)
-  return DbDrop({}, ...)
-end
-function r.db_list(...)
-  return DbList({}, ...)
-end
-function r.table_create(...)
-  return TableCreate(get_opts(...))
-end
-function r.table_drop(...)
-  return TableDrop({}, ...)
-end
-function r.table_list(...)
-  return TableList({}, ...)
-end
-function r.do_(...)
-  return FunCall({}, ...)
-end
-function r.branch(...)
-  return Branch({}, ...)
-end
-function r.asc(...)
-  return Asc({}, ...)
-end
-function r.desc(...)
-  return Desc({}, ...)
-end
-function r.eq(...)
-  return Eq({}, ...)
-end
-function r.ne(...)
-  return Ne({}, ...)
-end
-function r.lt(...)
-  return Lt({}, ...)
-end
-function r.le(...)
-  return Le({}, ...)
-end
-function r.gt(...)
-  return Gt({}, ...)
-end
-function r.ge(...)
-  return Ge({}, ...)
-end
-function r.any(...)
-  return Any({}, ...)
-end
-function r.all(...)
-  return All({}, ...)
-end
-function r.not_(...)
-  return Not({}, ...)
-end
-function r.add(...)
-  return Add({}, ...)
-end
-function r.sub(...)
-  return Sub({}, ...)
-end
-function r.div(...)
-  return Div({}, ...)
-end
-function r.mul(...)
-  return Mul({}, ...)
-end
-function r.mod(...)
-  return Mod({}, ...)
-end
-function r.type_of(...)
-  return TypeOf({}, ...)
-end
-function r.info(...)
-  return Info({}, ...)
-end
-function r.literal(...)
-  return Literal({}, ...)
-end
-function r.iso8601(...)
-  return ISO8601(get_opts(...))
-end
-function r.epoch_time(...)
-  return EpochTime({}, ...)
-end
-function r.now(...)
-  return Now({}, ...)
-end
-function r.time(...)
-  return Time({}, ...)
-end
-
-r.monday = Monday()
-r.tuesday = Tuesday()
-r.wednesday = Wednesday()
-r.thursday = Thursday()
-r.friday = Friday()
-r.saturday = Saturday()
-r.sunday = Sunday()
-
-r.january = January()
-r.february = February()
-r.march = March()
-r.april = April()
-r.may = May()
-r.june = June()
-r.july = July()
-r.august = August()
-r.september = September()
-r.october = October()
-r.november = November()
-r.december = December()
-
-function r.object(...)
-  return Object({}, ...)
-end
-function r.args(...)
-  return Args({}, ...)
-end
-function r.geo_json(...)
-  return GeoJson({}, ...)
-end
-function r.point(...)
-  return Point({}, ...)
-end
-function r.line(...)
-  return Line({}, ...)
-end
-function r.polygon(...)
-  return Polygon({}, ...)
-end
-function r.intersects(...)
-  return Intersects({}, ...)
-end
-function r.distance(...)
-  return Distance(get_opts(...))
-end
-function r.circle(...)
-  return Circle(get_opts(...))
-end
-function r.uuid(...)
-  return UUID({}, ...)
-end
 
 Cursor = class(
   'Cursor',
