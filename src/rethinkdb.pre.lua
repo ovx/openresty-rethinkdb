@@ -743,10 +743,10 @@ Cursor = class(
       if not self._end_flag then
         self._conn:_end_query(self._token)
       end
-      if cb then return cb() end
+      if callback then return callback() end
     end,
     each = function(self, callback, on_finished)
-      if type(cb) ~= 'function' then
+      if type(callback) ~= 'function' then
         error('First argument to each must be a function.')
       end
       if on_finished and type(on_finished) ~= 'function' then
@@ -761,7 +761,7 @@ Cursor = class(
             return on_finished(err)
           end
         else
-          cb(data)
+          callback(data)
           return self:next(next_cb)
         end
       end
@@ -950,17 +950,14 @@ Connection = class(
       return wrapped_cb()
     end,
     noreply_wait = function(self, callback)
-      if type(cb) ~= 'function' then
-        cb = function(err) return nil, err end
-      end
-      function callback(err, cur)
+      function cb(err, cur)
         if cur then
-          return cur.next(function(err) return cb(err) end)
+          return cur.next(function(err) return callback(err) end)
         end
-        return cb(err)
+        return callback(err)
       end
       if not self.open then
-        return callback(ReQLDriverError('Connection is closed.'))
+        return cb(ReQLDriverError('Connection is closed.'))
       end
 
       -- Assign token
@@ -976,38 +973,36 @@ Connection = class(
       -- Construct query
       self:_send_query(token, {--[[Query.NOREPLY_WAIT]]})
 
-      return callback(nil, cursor)
+      return cb(nil, cursor)
     end,
     reconnect = function(self, opts_or_callback, callback)
-      local opts
-      if callback then
+      local opts = {}
+      if callback or not type(opts_or_callback) == 'function' then
         opts = opts_or_callback
-      elseif type(opts_or_callback) == 'function' then
-        opts = {}
-        callback = opts_or_callback
       else
-        opts = opts_or_callback or {}
+        callback = opts_or_callback
       end
-      function cb(err, conn)
-        if callback then
-          local res = callback(err, conn)
-          conn:close({noreply_wait = false})
-          return res
-        end
-        return conn, err
-      end
-      return self:close(opts, function(err)
-        if err then
-          return cb(err)
-        end
-        return Connection(self, cb)
+      return self:close(opts, function()
+        return Connection(self, callback)
       end)
     end,
     use = function(self, db)
       self.db = db
     end,
-    _start = function(self, term, cb, opts)
-      if not (self.open) then
+    _start = function(self, term, callback, opts)
+      function cb(err, cur)
+        local res
+        if type(callback) == 'function' and not opts.noreply then
+          res = callback(nil, cursor)
+        else
+          if err then
+            error(err.message)
+          end
+        end
+        cur:close()
+        return res
+      end
+      if not self.open then
         cb(ReQLDriverError('Connection is closed.'))
       end
 
@@ -1035,12 +1030,7 @@ Connection = class(
       -- Save cursor
       self.outstanding_callbacks[token] = {cursor = cursor}
       self:_send_query(token, query)
-      local res
-      if type(cb) == 'function' and not opts.noreply then
-        res = cb(nil, cursor)
-      end
-      cursor:close()
-      return res
+      return cb(nil, cursor)
     end,
     _continue_query = function(self, token)
       self:_send_query(token, {--[[Query.CONTINUE]]})
