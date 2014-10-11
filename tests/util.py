@@ -52,7 +52,9 @@ class LuaTestCase(unittest.TestCase):
         try:
             output = json.loads(res)
         except:
-            output = res.strip()
+            output = res
+        if isinstance(output, str):
+            output = output.strip()
         self.assertEqual(self.deep_sort(output), expected)
 
     def tearDown(self):
