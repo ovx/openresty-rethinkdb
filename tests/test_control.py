@@ -1,34 +1,42 @@
+import util
+
+
+class TestControl(util.LuaTestCase):
+    def setUp(self):
+        self.create_table('array.limits')
+
+    def test_do_mul(self):
+        self.assertEqual(self.run_lua('test_control_do_mul'), "2")
+
+    def test_do_append(self):
+        self.assertEqual(self.run_lua('test_control_do_append'), "{0, 1, 2, 3}")
+
+    def test_do_add(self):
+        self.assertEqual(self.run_lua('test_control_do_add'), "3")
+
+    def test_do(self):
+        self.assertEqual(self.run_lua('test_control_do'), "1")
+
+    def test_huge_table(self):
+        self.assertEqual(self.run_lua('test_arraylimits_huge_table'), "{deleted: 0, errors: 1, first_error: Array too large for disk writes (limit 100,000 elements), inserted: 1, replaced: 0, skipped: 0, unchanged: 0}")
+
+    def test_lessthan(self):
+        self.assertEqual(self.run_lua('test_arraylimits_lessthan'), "ReQLRuntimeError Array over size limit `4`. in:\nr({1, 2, 3, 4}):union({5, 6, 7, 8})")
+
+    def test_lessthan_read(self):
+        self.assertEqual(self.run_lua('test_arraylimits_lessthan_read'), "{array: {1, 2, 3, 4, 5, 6, 7, 8, 9, 10}, id: 1}")
+
+    def test_negative(self):
+        self.assertEqual(self.run_lua('test_arraylimits_negative'), "ReQLCompileError Illegal array size limit `-1`. in:\n{1, 2, 3, 4, 5, 6, 7, 8}")
+
+    def test_zero(self):
+        self.assertEqual(self.run_lua('test_arraylimits_zero'), "ReQLCompileError Illegal array size limit `0`. in:\n{1, 2, 3, 4, 5, 6, 7, 8}")
+
+
+if __name__ == '__main__':
+    unittest.main()
 '''
-desc: Tests RQL control flow structures
-table_variable_name: tbl
-tests:
-
-    # Setup a second table
-    - cd: r.db('test').table_create('test2')
-      ot: ({'created':1})
-      def: tbl2 = r.db('test').table('test2')
-
     ## FunCall
-
-    - py: "r.expr(1).do(lambda v: v * 2)"
-      js: r.expr(1).do(function(v) { return v.mul(2); })
-      rb: r.expr(1).do{|v| v * 2 }
-      ot: 2
-
-    - py: "r.expr([0, 1, 2]).do(lambda v: v.append(3))"
-      js: r([0, 1, 2]).do(function(v) { return v.append(3); })
-      rb: r([0, 1, 2]).do{ |v| v.append(3) }
-      ot: [0, 1, 2, 3]
-
-    - py: "r.do(1, 2, lambda x, y: x + y)"
-      js: r.do(1, 2, function(x, y) { return x.add(y); })
-      rb: r.do(1, 2) {|x, y| x + y}
-      ot: 3
-
-    - py: "r.do(lambda: 1)"
-      js: r.do(function() { return 1; })
-      rb: r.do{1}
-      ot: 1
 
     # do error cases
     - py: "r.do(1, 2, lambda x: x)"
