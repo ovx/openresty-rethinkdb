@@ -1,4 +1,5 @@
 import argparse
+import os
 import struct
 import subprocess
 
@@ -53,6 +54,15 @@ def lint(args):
     if returncode:
         print('`luac rethinkdb.lua` returned:', returncode)
         exit(returncode)
+
+    print('linting tests')
+
+    for test in os.listdir('tests'):
+        if test.endswith('.lua'):
+            returncode = subprocess.call(['luac', test], cwd='tests')
+            if returncode:
+                print('`luac {}` returned:'.format(test), returncode)
+                exit(returncode)
 
     print('linting successful')
 
