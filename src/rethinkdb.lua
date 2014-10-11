@@ -1036,6 +1036,10 @@ Cursor = class(
     end,
     -- Implement IterableResult
     next = function(self, callback)
+      local cb = function(err, row)
+        if type(err) == 'number' then error('' .. err) end
+        return callback(err, row)
+      end
       -- Try to get a row out of the responses
       while not self._responses[1] do
         if self._end_flag then
@@ -1087,6 +1091,9 @@ Cursor = class(
       if on_finished and type(on_finished) ~= 'function' then
         error('Optional second argument to each must be a function.')
       end
+      local cb = function(row)
+        return callback(row)
+      end
       function next_cb(err, data)
         if err then
           if err.message == 'ReQLDriverError No more rows in the cursor.' then
@@ -1096,7 +1103,7 @@ Cursor = class(
             return on_finished(err)
           end
         else
-          callback(data)
+          cb(data)
           return self:next(next_cb)
         end
       end
@@ -1106,6 +1113,9 @@ Cursor = class(
       if not self._type then self:_prompt_cont() end
       if self._type == 5 then
         return cb(ReQLDriverError('`to_array` is not available for feeds.'))
+      end
+      local cb = function(err, arr)
+        return callback(err, arr)
       end
       local arr = {}
       return self:each(
@@ -1127,15 +1137,12 @@ Connection = class(
       local host = {}
       if type(host_or_callback) == 'function' then
         callback = host_or_callback
+      elseif type(host_or_callback) == 'string' then
+        host = {host = host_or_callback}
       else
         host = host_or_callback
       end
-      if type(host) == 'string' then
-        host = {
-          host = host
-        }
-      end
-      function cb(err, conn)
+      local cb = function(err, conn)
         if callback then
           local res = callback(err, conn)
           conn:close({noreply_wait = false})
@@ -1285,7 +1292,7 @@ Connection = class(
       return wrapped_cb()
     end,
     noreply_wait = function(self, callback)
-      function cb(err, cur)
+      local cb = function(err, cur)
         if cur then
           return cur.next(function(err) return callback(err) end)
         end
@@ -1325,10 +1332,10 @@ Connection = class(
       self.db = db
     end,
     _start = function(self, term, callback, opts)
-      function cb(err, cur)
+      local cb = function(err, cur)
         local res
         if type(callback) == 'function' and not opts.noreply then
-          res = callback(nil, cur)
+          res = callback(err, cur)
         else
           if err then
             error(err.message)
