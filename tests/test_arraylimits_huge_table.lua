@@ -9,9 +9,9 @@ r.connect({timeout = 1}, function(err, c)
   r.db('array'):table('limits'):insert({id = 0, array = huge_l:append(1)}):run(
     c, {array_limit = 100001}, function(err, cur)
       if err then error(err.message) end
-      cur:next(function(err, row)
+      cur:to_array(function(err, arr)
         if err then error(err.message) end
-        print(json.encode(row))
+        print(json.encode(arr))
       end)
     end
   )
