@@ -28,7 +28,8 @@ tests run: {}
 errors: {}
 failures: {}
 skipped: {}'''.format(
-        res.testsRun, len(res.errors), len(res.failures), len(res.skipped)))
+        res.testsRun, len(res.errors), len(res.failures), len(res.skipped)
+    ))
     io.terminate()
     io.wait()
     if not res.wasSuccessful():
@@ -50,8 +51,7 @@ def lint(args):
 
     returncode = subprocess.call(['luac', 'rethinkdb.lua'], cwd='src')
     if returncode:
-        print('`luac rethinkdb.lua` '
-              'returned:', returncode)
+        print('`luac rethinkdb.lua` returned:', returncode)
         exit(returncode)
 
     print('linting successful')
@@ -86,7 +86,7 @@ def build(args):
         for name in ast_constants
     }
     ast_classes = [
-        '{0} = ast(\'{0}\', {{tt = {1}, st = \'{2}\'}})'.format(
+        '{0} = ast({0!r}, {{tt = {1}, st = {2!r}}})'.format(
             ast_class_names[name],
             getattr(protodef.Term.TermType, name),
             ast_method_names[name]
@@ -162,6 +162,7 @@ def build(args):
 def install(args):
     if not args.f:
         lint(args)
+
     returncode = subprocess.call(['luarocks', 'make'])
     if returncode:
         print('`luarocks make` returned:', returncode)
