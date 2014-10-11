@@ -835,7 +835,7 @@ Connection = class(
         -- Initialize connection with magic number to validate version
         self.raw_socket:send(
           --[[Version]] ..
-          int_to_bytes(self.auth_key:len(), 4) ..
+          int_to_bytes(#self.auth_key, 4) ..
           self.auth_key ..
           --[[Protocol]]
         )
