@@ -436,7 +436,10 @@ class_methods = {
         self.args[i] = r(a)
       end
     end
-    self.optargs = optargs
+    self.optargs = {}
+    for k, v in pairs(optargs) do
+      self.optargs[k] = r(v)
+    end
   end,
   build = function(self)
     if self.tt == --[[Term.BINARY]] and (not self.args[1]) then
