@@ -11,7 +11,10 @@ def test(args):
     import time
 
     res = unittest.TestResult()
-    io = subprocess.Popen(['rethinkdb'], cwd='tests')
+    io = subprocess.Popen(
+        'rethinkdb', cwd='tests',
+        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+    )
     time.sleep(4)
     unittest.defaultTestLoader.discover('./tests').run(res)
     for error in res.errors:
