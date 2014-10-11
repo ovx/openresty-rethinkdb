@@ -1052,12 +1052,18 @@ Cursor = class(
       -- Error responses are not discarded, and the error will be sent to all future callbacks
       local t = response.t
       if t == 1 or t == 3 or t == 5 or t == 2 then
-        local row, err = pcall(
+        local err
+
+        local status, row = pcall(
           recursively_convert_pseudotype,
           response.r[self._response_index],
           self._opts
         )
-        if err then row = response.r[self._response_index] end
+        if not status then
+          err = row
+          row = response.r[self._response_index]
+        end
+
         self._response_index = self._response_index + 1
 
         -- If we're done with this response, discard it
