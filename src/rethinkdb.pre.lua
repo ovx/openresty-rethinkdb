@@ -402,6 +402,12 @@ class_methods = {
       local func = args[1]
       local anon_args = {}
       local arg_nums = {}
+      if debug.getinfo then
+        local func_info = debug.getinfo(func)
+        if func_info.what == 'Lua' and func_info.nparams then
+          optargs.arity = func_info.nparams
+        end
+      end
       for i=1, optargs.arity or 1 do
         table.insert(arg_nums, ReQLOp.next_var_id)
         table.insert(anon_args, Var({}, ReQLOp.next_var_id))
