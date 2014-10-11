@@ -1,4 +1,5 @@
 r = require('rethinkdb')
+local json = require('json')
 
 r.connect({timeout = 1}, function(err, c)
   if err then error(err.message) end
@@ -8,10 +9,10 @@ r.connect({timeout = 1}, function(err, c)
   huge_l:append(1):count():run(
     c, {array_limit = 100001}, function(err, cur)
       if err then error(err.message) end
-      print(cur:to_array(function(err, arr)
+      cur:to_array(function(err, arr)
         if err then error(err.message) end
-        return arr[1]
-      end))
+        print(json.encode(arr))
+      end)
     end
   )
 end)

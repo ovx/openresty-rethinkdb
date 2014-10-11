@@ -1,4 +1,5 @@
 r = require('rethinkdb')
+local json = require('json')
 
 r.connect({timeout = 1}, function(err, c)
   if err then error(err.message) end
@@ -6,7 +7,7 @@ r.connect({timeout = 1}, function(err, c)
     c, {array_limit = 0}, function(err, cur)
       if err then error(err.message) end
       cur:to_array(function(err, arr)
-        if err then print(err.message) end
+        if err then print(json.encode(err.message)) end
       end)
     end
   )
