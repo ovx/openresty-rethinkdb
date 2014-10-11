@@ -1333,7 +1333,7 @@ Connection = class(
       function cb(err, cur)
         local res
         if type(callback) == 'function' and not opts.noreply then
-          res = callback(nil, cursor)
+          res = callback(nil, cur)
         else
           if err then
             error(err.message)
