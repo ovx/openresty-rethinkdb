@@ -12,7 +12,9 @@ r.connect({timeout = 1}, function(err, c)
       if err then error(err.message) end
       r.db('changefeeds'):table('watched'):insert(
         {{id = 7}, {id = 8}, {id = 9}, {id = 10}}
-      ):run(c)
+      ):run(c, function(err)
+        if err then error(err.message) end
+      end)
       res = {}
       cur:each(function(err, row)
         if err then error(err.message) end
