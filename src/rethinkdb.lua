@@ -21,12 +21,13 @@ local InsertAt, Intersects, IsEmpty, January, JavaScript, Json, July, June
 local Keys, Le, Limit, Line, Literal, Lt, MakeArray, MakeObj, Map, March
 local Match, Max, May, Merge, Min, Minutes, Mod, Monday, Month, Mul, Ne, Not
 local November, Now, Nth, Object, October, OrderBy, OuterJoin, Pluck, Point
-local Polygon, PolygonSub, Prepend, Random, Reduce, Replace, Sample, Saturday
-local Seconds, September, SetDifference, SetInsert, SetIntersection, SetUnion
-local Skip, Slice, SpliceAt, Split, Sub, Sum, Sunday, Sync, Table, TableCreate
-local TableDrop, TableList, Thursday, Time, TimeOfDay, Timezone, ToEpochTime
-local ToGeojson, ToISO8601, ToJsonString, Tuesday, TypeOf, UUID, Ungroup
-local Union, Upcase, Update, Var, Wednesday, WithFields, Without, Year, Zip
+local Polygon, PolygonSub, Prepend, Random, Range, Reduce, Replace, Sample
+local Saturday, Seconds, September, SetDifference, SetInsert, SetIntersection
+local SetUnion, Skip, Slice, SpliceAt, Split, Sub, Sum, Sunday, Sync, Table
+local TableCreate, TableDrop, TableList, Thursday, Time, TimeOfDay, Timezone
+local ToEpochTime, ToGeojson, ToISO8601, ToJsonString, Tuesday, TypeOf, UUID
+local Ungroup, Union, Upcase, Update, Var, Wednesday, WithFields, Without
+local Year, Zip
 local ReQLDriverError, ReQLServerError, ReQLRuntimeError, ReQLCompileError
 local ReQLClientError, ReQLQueryPrinter, ReQLError
 
@@ -527,6 +528,7 @@ ast_methods = {
   polygon_sub = function(...) return PolygonSub({}, ...) end,
   prepend = function(...) return Prepend({}, ...) end,
   random = function(...) return Random(get_opts(...)) end,
+  range = function(...) return Range({}, ...) end,
   reduce = function(...) return Reduce({}, ...) end,
   replace = function(...) return Replace(get_opts(...)) end,
   sample = function(...) return Sample({}, ...) end,
@@ -956,6 +958,7 @@ Polygon = ast('Polygon', {tt = 161, st = 'polygon'})
 PolygonSub = ast('PolygonSub', {tt = 171, st = 'polygon_sub'})
 Prepend = ast('Prepend', {tt = 80, st = 'prepend'})
 Random = ast('Random', {tt = 151, st = 'random'})
+Range = ast('Range', {tt = 173, st = 'range'})
 Reduce = ast('Reduce', {tt = 37, st = 'reduce'})
 Replace = ast('Replace', {tt = 55, st = 'replace'})
 Sample = ast('Sample', {tt = 81, st = 'sample'})

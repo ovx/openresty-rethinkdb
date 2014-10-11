@@ -116,6 +116,7 @@ class Term:
         OUTER_JOIN = 49
         EQ_JOIN = 50
         ZIP = 72
+        RANGE = 173
         INSERT_AT = 82
         DELETE_AT = 83
         CHANGE_AT = 84
