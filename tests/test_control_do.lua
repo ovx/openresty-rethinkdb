@@ -3,7 +3,7 @@ local json = require('json')
 
 r.connect({timeout = 1}, function(err, c)
   if err then error(err.message) end
-  r.do(function() return 1 do):run(
+  r.do_(function() return 1 end):run(
     c, function(err, cur)
       if err then error(err.message) end
       cur:to_array(function(err, arr)
