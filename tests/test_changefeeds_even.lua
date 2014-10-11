@@ -2,6 +2,7 @@ local r = require('rethinkdb')
 local json = require('json')
 
 r.connect({timeout = 1}, function(err, c)
+  if err then error(err.message) end
   r.db('changefeeds'):table('watched'):changes():filter(
     function(row)
       return (row('new_val')('id') % 2):eq(0)

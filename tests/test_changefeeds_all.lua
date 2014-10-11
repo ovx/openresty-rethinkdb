@@ -2,6 +2,7 @@ local r = require('rethinkdb')
 local json = require('json')
 
 r.connect({timeout = 1}, function(err, c)
+  if err then error(err.message) end
   r.db('changefeeds'):table('watched'):changes():limit(4):run(
     c, function(err, cur)
       if err then error(err.message) end
