@@ -709,11 +709,6 @@ class_methods = {
       }
     end
     if self.tt == 69 then
-      if ivar_scan(self.args[2]) then
-        return {
-          args[2]
-        }
-      end
       return {
         'function(',
         intsp(args[1]),
