@@ -7,7 +7,7 @@ r.connect({timeout = 1}, function(err, c)
     c, {array_limit = 4}, function(err, cur)
       if err then error(err.message) end
       cur:to_array(function(err, arr)
-        if err then print(json.encode(err.message)) end
+        if err then return print(json.encode(err.message)) end
         error(json.encode(arr))
       end)
     end
