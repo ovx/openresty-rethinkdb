@@ -15,9 +15,11 @@ local ReQLClientError, ReQLQueryPrinter, ReQLError
 function is_instance(obj, ...)
   local class_list = {...}
 
-  for _, class in ipairs(class_list) do
-    if type(class) == 'string' and type(obj) == class then
-      return true
+  for _, cls in ipairs(class_list) do
+    if type(cls) == 'string' then
+      if type(obj) == cls then
+        return true
+      end
     else
       class = class.__name
     end
@@ -25,7 +27,7 @@ function is_instance(obj, ...)
     if type(obj) == 'table' then
       local obj_cls = obj.__class
       while obj_cls do
-        if obj_cls.__name == class then
+        if obj_cls.__name == cls then
           return true
         end
         obj_cls = obj_cls.__parent
