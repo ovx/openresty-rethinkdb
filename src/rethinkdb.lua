@@ -1357,7 +1357,9 @@ Connection = class(
         global_opts[k] = r(v):build()
       end
 
-      if self.db and not opts.db then
+      if opts.db then
+        global_opts.db = r.db(opts.db):build()
+      elseif self.db then
         global_opts.db = r.db(self.db):build()
       end
 
