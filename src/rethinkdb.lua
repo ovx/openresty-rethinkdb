@@ -576,47 +576,42 @@ ast_methods = {
 
 class_methods = {
   __init = function(self, optargs, ...)
+    local args = {...}
     optargs = optargs or {}
-    self.args = {...}
-    local first = self.args[1]
     if self.tt == 69 then
-      local args = {}
+      local func = args[1]
+      local anon_args = {}
       local arg_nums = {}
       for i=1, optargs.arity or 1 do
         table.insert(arg_nums, ReQLOp.next_var_id)
-        table.insert(args, Var({}, ReQLOp.next_var_id))
+        table.insert(anon_args, Var({}, ReQLOp.next_var_id))
         ReQLOp.next_var_id = ReQLOp.next_var_id + 1
       end
-      first = first(unpack(args))
-      if first == nil then
+      func = func(unpack(anon_args))
+      if func == nil then
         error('Anonymous function returned `nil`. Did you forget a `return`?')
       end
       optargs.arity = nil
-      self.args = {MakeArray({}, unpack(arg_nums)), r(first)}
+      args = {{unpack(arg_nums)}, func}
     elseif self.tt == 155 then
-      if is_instance(first, 'ReQLOp') then
-      elseif type(first) == 'string' then
-        self.base64_data = mime.b64(first)
+      local data = args[1]
+      if is_instance(data, 'ReQLOp') then
+      elseif type(data) == 'string' then
+        self.base64_data = mime.b64(table.remove(args, 1))
       else
         error('Parameter to `r.binary` must be a string or ReQL query.')
       end
     elseif self.tt == 64 then
-      local func = table.remove(self.args)
-      table.insert(self.args, 1, Func({arity = #self.args}, func))
-      for i, a in ipairs(self.args) do
-        self.args[i] = r(a)
-      end
+      local func = table.remove(args)
+      table.insert(args, 1, Func({arity = #args}, func))
     elseif self.tt == 37 then
-      self.args[#self.args] = Func({arity = 2}, self.args[#self.args])
-      for i, a in ipairs(self.args) do
-        self.args[i] = r(a)
-      end
-    else
-      for i, a in ipairs(self.args) do
-        self.args[i] = r(a)
-      end
+      args[#args] = Func({arity = 2}, args[#args])
     end
+    self.args = {}
     self.optargs = {}
+    for i, a in ipairs(args) do
+      self.args[i] = r(a)
+    end
     for k, v in pairs(optargs) do
       self.optargs[k] = r(v)
     end
