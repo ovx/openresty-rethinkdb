@@ -170,10 +170,10 @@ end
 function get_opts(...)
   local args = {...}
   local opt = {}
-  local pos_opt = args[-1]
+  local pos_opt = args[#args]
   if (type(pos_opt) == 'table') and (not is_instance(pos_opt, 'ReQLOp')) then
     opt = pos_opt
-    args[-1] = nil
+    args[#args] = nil
   end
   return opt, unpack(args)
 end
@@ -421,13 +421,13 @@ class_methods = {
         error('Parameter to `r.binary` must be a string or ReQL query.')
       end
     elseif self.tt == --[[Term.FUNCALL]] then
-      self.args[-1] = Func({arity = args.n - 1}, self.args[-1])
-      table.insert(self.args, table.remove(self.args, -1), 1)
+      local func = table.remove(self.args)
+      table.insert(self.args, 1, Func({arity = #self.args}, func))
       for i, a in ipairs(self.args) do
         self.args[i] = r(a)
       end
     elseif self.tt == --[[Term.REDUCE]] then
-      self.args[-1] = Func({arity = 2}, self.args[-1])
+      self.args[#self.args] = Func({arity = 2}, self.args[#self.args])
       for i, a in ipairs(self.args) do
         self.args[i] = r(a)
       end
