@@ -8,6 +8,7 @@ r.connect({timeout = 1}, function(err, c)
       if err then error(err.message) end
       cur:to_array(function(err, arr)
         if err then return print(json.encode(err.message)) end
+        error(json.encode(arr))
       end)
     end
   )
