@@ -3,34 +3,19 @@ import util
 
 class TestControl(util.LuaTestCase):
     def setUp(self):
-        self.create_table('array.limits')
+        self.create_table('control.func')
 
     def test_do_mul(self):
-        self.assertEqual(self.run_lua('test_control_do_mul'), "2")
+        self.expect('test_control_do_mul', [2])
 
     def test_do_append(self):
-        self.assertEqual(self.run_lua('test_control_do_append'), "{0, 1, 2, 3}")
+        self.expect('test_control_do_append', [[0, 1, 2, 3]])
 
     def test_do_add(self):
-        self.assertEqual(self.run_lua('test_control_do_add'), "3")
+        self.expect('test_control_do_add', [3])
 
     def test_do(self):
-        self.assertEqual(self.run_lua('test_control_do'), "1")
-
-    def test_huge_table(self):
-        self.assertEqual(self.run_lua('test_arraylimits_huge_table'), "{deleted: 0, errors: 1, first_error: Array too large for disk writes (limit 100,000 elements), inserted: 1, replaced: 0, skipped: 0, unchanged: 0}")
-
-    def test_lessthan(self):
-        self.assertEqual(self.run_lua('test_arraylimits_lessthan'), "ReQLRuntimeError Array over size limit `4`. in:\nr({1, 2, 3, 4}):union({5, 6, 7, 8})")
-
-    def test_lessthan_read(self):
-        self.assertEqual(self.run_lua('test_arraylimits_lessthan_read'), "{array: {1, 2, 3, 4, 5, 6, 7, 8, 9, 10}, id: 1}")
-
-    def test_negative(self):
-        self.assertEqual(self.run_lua('test_arraylimits_negative'), "ReQLCompileError Illegal array size limit `-1`. in:\n{1, 2, 3, 4, 5, 6, 7, 8}")
-
-    def test_zero(self):
-        self.assertEqual(self.run_lua('test_arraylimits_zero'), "ReQLCompileError Illegal array size limit `0`. in:\n{1, 2, 3, 4, 5, 6, 7, 8}")
+        self.expect('test_control_do', [1])
 
 
 if __name__ == '__main__':
