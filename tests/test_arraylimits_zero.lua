@@ -1,4 +1,4 @@
-r = require('rethinkdb')
+local r = require('rethinkdb')
 local json = require('json')
 
 r.connect({timeout = 1}, function(err, c)
