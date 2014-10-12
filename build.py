@@ -102,16 +102,24 @@ def build(args):
             ast_method_names[name]
         ) for name in ast_constants
     ]
-    ast_methods_w_opt = {
-        name: '{} = function(...) return {}(get_opts(...)) end'
-        for name in (
-            'BETWEEN', 'CIRCLE', 'DELETE', 'DISTANCE', 'DISTANCE', 'DISTINCT',
-            'DURING', 'EQ_JOIN', 'FILTER', 'GET_ALL', 'GET_INTERSECTING',
-            'GET_NEAREST', 'GROUP', 'HTTP', 'INDEX_CREATE', 'INDEX_RENAME',
-            'INSERT', 'ISO8601', 'JAVASCRIPT', 'ORDER_BY', 'RANDOM', 'REPLACE',
-            'SLICE', 'TABLE', 'TABLE', 'TABLE_CREATE', 'TABLE_CREATE', 'UPDATE'
-        )
-    }
+    ast_methods_w_opt = dict(
+        {
+            name: '{} = function(...) return {}(get_opts(...)) end'
+            for name in (
+                'CIRCLE', 'DELETE', 'DISTINCT', 'EQ_JOIN', 'FILTER', 'GET_ALL',
+                'GET_INTERSECTING', 'GET_NEAREST', 'GROUP', 'HTTP',
+                'INDEX_CREATE', 'INDEX_RENAME', 'ISO8601', 'JAVASCRIPT',
+                'ORDER_BY', 'RANDOM', 'REPLACE', 'SLICE', 'TABLE',
+                'TABLE_CREATE', 'UPDATE'
+            )
+        },
+        BETWEEN=
+        '{} = function(self, left, right, opts) return {}(opts, self, left, right) end',
+        DISTANCE='{} = function(self, g, opts) return {}(opts, self, g) end',
+        DURING=
+        '{} = function(t1, t2, t3, opts) return {}(opts, t1, t2, t3) end',
+        INSERT='{} = function(tbl, doc, opts) return {}(opts, tbl, doc) end'
+    )
     ast_methods = [
         ast_methods_w_opt.get(
             name,
