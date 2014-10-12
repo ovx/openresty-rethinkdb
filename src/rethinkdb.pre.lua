@@ -429,7 +429,10 @@ class_methods = {
       end
     elseif self.tt == --[[Term.FUNCALL]] then
       local func = table.remove(args)
-      table.insert(args, 1, Func({arity = #args}, func))
+      if type(func) == 'function' then
+        func = Func({arity = #args}, func)
+      end
+      table.insert(args, 1, func)
     elseif self.tt == --[[Term.REDUCE]] then
       args[#args] = Func({arity = 2}, args[#args])
     end
