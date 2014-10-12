@@ -5,17 +5,17 @@ class TestControl(util.LuaTestCase):
     def setUp(self):
         self.create_table('control.func')
 
-    def test_do_mul(self):
-        self.expect('test_control_do_mul', [2])
-
-    def test_do_append(self):
-        self.expect('test_control_do_append', [[0, 1, 2, 3]])
+    def test_do(self):
+        self.expect('test_control_do', [1])
 
     def test_do_add(self):
         self.expect('test_control_do_add', [3])
 
-    def test_do(self):
-        self.expect('test_control_do', [1])
+    def test_do_append(self):
+        self.expect('test_control_do_append', [[0, 1, 2, 3]])
+
+    def test_do_mul(self):
+        self.expect('test_control_do_mul', [2])
 
 
 if __name__ == '__main__':
