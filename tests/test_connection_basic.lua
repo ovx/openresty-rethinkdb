@@ -1,4 +1,4 @@
-r = require('rethinkdb')
+local r = require('rethinkdb')
 
 r.connect(function(err, c)
   if err then error(err.message) end
