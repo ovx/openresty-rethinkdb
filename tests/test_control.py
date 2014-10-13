@@ -5,6 +5,40 @@ class TestControl(util.LuaTestCase):
     def setUp(self):
         self.create_table('control.func')
 
+    def test_branch_db(self):
+        self.expect(
+            'test_control_branch_db',
+            'ReQLRuntimeError Expected type DATUM but found DATABASE:\n'
+            'db("test") in:\n'
+            'r.branch(r.db("test"), 1, 2)'
+        )
+
+    def test_branch_error(self):
+        self.expect(
+            'test_control_branch_error',
+            'ReQLRuntimeError a in:\nr.branch(r.error_("a"), 1, 2)'
+        )
+
+    def test_branch_false(self):
+        self.expect('test_control_branch_false', [2])
+
+    def test_branch_nil(self):
+        self.expect('test_control_branch_nil', [2])
+
+    def test_branch_num(self):
+        self.expect('test_control_branch_num', ['c'])
+
+    def test_branch_table(self):
+        self.expect(
+            'test_control_branch_table',
+            'ReQLRuntimeError Expected type DATUM but found TABLE:\n'
+            'table("func") in:\n'
+            'r.branch(r.table("func"), 1, 2)'
+        )
+
+    def test_branch_true(self):
+        self.expect('test_control_branch_true', [1])
+
     def test_do(self):
         self.expect('test_control_do', [1])
 
@@ -14,115 +48,77 @@ class TestControl(util.LuaTestCase):
     def test_do_append(self):
         self.expect('test_control_do_append', [[0, 1, 2, 3]])
 
+    def test_do_extra_arg(self):
+        self.expect(
+            'test_control_do_extra_arg',
+            'ReQLRuntimeError Expected 2 arguments but found 1. in:\n'
+            'r.do_(1, function() return r.add(var_0, var_1) end)'
+        )
+
+    def test_do_missing_arg(self):
+        self.expect(
+            'test_control_do_missing_arg',
+            'ReQLRuntimeError Expected 1 argument but found 2. in:\n'
+            'r.do_(1, 2, function() return var_0 end)'
+        )
+
     def test_do_mul(self):
         self.expect('test_control_do_mul', [2])
+
+    def test_do_no_args(self):
+        self.expect(
+            'test_control_do_no_args',
+            'ReQLCompileError Expected 1 or more arguments but found 0. in:\n'
+            'r.do_()'
+        )
+
+    def test_do_no_func(self):
+        self.expect('test_control_do_no_func', [1])
+
+    def test_do_no_return(self):
+        self.expect(
+            'test_control_do_no_return',
+            '../src/rethinkdb.lua:598: Anonymous function returned `nil`. Did you forget a `return`?'
+        )
+
+    def test_do_return_nil(self):
+        self.expect(
+            'test_control_do_return_nil',
+            '../src/rethinkdb.lua:598: Anonymous function returned `nil`. Did you forget a `return`?'
+        )
+
+    def test_do_str_add_num(self):
+        self.expect(
+            'test_control_do_str_add_num',
+            'ReQLRuntimeError Expected type STRING but found NUMBER. in:\n'
+            'r.do_("abc", function() return r.add(var_0, 3) end)'
+        )
+
+    def test_do_str_add_str_add_num(self):
+        self.expect(
+            'test_control_do_str_add_str_add_num',
+            'ReQLRuntimeError Expected type STRING but found NUMBER. in:\n'
+            'r.add(r.do_("abc", function() return r.add(var_0, "def") end), 3)'
+        )
+
+    def test_do_str_append(self):
+        self.expect(
+            'test_control_do_str_append',
+            'ReQLRuntimeError Expected type ARRAY but found STRING. in:\n'
+            'r.do_("abc", function() return r.append(var_0, 3) end)'
+        )
+
+    def test_error(self):
+        self.expect(
+            'test_control_error',
+            'ReQLRuntimeError Hello World in:\n'
+            'r.error_("Hello World")'
+        )
 
 
 if __name__ == '__main__':
     unittest.main()
 '''
-    ## FunCall
-
-    # do error cases
-    - py: "r.do(1, 2, lambda x: x)"
-      js: r.do(1, 2, function(x) { return x; })
-      rb: r.do(1, 2) {|x| x}
-      ot: err("RqlRuntimeError", 'Expected 1 argument but found 2.', [1])
-
-    - py: "r.do(1, 2, 3, lambda x, y: x + y)"
-      js: r.do(1, 2, 3, function(x, y) { return x.add(y); })
-      rb: r.do(1, 2, 3) {|x, y| x + y}
-      ot: err("RqlRuntimeError", 'Expected 2 arguments but found 3.', [1])
-
-    - cd: "r.do(1)"
-      ot: 1
-
-    - js: r.do(1, function(x) {})
-      cd: []
-      ot: err("RqlDriverError", 'Anonymous function returned `undefined`. Did you forget a `return`?', [1])
-
-    - js: r.do(1, function(x) { return undefined; })
-      cd: []
-      ot: err("RqlDriverError", 'Anonymous function returned `undefined`. Did you forget a `return`?', [1])
-
-    - cd: r.do()
-      py: [] # Case handled by native python error
-      ot: err("RqlDriverError", 'Expected 1 or more arguments but found 0.', [1])
-
-
-    # FunCall errors
-
-    - py: "r.expr('abc').do(lambda v: v.append(3))"
-      js: r('abc').do(function(v) { return v.append(3); })
-      rb: r('abc').do{ |v| v.append(3) }
-      ot: err("RqlRuntimeError", "Expected type ARRAY but found STRING.", [1, 0])
-
-    - py: "r.expr('abc').do(lambda v: v + 3)"
-      js: r('abc').do(function(v) { return v.add(3); })
-      rb: r('abc').do{ |v| v + 3 }
-      ot: err("RqlRuntimeError", "Expected type STRING but found NUMBER.", [1, 1])
-
-    - py: "r.expr('abc').do(lambda v: v + 'def') + 3"
-      js: r('abc').do(function(v) { return v.add('def'); }).add(3)
-      rb: r('abc').do{ |v| v + 'def' } + 3
-      ot: err("RqlRuntimeError", "Expected type STRING but found NUMBER.", [1])
-
-    - py: "r.expr(0).do(lambda a,b: a + b)"
-      js: r(0).do(function(a,b) { return a.add(b); })
-      rb: r(0).do{ |a, b| a + b }
-      ot: err("RqlRuntimeError", 'Expected 2 arguments but found 1.', [1])
-
-    - py: "r.do(1, 2, lambda a: a)"
-      js: r.do(1,2, function(a) { return a; })
-      rb: r.do(1, 2) { |a| a }
-      ot: err("RqlRuntimeError", 'Expected 1 argument but found 2.', [1])
-
-    - cd: r.expr(5).do(r.row)
-      rb: r(5).do{ |row| row }
-      ot: 5
-
-    ## Branch
-
-    - cd: r.branch(True, 1, 2)
-      ot: 1
-    - cd: r.branch(False, 1, 2)
-      ot: 2
-    - cd: r.branch(1, 'c', False)
-      ot: ("c")
-    - cd: r.branch(null, {}, [])
-      ot: ([])
-
-    - cd: r.branch(r.db('test'), 1, 2)
-      ot: err("RqlRuntimeError", "Expected type DATUM but found DATABASE.", [])
-    - cd: r.branch(tbl, 1, 2)
-      ot: err("RqlRuntimeError", "Expected type DATUM but found TABLE.", [])
-    - cd: r.branch(r.error("a"), 1, 2)
-      ot: err("RqlRuntimeError", "a", [])
-
-    - cd: r.branch([], 1, 2)
-      ot: 1
-    - cd: r.branch({}, 1, 2)
-      ot: 1
-    - cd: r.branch("a", 1, 2)
-      ot: 1
-    - cd: r.branch(1.2, 1, 2)
-      ot: 1
-
-    # r.error()
-    - cd: r.error('Hello World')
-      ot: err("RqlRuntimeError", "Hello World", [0])
-
-    - cd: r.error(5) # we might want to allow this eventually
-      ot: err("RqlRuntimeError", "Expected type STRING but found NUMBER.", [0])
-
-    # For kicks, let's test arity checking in map and filter (Python driver doesn't require this)
-    - js: r.expr([1, 2, 3]).filter()
-      cd: []
-      ot: err("RqlDriverError", "Expected 1 argument (not including options) but found 0.", [0])
-    - js: r.expr([1, 2, 3]).filter(1, 2)
-      cd: []
-      ot: err("RqlDriverError", "Expected 1 argument (not including options) but found 2.", [0])
-
     # r.js()
     - cd: r.js('1 + 1')
       ot: 2
