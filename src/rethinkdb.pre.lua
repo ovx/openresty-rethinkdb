@@ -485,27 +485,10 @@ class_methods = {
       return kved(optargs)
     end
     if self.tt == --[[Term.VAR]] then
-      if not args then return {} end
-      for i, v in ipairs(args) do
-        args[i] = 'var_' .. v
-      end
-      return args
+      return {'var_' .. args[1]}
     end
-    if self.tt == --[[Term.BINARY]] then
-      if self.args[1] then
-        return {
-          'r.binary(',
-          intspallargs(args, optargs),
-          ')'
-        }
-      else
-        return 'r.binary(<data>)'
-      end
-    end
-    if self.tt == --[[Term.IMPLICIT_VAR]] then
-      return {
-        'r.row'
-      }
+    if self.tt == --[[Term.BINARY]] and not self.args[1] then
+      return 'r.binary(<data>)'
     end
     if self.tt == --[[Term.TABLE]] then
       if is_instance(self.args[1], 'Db') then
@@ -540,40 +523,34 @@ class_methods = {
     if self.tt == --[[Term.FUNC]] then
       return {
         'function(',
-        intsp(args[1]),
+        intsp((function()
+          local _accum_0 = {}
+          for i, v in ipairs(self.args[1]) do
+            _accum_0[i] = 'var_' .. v
+          end
+          return _accum_0
+        end)()),
         ') return ',
         args[2],
         ' end'
       }
     end
     if self.tt == --[[Term.FUNCALL]] then
-      if #args > 2 then
+      local func = table.remove(args, 1)
+      if #self.args > 2 then
         return {
           'r.do_(',
-          intsp((function()
-            local _accum_0 = {}
-            for i = 2, #args do
-              _accum_0[i - 1] = args[i]
-            end
-            return _accum_0
-          end)()),
+          intsp(args),
           ', ',
-          args[1],
+          func,
           ')'
         }
       end
-      if should_wrap(self.args[1]) then
-        args[1] = {
-          'r(',
-          args[1],
-          ')'
-        }
-      end
+      table.insert(args, func)
+    end
+    if not self.args then
       return {
-        args[2],
-        '.do_(',
-        args[1],
-        ')'
+        type(self)
       }
     end
     if should_wrap(self.args[1]) then
