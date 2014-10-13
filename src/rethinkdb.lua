@@ -453,7 +453,7 @@ ast_methods = {
   epoch_time = function(...) return EpochTime({}, ...) end,
   eq = function(...) return Eq({}, ...) end,
   eq_join = function(...) return EqJoin(get_opts(...)) end,
-  error = function(...) return Error({}, ...) end,
+  error_ = function(...) return Error({}, ...) end,
   february = function(...) return February({}, ...) end,
   fill = function(...) return Fill({}, ...) end,
   filter = function(...) return Filter(get_opts(...)) end,
@@ -867,7 +867,7 @@ During = ast('During', {tt = 105, st = 'during'})
 EpochTime = ast('EpochTime', {tt = 101, st = 'epoch_time'})
 Eq = ast('Eq', {tt = 17, st = 'eq'})
 EqJoin = ast('EqJoin', {tt = 50, st = 'eq_join'})
-Error = ast('Error', {tt = 12, st = 'error'})
+Error = ast('Error', {tt = 12, st = 'error_'})
 February = ast('February', {tt = 115, st = 'february'})
 Fill = ast('Fill', {tt = 167, st = 'fill'})
 Filter = ast('Filter', {tt = 39, st = 'filter'})
