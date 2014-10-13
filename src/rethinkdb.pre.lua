@@ -490,28 +490,6 @@ class_methods = {
     if self.tt == --[[Term.BINARY]] and not self.args[1] then
       return 'r.binary(<data>)'
     end
-    if self.tt == --[[Term.TABLE]] then
-      if is_instance(self.args[1], 'Db') then
-        return {
-          args[1],
-          ':table(',
-          intspallargs((function()
-            local _accum_0 = {}
-            for _index_0 = 2, #args do
-              _accum_0[_index_0 - 1] = args[_index_0]
-            end
-            return _accum_0
-          end)(), optargs),
-          ')'
-        }
-      else
-        return {
-          'r.table(',
-          intspallargs(args, optargs),
-          ')'
-        }
-      end
-    end
     if self.tt == --[[Term.BRACKET]] then
       return {
         args[1],
@@ -536,42 +514,16 @@ class_methods = {
       }
     end
     if self.tt == --[[Term.FUNCALL]] then
-      local func = table.remove(args, 1)
-      if #self.args > 2 then
-        return {
-          'r.do_(',
-          intsp(args),
-          ', ',
-          func,
-          ')'
-        }
-      end
-      table.insert(args, func)
+      table.insert(args, table.remove(args, 1))
     end
     if not self.args then
       return {
         type(self)
       }
     end
-    if should_wrap(self.args[1]) then
-      args[1] = {
-        'r(',
-        args[1],
-        ')'
-      }
-    end
     return {
-      args[1],
-      ':',
-      self.st,
-      '(',
-      intspallargs((function()
-        local _accum_0 = {}
-        for _index_0 = 2, #args do
-          _accum_0[_index_0 - 1] = args[_index_0]
-        end
-        return _accum_0
-      end)(), optargs),
+      'r.' .. self.st .. '(',
+      intspallargs(args, optargs),
       ')'
     }
   end,
