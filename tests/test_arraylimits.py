@@ -21,7 +21,11 @@ class TestArrayLimits(util.LuaTestCase):
         self.expect('test_arraylimits_huge_table', [{'deleted': 0, 'errors': 1, 'first_error': 'Array too large for disk writes (limit 100,000 elements)', 'inserted': 1, 'replaced': 0, 'skipped': 0, 'unchanged': 0}])
 
     def test_lessthan(self):
-        self.expect('test_arraylimits_lessthan', 'ReQLRuntimeError Array over size limit `4`. in:\nr({1, 2, 3, 4}):union({5, 6, 7, 8})')
+        self.expect(
+            'test_arraylimits_lessthan',
+            'ReQLRuntimeError Array over size limit `4`. in:\n'
+            'r.union({1, 2, 3, 4}, {5, 6, 7, 8})'
+        )
 
     def test_lessthan_read(self):
         self.expect('test_arraylimits_lessthan_read', [{'array': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 'id': 1}])
