@@ -78,13 +78,13 @@ class TestControl(util.LuaTestCase):
     def test_do_no_return(self):
         self.expect(
             'test_control_do_no_return',
-            '../src/rethinkdb.lua:598: Anonymous function returned `nil`. Did you forget a `return`?'
+            '../src/rethinkdb.lua:591: Anonymous function returned `nil`. Did you forget a `return`?'
         )
 
     def test_do_return_nil(self):
         self.expect(
             'test_control_do_return_nil',
-            '../src/rethinkdb.lua:598: Anonymous function returned `nil`. Did you forget a `return`?'
+            '../src/rethinkdb.lua:591: Anonymous function returned `nil`. Did you forget a `return`?'
         )
 
     def test_do_str_add_num(self):

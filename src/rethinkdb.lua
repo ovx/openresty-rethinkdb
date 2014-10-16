@@ -145,31 +145,24 @@ function class(name, parent, base)
 end
 
 function intsp(seq)
-  if seq[1] == nil then
-    return {}
-  end
-  local res = {seq[1]}
-  for i=2, #seq do
-    table.insert(res, ', ')
-    table.insert(res, seq[i])
+  local res = {}
+  local sep = ''
+  for _, v in ipairs(seq) do
+    table.insert(res, {sep, v})
+    sep = ', '
   end
   return res
 end
 
 function kved(optargs)
-  return {
-    '{',
-    intsp((function()
-      local _accum_0 = {}
-      local i = 1
-      for k, v in pairs(optargs) do
-        _accum_0[i] = {k, ': ', v}
-        i = i + 1
-      end
-      return _accum_0
-    end)()),
-    '}'
-  }
+  local res = {'{'}
+  local sep = ''
+  for k, v in pairs(optargs) do
+    table.insert(res, {sep, k, ': ', v})
+    sep = ', '
+  end
+  table.insert(res, '}')
+  return res
 end
 
 function intspallargs(args, optargs)
