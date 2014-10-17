@@ -631,7 +631,6 @@ Cursor = class(
     -- Implement IterableResult
     next = function(self, callback)
       local cb = function(err, row)
-        if type(err) == 'number' then error('' .. err) end
         return callback(err, row)
       end
       -- Try to get a row out of the responses
