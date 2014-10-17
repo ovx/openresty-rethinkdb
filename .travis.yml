@@ -30,7 +30,7 @@ install:
   - 'python --version'
   - 'sudo python --version'
   - 'sudo python build.py install'
-  - 'luarocks make'
+  - 'sudo luarocks make'
 
 # add the python rethinkdb driver so that it can be used in test setup
 before_script:
