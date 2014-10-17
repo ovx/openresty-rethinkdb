@@ -27,10 +27,7 @@ before_install:
 
 # command to install dependencies
 install:
-  - 'python --version'
-  - 'sudo python --version'
   - 'sudo python3 build.py install'
-  - 'sudo luarocks make'
 
 # add the python rethinkdb driver so that it can be used in test setup
 before_script:
