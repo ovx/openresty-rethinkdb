@@ -1,3 +1,8 @@
+import sys
+if sys.version_info[0] < 3:
+    print('Support for building with Python2 is not provided.')
+    exit(0)
+
 import argparse
 import os
 import struct
