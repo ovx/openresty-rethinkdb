@@ -687,7 +687,10 @@ class_methods = {
       }
     end
     if self.tt == 64 then
-      table.insert(args, table.remove(args, 1))
+      local func = table.remove(args, 1)
+      if func then
+        table.insert(args, func)
+      end
     end
     if not self.args then
       return {
