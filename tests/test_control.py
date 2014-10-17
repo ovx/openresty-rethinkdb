@@ -48,6 +48,7 @@ class TestControl(util.LuaTestCase):
     def test_do_append(self):
         self.expect('test_control_do_append', [[0, 1, 2, 3]])
 
+    @util.unittest.skipIf(util.lua_version() < 5.2, 'requires Lua 5.2')
     def test_do_extra_arg(self):
         self.expect(
             'test_control_do_extra_arg',
@@ -55,6 +56,7 @@ class TestControl(util.LuaTestCase):
             'r.do_(1, function() return r.add(var_0, var_1) end)'
         )
 
+    @util.unittest.skipIf(util.lua_version() < 5.2, 'requires Lua 5.2')
     def test_do_missing_arg(self):
         self.expect(
             'test_control_do_missing_arg',

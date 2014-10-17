@@ -1,10 +1,17 @@
 import json
 import os
+import re
 import subprocess
 import unittest
 
 import rethinkdb as r
 
+
+def lua_version():
+    version = subprocess.check_output(['lua', '-v'])
+    version = re.match(b'Lua (\d)\.(\d)\.(\d)', version)
+    version = version.group(1, 2, 3)
+    return int(version[0]) + 0.1 * int(version[1]) + 0.01 * int(version[2])
 
 class LuaTestCase(unittest.TestCase):
     tables = None
