@@ -748,7 +748,7 @@ DatumTerm = ast(
   {
     __init = function(self, val)
       if type(val) == 'number' then
-        if math.abs(val) == math.huge or '' .. val == 'nan' then
+        if math.abs(val) == math.huge or val ~= val then
           error('Illegal non-finite number `' .. val .. '`.')
         end
       end
