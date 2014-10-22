@@ -9,44 +9,27 @@ import struct
 import subprocess
 
 
-def test(args):
+def spec(args):
     if not args.f:
         lint(args)
 
-    import unittest
     import time
 
-    res = unittest.TestResult()
     io = subprocess.Popen(
-        'rethinkdb', cwd='tests',
+        'rethinkdb', cwd='spec',
         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
     )
     time.sleep(4)
-    unittest.defaultTestLoader.discover('./tests').run(res)
-    for error in res.errors:
-        print(error[0])
-        print(error[1])
-    for fail in res.failures:
-        print(fail[0])
-        print(fail[1])
-    print('''
-tests run: {}
-errors: {}
-failures: {}
-skipped: {}'''.format(
-        res.testsRun, len(res.errors), len(res.failures), len(res.skipped)
-    ))
+    res = subprocess.call('busted')
     io.terminate()
     io.wait()
-    if not res.wasSuccessful():
-        exit(1)
+    exit(res)
 
 
 def clean(args):
     import shutil
     shutil.rmtree('__pycache__', ignore_errors=True)
-    shutil.rmtree('tests/__pycache__', ignore_errors=True)
-    shutil.rmtree('tests/rethinkdb_data', ignore_errors=True)
+    shutil.rmtree('spec/rethinkdb_data', ignore_errors=True)
 
 
 def lint(args):
@@ -57,16 +40,14 @@ def lint(args):
 
     returncode = subprocess.call(['luac', 'rethinkdb.lua'], cwd='src')
     if returncode:
-        print('`luac rethinkdb.lua` returned:', returncode)
         exit(returncode)
 
     print('linting tests')
 
-    for test in os.listdir('tests'):
+    for test in os.listdir('spec'):
         if test.endswith('.lua'):
-            returncode = subprocess.call(['luac', test], cwd='tests')
+            returncode = subprocess.call(['luac', test], cwd='spec')
             if returncode:
-                print('`luac {}` returned:'.format(test), returncode)
                 exit(returncode)
 
     print('linting successful')
@@ -188,20 +169,21 @@ def install(args):
 
     returncode = subprocess.call(['luarocks', 'make'])
     if returncode:
-        print('`luarocks make` returned:', returncode)
         exit(returncode)
+
+    print('install successful')
 
 
 def main():
     parser = argparse.ArgumentParser(description='Build Lua-ReQL.')
 
-    parser.add_argument('action', nargs='?', default='test')
+    parser.add_argument('action', nargs='?', default='spec')
     parser.add_argument('-f', action='store_true')
 
     args = parser.parse_args()
 
     {
-        'test': test,
+        'spec': spec,
         'lint': lint,
         'clean': clean,
         'install': install,

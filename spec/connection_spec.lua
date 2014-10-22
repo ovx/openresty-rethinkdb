@@ -1,15 +1,20 @@
-import util
+describe('connection', function()
+  local r
+
+  setup(function()
+    r = require('rethinkdb')
+  end)
+
+  it('basic', function()
+    r.connect(function(err, c)
+      if err then error(err.message) end
+      assert.are_not.equal(c, nil)
+    end)
+  end)
+end)
 
 
-class TestConnection(util.LuaTestCase):
-    def test_basic(self):
-        self.expect('test_connection_basic', 'SUCCESS')
-
-
-if __name__ == '__main__':
-    unittest.main()
-
-"""
+--[[
 #!/usr/bin/env python
 ##
 # Tests the driver API for making connections and excercizes the networking code
@@ -545,4 +550,4 @@ if __name__ == '__main__':
     res = unittest.TextTestRunner(verbosity=2).run(suite)
     if not res.wasSuccessful():
         sys.exit(1)
-"""
+--]]
