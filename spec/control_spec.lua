@@ -67,7 +67,7 @@ describe('control', function()
     )
   end)
 
-  it('branch nil' function()
+  it('branch nil', function()
     assert.are.equal(
       r():branch(1, 2):run(
         c, function(err, cur)
