@@ -738,7 +738,7 @@ Connection = class(
         callback = host_or_callback
       elseif type(host_or_callback) == 'string' then
         host = {host = host_or_callback}
-      else
+      elseif host_or_callback then
         host = host_or_callback
       end
       local cb = function(err, conn)
