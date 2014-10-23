@@ -25,11 +25,11 @@ describe('cursor', function()
     num_rows = math.random(1111, 2222)
 
     local doc = {}
-    for i=0, i<500, 1 do
+    for i=0, 500, 1 do
       table.insert(doc, i)
     end
     local document = {}
-    for i=0, i<num_rows, 1 do
+    for i=0, num_rows, 1 do
       table.insert(document, doc)
     end
 
