@@ -54,7 +54,7 @@ describe('control', function()
   end)
 
   it('branch false', function()
-    assert.are.equal(
+    assert.same(
       r.branch(false, 1, 2):run(
         c, function(err, cur)
           if err then error(err.message) end
@@ -68,7 +68,7 @@ describe('control', function()
   end)
 
   it('branch nil', function()
-    assert.are.equal(
+    assert.same(
       r():branch(1, 2):run(
         c, function(err, cur)
           if err then error(err.message) end
@@ -82,7 +82,7 @@ describe('control', function()
   end)
 
   it('branch num', function()
-    assert.are.equal(
+    assert.same(
       r.branch(1, 'c', false):run(
         c, function(err, cur)
           if err then error(err.message) end
@@ -112,7 +112,7 @@ describe('control', function()
   end)
 
   it('branch true', function()
-    assert.are.equal(
+    assert.same(
       r.branch(true, 1, 2):run(
         c, function(err, cur)
           if err then error(err.message) end
@@ -126,7 +126,7 @@ describe('control', function()
   end)
 
   it('do', function()
-    assert.are.equal(
+    assert.same(
       r.do_(function() return 1 end):run(
         c, function(err, cur)
           if err then error(err.message) end
@@ -140,7 +140,7 @@ describe('control', function()
   end)
 
   it('do add', function()
-    assert.are.equal(
+    assert.same(
       r.do_(1, 2, function(x, y) return x:add(y) end):run(
         c, function(err, cur)
           if err then error(err.message) end
@@ -154,7 +154,7 @@ describe('control', function()
   end)
 
   it('do append', function()
-    assert.are.equal(
+    assert.same(
       r({0, 1, 2}):do_(function(v) return v:append(3) end):run(
         c, function(err, cur)
           if err then error(err.message) end
@@ -202,7 +202,7 @@ describe('control', function()
   end
 
   it('do mul', function()
-    assert.are.equal(
+    assert.same(
       r(1):do_(function(v) return v:mul(2) end):run(
         c, function(err, cur)
           if err then error(err.message) end
@@ -232,7 +232,7 @@ describe('control', function()
   end)
 
   it('do no func', function()
-    assert.are.equal(
+    assert.same(
       r.do_(1):run(
         c, function(err, cur)
           if err then error(err.message) end

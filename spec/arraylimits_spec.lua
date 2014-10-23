@@ -41,7 +41,7 @@ describe('array limits', function()
   end)
 
   it('equal', function()
-    assert.are.equal(
+    assert.same(
       r({1, 2, 3, 4}):union({5, 6, 7, 8}):run(
         c, {array_limit = 8}, function(err, cur)
           if err then error(err.message) end
@@ -55,7 +55,7 @@ describe('array limits', function()
   end)
 
   it('huge', function()
-    assert.are.equal(
+    assert.same(
       huge_l:append(1):count():run(
         c, {array_limit = 100001}, function(err, cur)
           if err then error(err.message) end
@@ -77,7 +77,7 @@ describe('array limits', function()
         end)
       end
     )
-    assert.are.equal(
+    assert.same(
       r.table(reql_table):get(0):run(
         c, {array_limit = 100001}, function(err, cur)
           if err then error(err.message) end
@@ -91,7 +91,7 @@ describe('array limits', function()
   end)
 
   it('huge table', function()
-    assert.are.equal(
+    assert.same(
       r.table(reql_table):insert({id = 0, array = huge_l:append(1)}):run(
         c, {array_limit = 100001}, function(err, cur)
           if err then error(err.message) end
@@ -134,7 +134,7 @@ describe('array limits', function()
         end)
       end
     )
-    assert.are.equal(
+    assert.same(
       r.table(reql_table):get(1):run(
         c, {array_limit = 4}, function(err, cur)
           if err then error(err.message) end
