@@ -236,9 +236,9 @@ describe('control', function()
       r.do_(1):run(
         c, function(err, cur)
           if err then error(err.message) end
-          cur:to_array(function(err, arr)
-            if err then error(err.msg) end
-            error('no error thrown')
+          return cur:to_array(function(err, arr)
+            if err then error(err.message) end
+            return arr
           end)
         end
       ), {1}
