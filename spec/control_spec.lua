@@ -24,7 +24,7 @@ describe('control', function()
   it('branch db', function()
     assert.has_error(
       function()
-        r.db('test'):branch(1, 2):run(
+        r.db(reql_db):branch(1, 2):run(
           c, function(err, cur)
             if err then error(err.message) end
             cur:to_array(function(err, arr)
@@ -98,7 +98,7 @@ describe('control', function()
   it('branch table', function()
     assert.has_error(
       function()
-        r.table('func'):branch(1, 2):run(
+        r.table(reql_table):branch(1, 2):run(
           c, function(err, cur)
             if err then error(err.message) end
             cur:to_array(function(err, arr)
