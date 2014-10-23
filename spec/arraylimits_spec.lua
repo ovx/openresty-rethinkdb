@@ -1,9 +1,9 @@
+local r = require('rethinkdb')
+
 describe('array limits', function()
-  local r, reql_db, reql_table, c, huge_l
+  local reql_db, reql_table, c, huge_l
 
   setup(function()
-    r = require('rethinkdb')
-
     reql_db = 'array'
     reql_table = 'limits'
 

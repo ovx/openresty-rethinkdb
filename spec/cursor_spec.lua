@@ -1,9 +1,9 @@
+local r = require('rethinkdb')
+
 describe('cursor', function()
-  local r, reql_db, reql_table, c, num_rows
+  local reql_db, reql_table, c, num_rows
 
   setup(function()
-    r = require('rethinkdb')
-
     reql_db = 'cursor'
     reql_table = 'tests'
 

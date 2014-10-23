@@ -1,10 +1,6 @@
+local r = require('rethinkdb')
+
 describe('connection', function()
-  local r
-
-  setup(function()
-    r = require('rethinkdb')
-  end)
-
   it('basic', function()
     r.connect(function(err, c)
       if err then error(err.message) end

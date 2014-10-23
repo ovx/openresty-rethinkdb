@@ -1,9 +1,9 @@
+local r = require('rethinkdb')
+
 describe('change feeds', function()
-  local r, reql_db, reql_table, c
+  local reql_db, reql_table, c
 
   setup(function()
-    r = require('rethinkdb')
-
     reql_db = 'changefeeds'
     reql_table = 'watched'
 
