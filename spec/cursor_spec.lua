@@ -22,7 +22,7 @@ describe('cursor', function()
   end)
 
   before_each(function()
-    num_rows = random(1111, 2222)
+    num_rows = math.random(1111, 2222)
 
     local doc = {}
     for i=0, i<500, 1 do
