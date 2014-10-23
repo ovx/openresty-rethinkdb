@@ -24,7 +24,9 @@ install:
   - make build
   - sudo make install
   - sudo make bootstrap
-  - sudo luarocks install busted luajson luasocket
+  - sudo luarocks install luasocket
+  - sudo luarocks install luajson
+  - sudo luarocks install busted
   - cd $TRAVIS_BUILD_DIR
   - python build.py lint
 
