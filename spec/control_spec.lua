@@ -40,11 +40,11 @@ describe('control', function()
   it('branch error', function()
     assert.has_error(
       function()
-        r.branch(r.error_("a"), 1, 2):run(
+        r.branch(r.error_('a'), 1, 2):run(
           c, function(err, cur)
             if err then error(err.message) end
             cur:to_array(function(err, arr)
-              if err then error(err.message) end
+              if err then error(err.msg) end
               error('no error thrown')
             end)
           end
