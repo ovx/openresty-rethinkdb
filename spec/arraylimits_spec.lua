@@ -17,8 +17,9 @@ describe('array limits', function()
     r.table_create(reql_table):run(c)
 
     local ten_l = r({1, 2, 3, 4, 5, 6, 7, 8, 9, 10})
-    huge_l = ten_l:concat_map(ten_l):concat_map(ten_l):concat_map(
-      ten_l):concat_map(ten_l)
+    local ten_f = function() return ten_l end
+    huge_l = ten_l:concat_map(ten_f):concat_map(ten_f):concat_map(
+      ten_f):concat_map(ten_f)
   end)
 
   after_each(function()
