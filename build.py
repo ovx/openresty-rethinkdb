@@ -104,6 +104,7 @@ def build(args):
         DISTANCE='{} = function(self, g, opts) return {}(opts, self, g) end',
         DURING=
         '{} = function(t1, t2, t3, opts) return {}(opts, t1, t2, t3) end',
+        FILTER='{} = function(self, pred, opts) return {}(opts, self, pred) end',
         INSERT='{} = function(tbl, doc, opts) return {}(opts, tbl, doc) end',
         UPDATE='{} = function(tbl, doc, opts) return {}(opts, tbl, doc) end'
     )
