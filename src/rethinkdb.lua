@@ -3,7 +3,7 @@ local mime = require('mime')
 local socket = require('socket')
 
 -- r is both the main export table for the module
--- and a function that wraps a native Lua value in an ReQL datum
+-- and a function that wraps a native Lua value in a ReQL datum
 local r = {}
 
 local Connection, Cursor
