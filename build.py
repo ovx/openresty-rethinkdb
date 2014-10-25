@@ -104,7 +104,8 @@ def build(args):
         DISTANCE='{} = function(self, g, opts) return {}(opts, self, g) end',
         DURING=
         '{} = function(t1, t2, t3, opts) return {}(opts, t1, t2, t3) end',
-        INSERT='{} = function(tbl, doc, opts) return {}(opts, tbl, doc) end'
+        INSERT='{} = function(tbl, doc, opts) return {}(opts, tbl, doc) end',
+        UPDATE='{} = function(tbl, doc, opts) return {}(opts, tbl, doc) end'
     )
     ast_methods = [
         ast_methods_w_opt.get(
