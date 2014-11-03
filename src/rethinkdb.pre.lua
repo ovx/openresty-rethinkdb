@@ -21,7 +21,7 @@ function is_instance(obj, ...)
         return true
       end
     else
-      class = class.__name
+      cls = cls.__name
     end
 
     if type(obj) == 'table' then
