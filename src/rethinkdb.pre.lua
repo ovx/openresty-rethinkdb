@@ -618,6 +618,9 @@ Cursor = class(
         self._conn:_del_query(self._token)
       end
       self._cont_flag = false
+      while (self._cb and self._responses[1]) do
+        self:_run_cb(self._cb)
+      end
     end,
     _prompt_cont = function(self)
       if self._end_flag then return end
@@ -628,17 +631,9 @@ Cursor = class(
       end
       self._conn:_get_response(self._token)
     end,
-    -- Implement IterableResult
-    next = function(self, callback)
+    _run_cb = function(self, callback)
       local cb = function(err, row)
         return callback(err, row)
-      end
-      -- Try to get a row out of the responses
-      while not self._responses[1] do
-        if self._end_flag then
-          return cb(ReQLDriverError('No more rows in the cursor.'))
-        end
-        self:_prompt_cont()
       end
       local response = self._responses[1]
       -- Behavior varies considerably based on response type
@@ -677,9 +672,33 @@ Cursor = class(
       end
       return cb(ReQLDriverError('Unknown response type ' .. t))
     end,
+    set = function(self, callback)
+      self._cb = callback
+    end,
+    clear = function(self)
+      self._cb = nil
+    end,
+    -- Implement IterableResult
+    next = function(self, callback)
+      local cb = function(err, row)
+        return callback(err, row)
+      end
+      if self._cb then
+        return cb(ReQLDriverError('Use `cur:clear()` before `cur:next`.'))
+      end
+      -- Try to get a row out of the responses
+      while not self._responses[1] do
+        if self._end_flag then
+          return cb(ReQLDriverError('No more rows in the cursor.'))
+        end
+        self:_prompt_cont()
+      end
+      return self:_run_cb(cb)
+    end,
     close = function(self, callback)
       if not self._end_flag then
         self._conn:_end_query(self._token)
+        self._end_flag = true
       end
       if callback then return callback() end
     end,
