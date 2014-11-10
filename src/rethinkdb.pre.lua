@@ -652,7 +652,9 @@ Cursor = class(
         end
 
         return cb(err, row)
-      elseif t == --[[Response.COMPILE_ERROR]] then
+      end
+      self:clear()
+      if t == --[[Response.COMPILE_ERROR]] then
         return cb(ReQLCompileError(response.r[1], self._root, response.b))
       elseif t == --[[Response.CLIENT_ERROR]] then
         return cb(ReQLClientError(response.r[1], self._root, response.b))
@@ -1003,9 +1005,7 @@ Connection = class(
 )
 
 -- Add connect
-r.connect = function(...)
-  return Connection(...)
-end
+r.connect = Connection
 
 -- Export ReQL Errors
 r.error = {

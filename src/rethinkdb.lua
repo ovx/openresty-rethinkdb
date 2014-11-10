@@ -993,7 +993,9 @@ Cursor = class(
         end
 
         return cb(err, row)
-      elseif t == 17 then
+      end
+      self:clear()
+      if t == 17 then
         return cb(ReQLCompileError(response.r[1], self._root, response.b))
       elseif t == 16 then
         return cb(ReQLClientError(response.r[1], self._root, response.b))
