@@ -661,7 +661,7 @@ Cursor = class(
       elseif t == --[[Response.RUNTIME_ERROR]] then
         return cb(ReQLRuntimeError(response.r[1], self._root, response.b))
       elseif t == --[[Response.WAIT_COMPLETE]] then
-        return cb(nil, nil)
+        return cb()
       end
       return cb(ReQLDriverError('Unknown response type ' .. t))
     end,

@@ -1002,7 +1002,7 @@ Cursor = class(
       elseif t == 18 then
         return cb(ReQLRuntimeError(response.r[1], self._root, response.b))
       elseif t == 4 then
-        return cb(nil, nil)
+        return cb()
       end
       return cb(ReQLDriverError('Unknown response type ' .. t))
     end,
