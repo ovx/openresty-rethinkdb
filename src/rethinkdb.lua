@@ -945,7 +945,6 @@ Cursor = class(
       self._root = root -- current query
       self._responses = {}
       self._response_index = 1
-      self._cont_flag = true
     end,
     _add_response = function(self, response)
       local t = response.t
@@ -957,20 +956,12 @@ Cursor = class(
         -- We got an error, SUCCESS_SEQUENCE, WAIT_COMPLETE, or a SUCCESS_ATOM
         self._end_flag = true
         self._conn:_del_query(self._token)
+      else
+        self._conn:_continue_query(self._token)
       end
-      self._cont_flag = false
       while (self._cb and self._responses[1]) do
         self:_run_cb(self._cb)
       end
-    end,
-    _prompt_cont = function(self)
-      if self._end_flag then return end
-      -- Let's ask the server for more data if we haven't already
-      if not self._cont_flag then
-        self._cont_flag = true
-        self._conn:_continue_query(self._token)
-      end
-      self._conn:_get_response(self._token)
     end,
     _run_cb = function(self, callback)
       local cb = function(err, row)
@@ -1032,7 +1023,7 @@ Cursor = class(
         if self._end_flag then
           return cb(ReQLDriverError('No more rows in the cursor.'))
         end
-        self:_prompt_cont()
+        self._conn:_get_response(self._token)
       end
       return self:_run_cb(cb)
     end,
@@ -1069,7 +1060,7 @@ Cursor = class(
       return self:next(next_cb)
     end,
     to_array = function(self, callback)
-      if not self._type then self:_prompt_cont() end
+      if not self._type then self._conn:_get_response(self._token) end
       if self._type == 5 then
         return cb(ReQLDriverError('`to_array` is not available for feeds.'))
       end
@@ -1353,9 +1344,7 @@ Connection = class(
 )
 
 -- Add connect
-r.connect = function(...)
-  return Connection(...)
-end
+r.connect = Connection
 
 -- Export ReQL Errors
 r.error = {
