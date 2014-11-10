@@ -375,7 +375,7 @@ ast_methods = {
     end
     -- else we suppose that we have run(connection[, options][, callback])
 
-    if not is_instance(connection, 'Connection') then
+    if not is_instance(connection, 'Connection', 'Pool') then
       if callback then
         return callback(ReQLDriverError('First argument to `run` must be a connection.'))
       end
@@ -770,7 +770,6 @@ Connection = class(
       self.next_token = 1
       self.open = false
       self.buffer = ''
-      self._events = self._events or {}
       if self.raw_socket then
         self:close({
           noreply_wait = false
@@ -1004,8 +1003,62 @@ Connection = class(
   }
 )
 
+Pool = class(
+  'Pool',
+  {
+    __init = function(self, host, callback)
+      local cb = function(err, pool)
+        if callback then
+          local res = callback(err, pool)
+          pool:close({noreply_wait = false})
+          return res
+        end
+        return pool, err
+      end
+      self.open = false
+      conn, err = Connection(host)
+      if err then return cb(err) end
+      self.open = true
+      self.pool = {conn}
+      self.size = host.size or 12
+      self.host = host
+      for i=2, self.size do
+        table.insert(self.pool, (Connection(host)))
+      end
+      return cb(nil, self)
+    end,
+    close = function(self, opts, callback)
+      local cb = function(err)
+        if err and callback then
+          callback(err)
+        end
+      end
+      for _, conn in pairs(self.pool) do
+        conn:close(opts, cb)
+      end
+      self.open = false
+      if callback then return callback() end
+    end,
+    _start = function(self, term, callback, opts)
+      local wear = math.huge
+      local good_conn
+      for i=1, self.size do
+        if not self.pool[i] then self.pool[i] = Connection(self.host) end
+        local conn = self.pool[i]
+        if not conn.open then conn:reconnect() end
+        if conn.next_token < wear then
+          good_conn = conn
+          wear = conn.next_token
+        end
+      end
+      return conn:_start(term, callback, opts)
+    end
+  }
+)
+
 -- Add connect
 r.connect = Connection
+r.pool = Pool
 
 -- Export ReQL Errors
 r.error = {

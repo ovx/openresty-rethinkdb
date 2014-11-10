@@ -7,6 +7,12 @@ describe('connection', function()
       assert.are_not.equal(c, nil)
     end)
   end)
+  it('basic_pool', function()
+    r.pool({}, function(err, p)
+      if err then error(err.message) end
+      assert.are_not.equal(p, nil)
+    end)
+  end)
 end)
 
 
