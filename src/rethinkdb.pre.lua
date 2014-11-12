@@ -6,7 +6,6 @@ local socket = require('socket')
 -- and a function that wraps a native Lua value in a ReQL datum
 local r = {}
 
-local Connection, Cursor
 local DatumTerm, ReQLOp
 --[[AstNames]]
 local ReQLDriverError, ReQLServerError, ReQLRuntimeError, ReQLCompileError
@@ -588,7 +587,7 @@ DatumTerm = ast(
 
 --[[AstClasses]]
 
-Cursor = class(
+local Cursor = class(
   'Cursor',
   {
     __init = function(self, conn, token, opts, root)
@@ -735,7 +734,7 @@ Cursor = class(
   }
 )
 
-Connection = class(
+r.connect = class(
   'Connection',
   {
     __init = function(self, host_or_callback, callback)
@@ -997,7 +996,7 @@ Connection = class(
   }
 )
 
-Pool = class(
+r.pool = class(
   'Pool',
   {
     __init = function(self, host, callback)
@@ -1049,20 +1048,6 @@ Pool = class(
     end
   }
 )
-
--- Add connect
-r.connect = Connection
-r.pool = Pool
-
--- Export ReQL Errors
-r.error = {
-  ReQLError = ReQLError,
-  ReQLDriverError = ReQLDriverError,
-  ReQLServerError = ReQLServerError,
-  ReQLRuntimeError = ReQLRuntimeError,
-  ReQLCompileError = ReQLCompileError,
-  ReQLClientError = ReQLClientError
-}
 
 -- Export all names defined on r
 return r
