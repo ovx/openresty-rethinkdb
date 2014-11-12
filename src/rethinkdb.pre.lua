@@ -12,7 +12,7 @@ local DatumTerm, ReQLOp
 local ReQLDriverError, ReQLServerError, ReQLRuntimeError, ReQLCompileError
 local ReQLClientError, ReQLQueryPrinter, ReQLError
 
-function is_instance(obj, ...)
+function r.is_instance(obj, ...)
   local class_list = {...}
 
   for _, cls in ipairs(class_list) do
@@ -49,7 +49,7 @@ setmetatable(r, {
     if nesting_depth <= 0 then
       error('Nesting depth limit exceeded')
     end
-    if is_instance(val, 'ReQLOp') then
+    if r.is_instance(val, 'ReQLOp') then
       return val
     end
     if type(val) == 'function' then
@@ -160,7 +160,7 @@ function get_opts(...)
   local args = {...}
   local opt = {}
   local pos_opt = args[#args]
-  if (type(pos_opt) == 'table') and (not is_instance(pos_opt, 'ReQLOp')) then
+  if (type(pos_opt) == 'table') and (not r.is_instance(pos_opt, 'ReQLOp')) then
     opt = pos_opt
     args[#args] = nil
   end
@@ -408,7 +408,7 @@ class_methods = {
       args = {{unpack(arg_nums)}, func}
     elseif self.tt == --[[Term.BINARY]] then
       local data = args[1]
-      if is_instance(data, 'ReQLOp') then
+      if r.is_instance(data, 'ReQLOp') then
       elseif type(data) == 'string' then
         self.base64_data = mime.b64(table.remove(args, 1))
       else
@@ -1063,9 +1063,6 @@ r.error = {
   ReQLCompileError = ReQLCompileError,
   ReQLClientError = ReQLClientError
 }
-
--- Export class introspection
-r.is_instance = is_instance
 
 -- Export all names defined on r
 return r
