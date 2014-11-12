@@ -70,10 +70,6 @@ setmetatable(r, {
   end
 })
 
-function should_wrap(arg)
-  return is_instance(arg, 'DatumTerm', 'MakeArray', 'MakeObj')
-end
-
 function class(name, parent, base)
   local index, init
 
@@ -180,15 +176,13 @@ function bytes_to_int(str)
   return n
 end
 
-function div_mod(num, den)
-  return math.floor(num / den), math.fmod(num, den)
-end
-
 function int_to_bytes(num, bytes)
   local res = {}
   local mul = 0
-  for k=bytes,1,-1 do
-    res[k], num = div_mod(num, 2 ^ (8 * (k - 1)))
+  for k = bytes, 1, -1 do
+    local den = 2 ^ (8 * (k - 1))
+    res[k] = math.floor(num / den)
+    num = math.fmod(num, den)
   end
   return string.char(unpack(res))
 end
