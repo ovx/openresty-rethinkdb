@@ -368,7 +368,7 @@ ast_methods = {
     end
     -- else we suppose that we have run(connection[, options][, callback])
 
-    if not is_instance(connection, 'Connection', 'Pool') then
+    if not r.is_instance(connection, 'Connection', 'Pool') then
       if callback then
         return callback(ReQLDriverError('First argument to `run` must be a connection.'))
       end
