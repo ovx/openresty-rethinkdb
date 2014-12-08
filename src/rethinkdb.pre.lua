@@ -928,7 +928,7 @@ r.connect = class(
         callback = opts_or_callback
       end
       return self:close(opts, function()
-        return Connection(self, callback)
+        return r.connect(self, callback)
       end)
     end,
     use = function(self, db)
@@ -1009,14 +1009,14 @@ r.pool = class(
         return pool, err
       end
       self.open = false
-      conn, err = Connection(host)
+      conn, err = r.connect(host)
       if err then return cb(err) end
       self.open = true
       self.pool = {conn}
       self.size = host.size or 12
       self.host = host
       for i=2, self.size do
-        table.insert(self.pool, (Connection(host)))
+        table.insert(self.pool, (r.connect(host)))
       end
       return cb(nil, self)
     end,
@@ -1036,7 +1036,7 @@ r.pool = class(
       local wear = math.huge
       local good_conn
       for i=1, self.size do
-        if not self.pool[i] then self.pool[i] = Connection(self.host) end
+        if not self.pool[i] then self.pool[i] = r.connect(self.host) end
         local conn = self.pool[i]
         if not conn.open then conn:reconnect() end
         if conn.next_token < wear then

@@ -6,7 +6,6 @@ local socket = require('socket')
 -- and a function that wraps a native Lua value in a ReQL datum
 local r = {}
 
-local Connection, Cursor
 local DatumTerm, ReQLOp
 local Add, All, Any, Append, April, Args, Asc, August, Avg, Between, Binary
 local Bracket, Branch, ChangeAt, Changes, Circle, CoerceTo, ConcatMap
@@ -1082,7 +1081,7 @@ Cursor = class(
   }
 )
 
-Connection = class(
+r.connect = class(
   'Connection',
   {
     __init = function(self, host_or_callback, callback)
@@ -1276,7 +1275,7 @@ Connection = class(
         callback = opts_or_callback
       end
       return self:close(opts, function()
-        return Connection(self, callback)
+        return r.connect(self, callback)
       end)
     end,
     use = function(self, db)
@@ -1344,7 +1343,7 @@ Connection = class(
   }
 )
 
-Pool = class(
+r.pool = class(
   'Pool',
   {
     __init = function(self, host, callback)
@@ -1357,14 +1356,14 @@ Pool = class(
         return pool, err
       end
       self.open = false
-      conn, err = Connection(host)
+      conn, err = r.connect(host)
       if err then return cb(err) end
       self.open = true
       self.pool = {conn}
       self.size = host.size or 12
       self.host = host
       for i=2, self.size do
-        table.insert(self.pool, (Connection(host)))
+        table.insert(self.pool, (r.connect(host)))
       end
       return cb(nil, self)
     end,
@@ -1384,7 +1383,7 @@ Pool = class(
       local wear = math.huge
       local good_conn
       for i=1, self.size do
-        if not self.pool[i] then self.pool[i] = Connection(self.host) end
+        if not self.pool[i] then self.pool[i] = r.connect(self.host) end
         local conn = self.pool[i]
         if not conn.open then conn:reconnect() end
         if conn.next_token < wear then
@@ -1396,20 +1395,6 @@ Pool = class(
     end
   }
 )
-
--- Add connect
-r.connect = Connection
-r.pool = Pool
-
--- Export ReQL Errors
-r.error = {
-  ReQLError = ReQLError,
-  ReQLDriverError = ReQLDriverError,
-  ReQLServerError = ReQLServerError,
-  ReQLRuntimeError = ReQLRuntimeError,
-  ReQLCompileError = ReQLCompileError,
-  ReQLClientError = ReQLClientError
-}
 
 -- Export all names defined on r
 return r
