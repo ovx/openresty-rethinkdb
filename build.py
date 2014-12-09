@@ -77,7 +77,7 @@ def build(args):
     ast_method_names = {
         name: {
             'BRACKET': 'index', 'ERROR': 'error_', 'FUNCALL': 'do_',
-            'JAVASCRIPT': 'js', 'MAKE_ARRAY': 'array', 'NOT': 'not_'
+            'JAVASCRIPT': 'js', 'NOT': 'not_'
         }.get(name, name.lower())
         for name in ast_constants
     }
