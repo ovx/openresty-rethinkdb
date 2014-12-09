@@ -32,4 +32,5 @@ install:
 
 # command to run tests
 script:
-  - python build.py -f
+  - rethinkdb --daemon
+  - busted
