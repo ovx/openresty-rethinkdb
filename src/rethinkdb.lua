@@ -1287,7 +1287,7 @@ r.connect = class(
     _start = function(self, term, callback, opts)
       local cb = function(err, cur)
         local res
-        if type(callback) == 'function' and not opts.noreply then
+        if type(callback) == 'function' then
           res = callback(err, cur)
         else
           if err then
@@ -1317,6 +1317,10 @@ r.connect = class(
         global_opts.db = r.db(opts.db):build()
       elseif self.db then
         global_opts.db = r.db(self.db):build()
+      end
+
+      if type(callback) ~= 'function' then
+        global_opts.noreply = true
       end
 
       -- Construct query
