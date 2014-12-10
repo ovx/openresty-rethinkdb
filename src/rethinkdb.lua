@@ -1195,8 +1195,10 @@ r.connect = class(
     end,
     _del_query = function(self, token)
       -- This query is done, delete this cursor
+      if self.outstanding_callbacks[token].cursor then
+        self.weight = self.weight - 1
+      end
       self.outstanding_callbacks[token].cursor = nil
-      self.weight = self.weight - 1
     end,
     _process_response = function(self, response, token)
       local cursor = self.outstanding_callbacks[token]
@@ -1243,6 +1245,7 @@ r.connect = class(
     end,
     noreply_wait = function(self, callback)
       local cb = function(err, cur)
+        self.weight = 0
         if cur then
           return cur.next(function(err) return callback(err) end)
         end
