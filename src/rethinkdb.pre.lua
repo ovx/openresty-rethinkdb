@@ -369,10 +369,14 @@ ast_methods = {
     -- else we suppose that we have run(connection[, options][, callback])
 
     if not r.is_instance(connection, 'Connection', 'Pool') then
-      if callback then
-        return callback(ReQLDriverError('First argument to `run` must be a connection.'))
+      if r._pool then
+        connection = r._pool
+      else
+        if callback then
+          return callback(ReQLDriverError('First argument to `run` must be a connection.'))
+        end
+        error('First argument to `run` must be a connection.')
       end
-      error('First argument to `run` must be a connection.')
     end
 
     return connection:_start(self, callback, options or {})
@@ -754,6 +758,7 @@ r.connect = class(
         end
         return conn, err
       end
+      self.weight = 0
       self.host = host.host or self.DEFAULT_HOST
       self.port = host.port or self.DEFAULT_PORT
       self.db = host.db -- left nil if this is not set
@@ -850,6 +855,7 @@ r.connect = class(
     _del_query = function(self, token)
       -- This query is done, delete this cursor
       self.outstanding_callbacks[token].cursor = nil
+      self.weight = self.weight - 1
     end,
     _process_response = function(self, response, token)
       local cursor = self.outstanding_callbacks[token]
@@ -954,6 +960,7 @@ r.connect = class(
       -- Assign token
       local token = self.next_token
       self.next_token = self.next_token + 1
+      self.weight = self.weight + 1
 
       -- Set global options
       local global_opts = {}
@@ -1001,6 +1008,9 @@ r.pool = class(
   {
     __init = function(self, host, callback)
       local cb = function(err, pool)
+        if not r._pool then
+          r._pool = pool
+        end
         if callback then
           local res = callback(err, pool)
           pool:close({noreply_wait = false})
@@ -1021,30 +1031,35 @@ r.pool = class(
       return cb(nil, self)
     end,
     close = function(self, opts, callback)
-      local cb = function(err)
-        if err and callback then
-          callback(err)
+      local err
+      local cb = function(e)
+        if e then
+          err = e
         end
       end
       for _, conn in pairs(self.pool) do
         conn:close(opts, cb)
       end
       self.open = false
-      if callback then return callback() end
+      if callback then return callback(err) end
     end,
     _start = function(self, term, callback, opts)
-      local wear = math.huge
+      local weight = math.huge
       local good_conn
+      if opts.conn then
+        weight = -1
+        good_conn = self.pool[opts.conn]
+      end
       for i=1, self.size do
         if not self.pool[i] then self.pool[i] = r.connect(self.host) end
         local conn = self.pool[i]
         if not conn.open then conn:reconnect() end
-        if conn.next_token < wear then
+        if conn.weight < weight then
           good_conn = conn
-          wear = conn.next_token
+          weight = conn.weight
         end
       end
-      return conn:_start(term, callback, opts)
+      return good_conn:_start(term, callback, opts)
     end
   }
 )

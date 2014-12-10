@@ -88,10 +88,6 @@ setmetatable(r, {
   end
 })
 
-function should_wrap(arg)
-  return is_instance(arg, 'DatumTerm', 'MakeArray', 'MakeObj')
-end
-
 function class(name, parent, base)
   local index, init
 
@@ -198,15 +194,13 @@ function bytes_to_int(str)
   return n
 end
 
-function div_mod(num, den)
-  return math.floor(num / den), math.fmod(num, den)
-end
-
 function int_to_bytes(num, bytes)
   local res = {}
   local mul = 0
-  for k=bytes,1,-1 do
-    res[k], num = div_mod(num, 2 ^ (8 * (k - 1)))
+  for k = bytes, 1, -1 do
+    local den = 2 ^ (8 * (k - 1))
+    res[k] = math.floor(num / den)
+    num = math.fmod(num, den)
   end
   return string.char(unpack(res))
 end
@@ -394,10 +388,14 @@ ast_methods = {
     -- else we suppose that we have run(connection[, options][, callback])
 
     if not r.is_instance(connection, 'Connection', 'Pool') then
-      if callback then
-        return callback(ReQLDriverError('First argument to `run` must be a connection.'))
+      if r._pool then
+        connection = r._pool
+      else
+        if callback then
+          return callback(ReQLDriverError('First argument to `run` must be a connection.'))
+        end
+        error('First argument to `run` must be a connection.')
       end
-      error('First argument to `run` must be a connection.')
     end
 
     return connection:_start(self, callback, options or {})
@@ -408,7 +406,6 @@ ast_methods = {
   append = function(...) return Append({}, ...) end,
   april = function(...) return April({}, ...) end,
   args = function(...) return Args({}, ...) end,
-  array = function(...) return MakeArray({}, ...) end,
   asc = function(...) return Asc({}, ...) end,
   august = function(...) return August({}, ...) end,
   avg = function(...) return Avg({}, ...) end,
@@ -492,6 +489,7 @@ ast_methods = {
   line = function(...) return Line({}, ...) end,
   literal = function(...) return Literal({}, ...) end,
   lt = function(...) return Lt({}, ...) end,
+  make_array = function(...) return MakeArray({}, ...) end,
   make_obj = function(...) return MakeObj({}, ...) end,
   map = function(...) return Map({}, ...) end,
   march = function(...) return March({}, ...) end,
@@ -860,7 +858,7 @@ Limit = ast('Limit', {tt = 71, st = 'limit'})
 Line = ast('Line', {tt = 160, st = 'line'})
 Literal = ast('Literal', {tt = 137, st = 'literal'})
 Lt = ast('Lt', {tt = 19, st = 'lt'})
-MakeArray = ast('MakeArray', {tt = 2, st = 'array'})
+MakeArray = ast('MakeArray', {tt = 2, st = 'make_array'})
 MakeObj = ast('MakeObj', {tt = 3, st = 'make_obj'})
 Map = ast('Map', {tt = 38, st = 'map'})
 March = ast('March', {tt = 116, st = 'march'})
@@ -934,7 +932,7 @@ Without = ast('Without', {tt = 34, st = 'without'})
 Year = ast('Year', {tt = 128, st = 'year'})
 Zip = ast('Zip', {tt = 72, st = 'zip'})
 
-Cursor = class(
+local Cursor = class(
   'Cursor',
   {
     __init = function(self, conn, token, opts, root)
@@ -1101,6 +1099,7 @@ r.connect = class(
         end
         return conn, err
       end
+      self.weight = 0
       self.host = host.host or self.DEFAULT_HOST
       self.port = host.port or self.DEFAULT_PORT
       self.db = host.db -- left nil if this is not set
@@ -1197,6 +1196,7 @@ r.connect = class(
     _del_query = function(self, token)
       -- This query is done, delete this cursor
       self.outstanding_callbacks[token].cursor = nil
+      self.weight = self.weight - 1
     end,
     _process_response = function(self, response, token)
       local cursor = self.outstanding_callbacks[token]
@@ -1301,6 +1301,7 @@ r.connect = class(
       -- Assign token
       local token = self.next_token
       self.next_token = self.next_token + 1
+      self.weight = self.weight + 1
 
       -- Set global options
       local global_opts = {}
@@ -1348,6 +1349,9 @@ r.pool = class(
   {
     __init = function(self, host, callback)
       local cb = function(err, pool)
+        if not r._pool then
+          r._pool = pool
+        end
         if callback then
           local res = callback(err, pool)
           pool:close({noreply_wait = false})
@@ -1368,30 +1372,35 @@ r.pool = class(
       return cb(nil, self)
     end,
     close = function(self, opts, callback)
-      local cb = function(err)
-        if err and callback then
-          callback(err)
+      local err
+      local cb = function(e)
+        if e then
+          err = e
         end
       end
       for _, conn in pairs(self.pool) do
         conn:close(opts, cb)
       end
       self.open = false
-      if callback then return callback() end
+      if callback then return callback(err) end
     end,
     _start = function(self, term, callback, opts)
-      local wear = math.huge
+      local weight = math.huge
       local good_conn
+      if opts.conn then
+        weight = -1
+        good_conn = self.pool[opts.conn]
+      end
       for i=1, self.size do
         if not self.pool[i] then self.pool[i] = r.connect(self.host) end
         local conn = self.pool[i]
         if not conn.open then conn:reconnect() end
-        if conn.next_token < wear then
+        if conn.weight < weight then
           good_conn = conn
-          wear = conn.next_token
+          weight = conn.weight
         end
       end
-      return conn:_start(term, callback, opts)
+      return good_conn:_start(term, callback, opts)
     end
   }
 )
