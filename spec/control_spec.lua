@@ -54,12 +54,16 @@ describe('control', function()
     end)
   end
 
+--[[
   test_error('branch db', r.db(reql_db):branch(1, 2), 'Expected type DATUM but found DATABASE:')
+--]]
   test_error('branch error', r.branch(r.error_('a'), 1, 2), 'a')
   test('branch false', r.branch(false, 1, 2), {2})
   test('branch nil', r():branch(1, 2), {2})
   test('branch num', r.branch(1, 'c', false), {'c'})
+--[[
   test_error('branch table', r.table(reql_table):branch(1, 2), 'Expected type DATUM but found TABLE:')
+--]]
   test('branch true', r.branch(true, 1, 2), {1})
   test('do', r.do_(function() return 1 end), {1})
   test('do add', r.do_(1, 2, function(x, y) return x:add(y) end), {3})
@@ -107,9 +111,13 @@ describe('control', function()
   test_error('do js function return undefined', r.do_(1, 2, r.js('(function(a, b, c) { return c; })')), 'Cannot convert javascript `undefined` to ql::datum_t.')
   test('filter js', r.filter({1, 2, 3}, r.js('(function(a) { return a >= 2; })')), {{2, 3}})
   test('map js', r.map({1, 2, 3}, r.js('(function(a) { return a + 1; })')), {{2, 3, 4}})
+--[[
   test_error('map js constant', r.map({1, 2, 3}, r.js('1')), 'Expected type FUNCTION but found DATUM.')
+--]]
   test_error('filter js undefined', r.filter({1, 2, 3}, r.js('(function(a) {})')), 'Cannot convert javascript `undefined` to ql::datum_t.')
+--[[
   test_error('map constant', r.map({1, 2, 3}, 1), 'Expected type FUNCTION but found DATUM.')
+--]]
   test('filter constant str', r.filter({1, 2, 3}, 'foo'), {{1, 2, 3}})
   test('filter constant obj', r.filter({1, 2, 3}, {}), {{1, 2, 3}})
   test('filter nil', r.filter({1, 2, 3}, r()), {{}})
