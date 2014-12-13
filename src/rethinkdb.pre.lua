@@ -143,11 +143,11 @@ end
 
 function intspallargs(args, optargs)
   local argrepr = {}
-  if #args > 0 then
+  if next(args) then
     table.insert(argrepr, intsp(args))
   end
-  if optargs and #optargs > 0 then
-    if #argrepr > 0 then
+  if optargs and next(optargs) then
+    if next(argrepr) then
       table.insert(argrepr, ', ')
     end
     table.insert(argrepr, kved(optargs))
@@ -283,10 +283,10 @@ ReQLQueryPrinter = class(
     end,
     print_query = function(self)
       local carrots
-      if #self.frames == 0 then
-        carrots = {self:carrotify(self:compose_term(self.term))}
-      else
+      if next(self.frames) then
         carrots = self:compose_carrots(self.term, self.frames)
+      else
+        carrots = {self:carrotify(self:compose_term(self.term))}
       end
       carrots = self:join_tree(carrots):gsub('[^%^]', '')
       return self:join_tree(self:compose_term(self.term)) .. '\n' .. carrots
@@ -454,7 +454,7 @@ class_methods = {
       args[i] = arg:build()
     end
     res = {self.tt, args}
-    if #self.optargs > 0 then
+    if next(self.optargs) then
       local opts = {}
       for key, val in pairs(self.optargs) do
         opts[key] = val:build()
@@ -781,7 +781,7 @@ r.connect = class(
         -- Initialize connection with magic number to validate version
         self.raw_socket:send(
           --[[Version]] ..
-          int_to_bytes(#self.auth_key, 4) ..
+          int_to_bytes(#(self.auth_key), 4) ..
           self.auth_key ..
           --[[Protocol]]
         )
@@ -836,7 +836,7 @@ r.connect = class(
         end
         self.buffer = self.buffer .. buf
         if response_length > 0 then
-          if #self.buffer >= response_length then
+          if #(self.buffer) >= response_length then
             local response_buffer = string.sub(self.buffer, 1, response_length)
             self.buffer = string.sub(self.buffer, response_length + 1)
             response_length = 0
@@ -844,7 +844,7 @@ r.connect = class(
             if token == reqest_token then return end
           end
         else
-          if #self.buffer >= 12 then
+          if #(self.buffer) >= 12 then
             token = bytes_to_int(self.buffer:sub(1, 8))
             response_length = bytes_to_int(self.buffer:sub(9, 12))
             self.buffer = self.buffer:sub(13)
