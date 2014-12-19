@@ -26,6 +26,7 @@ install:
   - sudo make bootstrap
   - sudo luarocks install luasocket
   - sudo luarocks install luajson
+  - sudo luarocks install dkjson
   - sudo luarocks install busted
   - cd $TRAVIS_BUILD_DIR
   - python build.py lint
