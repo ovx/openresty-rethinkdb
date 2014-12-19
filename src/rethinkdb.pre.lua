@@ -49,7 +49,7 @@ setmetatable(r, {
     if nesting_depth <= 0 then
       error('Nesting depth limit exceeded')
     end
-    if r.is_instance(val, 'ReQLOp') then
+    if r.is_instance(val, 'ReQLOp') and type(val.build) == 'function' then
       return val
     end
     if type(val) == 'function' then
