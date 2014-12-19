@@ -22,3 +22,5 @@ Rethinkdb driver in Lua
 
 ## Installing from source
 - luarocks make
+
+[![gratipay](http://img.shields.io/gratipay/grandquista.svg)](https://gratipay.com/grandquista/)
