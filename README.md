@@ -11,6 +11,7 @@ Rethinkdb driver in Lua
 - Lua >= 5.1
 - Luarocks
   - busted
+  - dkjson [optional]
   - luajson
   - luasocket
 - Python >= 3.3
