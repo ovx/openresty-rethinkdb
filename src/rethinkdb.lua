@@ -25,24 +25,25 @@ end
 local DatumTerm, ReQLOp
 local Add, All, Any, Append, April, Args, Asc, August, Avg, Between, Binary
 local Bracket, Branch, ChangeAt, Changes, Circle, CoerceTo, ConcatMap
-local Contains, Count, Date, Day, DayOfWeek, DayOfYear, Db, DbCreate, DbDrop
-local DbList, December, Default, Delete, DeleteAt, Desc, Difference, Distance
-local Distinct, Div, Do, Downcase, During, EpochTime, Eq, EqJoin, Error
-local February, Fill, Filter, ForEach, Friday, Func, Ge, Geojson, Get, GetAll
-local GetField, GetIntersecting, GetNearest, Group, Gt, HasFields, Hours, Http
-local ISO8601, InTimezone, Includes, IndexCreate, IndexDrop, IndexList
-local IndexRename, IndexStatus, IndexWait, IndexesOf, Info, InnerJoin, Insert
-local InsertAt, Intersects, IsEmpty, January, JavaScript, Json, July, June
-local Keys, Le, Limit, Line, Literal, Lt, MakeArray, MakeObj, Map, March
-local Match, Max, May, Merge, Min, Minutes, Mod, Monday, Month, Mul, Ne, Not
-local November, Now, Nth, Object, October, OrderBy, OuterJoin, Pluck, Point
-local Polygon, PolygonSub, Prepend, Random, Range, Reduce, Replace, Sample
-local Saturday, Seconds, September, SetDifference, SetInsert, SetIntersection
-local SetUnion, Skip, Slice, SpliceAt, Split, Sub, Sum, Sunday, Sync, Table
-local TableCreate, TableDrop, TableList, Thursday, Time, TimeOfDay, Timezone
-local ToEpochTime, ToGeojson, ToISO8601, ToJsonString, Tuesday, TypeOf, UUID
-local Ungroup, Union, Upcase, Update, Var, Wednesday, WithFields, Without
-local Year, Zip
+local Contains, Count, Date, Day, DayOfWeek, DayOfYear, Db, DbConfig, DbCreate
+local DbDrop, DbList, December, Default, Delete, DeleteAt, Desc, Difference
+local Distance, Distinct, Div, Do, Downcase, During, EpochTime, Eq, EqJoin
+local Error, February, Fill, Filter, ForEach, Friday, Func, Ge, Geojson, Get
+local GetAll, GetField, GetIntersecting, GetNearest, Group, Gt, HasFields
+local Hours, Http, ISO8601, InTimezone, Includes, IndexCreate, IndexDrop
+local IndexList, IndexRename, IndexStatus, IndexWait, IndexesOf, Info
+local InnerJoin, Insert, InsertAt, Intersects, IsEmpty, January, JavaScript
+local Json, July, June, Keys, Le, Limit, Line, Literal, Lt, MakeArray, MakeObj
+local Map, March, Match, Max, May, Merge, Min, Minutes, Mod, Monday, Month
+local Mul, Ne, Not, November, Now, Nth, Object, October, OrderBy, OuterJoin
+local Pluck, Point, Polygon, PolygonSub, Prepend, Random, Range, Rebalance
+local Reconfigure, Reduce, Replace, Sample, Saturday, Seconds, September
+local SetDifference, SetInsert, SetIntersection, SetUnion, Skip, Slice
+local SpliceAt, Split, Sub, Sum, Sunday, Sync, Table, TableConfig, TableCreate
+local TableDrop, TableList, TableStatus, TableWait, Thursday, Time, TimeOfDay
+local Timezone, ToEpochTime, ToGeojson, ToISO8601, ToJsonString, Tuesday
+local TypeOf, UUID, Ungroup, Union, Upcase, Update, Var, Wednesday, WithFields
+local Without, Year, Zip
 local ReQLDriverError, ReQLServerError, ReQLRuntimeError, ReQLCompileError
 local ReQLClientError, ReQLQueryPrinter, ReQLError
 
@@ -454,6 +455,7 @@ ast_methods = {
   day_of_week = function(...) return DayOfWeek({}, ...) end,
   day_of_year = function(...) return DayOfYear({}, ...) end,
   db = function(...) return Db({}, ...) end,
+  db_config = function(...) return DbConfig({}, ...) end,
   db_create = function(...) return DbCreate({}, ...) end,
   db_drop = function(...) return DbDrop({}, ...) end,
   db_list = function(...) return DbList({}, ...) end,
@@ -549,6 +551,8 @@ ast_methods = {
   prepend = function(...) return Prepend({}, ...) end,
   random = function(...) return Random(get_opts(...)) end,
   range = function(...) return Range({}, ...) end,
+  rebalance = function(...) return Rebalance({}, ...) end,
+  reconfigure = function(...) return Reconfigure({}, ...) end,
   reduce = function(...) return Reduce({}, ...) end,
   replace = function(...) return Replace(get_opts(...)) end,
   sample = function(...) return Sample({}, ...) end,
@@ -568,9 +572,12 @@ ast_methods = {
   sunday = function(...) return Sunday({}, ...) end,
   sync = function(...) return Sync({}, ...) end,
   table = function(...) return Table(get_opts(...)) end,
+  table_config = function(...) return TableConfig({}, ...) end,
   table_create = function(...) return TableCreate(get_opts(...)) end,
   table_drop = function(...) return TableDrop({}, ...) end,
   table_list = function(...) return TableList({}, ...) end,
+  table_status = function(...) return TableStatus({}, ...) end,
+  table_wait = function(...) return TableWait({}, ...) end,
   thursday = function(...) return Thursday({}, ...) end,
   time = function(...) return Time({}, ...) end,
   time_of_day = function(...) return TimeOfDay({}, ...) end,
@@ -830,6 +837,7 @@ Day = ast('Day', {tt = 130, st = 'day'})
 DayOfWeek = ast('DayOfWeek', {tt = 131, st = 'day_of_week'})
 DayOfYear = ast('DayOfYear', {tt = 132, st = 'day_of_year'})
 Db = ast('Db', {tt = 14, st = 'db'})
+DbConfig = ast('DbConfig', {tt = 178, st = 'db_config'})
 DbCreate = ast('DbCreate', {tt = 57, st = 'db_create'})
 DbDrop = ast('DbDrop', {tt = 58, st = 'db_drop'})
 DbList = ast('DbList', {tt = 59, st = 'db_list'})
@@ -924,6 +932,8 @@ PolygonSub = ast('PolygonSub', {tt = 171, st = 'polygon_sub'})
 Prepend = ast('Prepend', {tt = 80, st = 'prepend'})
 Random = ast('Random', {tt = 151, st = 'random'})
 Range = ast('Range', {tt = 173, st = 'range'})
+Rebalance = ast('Rebalance', {tt = 179, st = 'rebalance'})
+Reconfigure = ast('Reconfigure', {tt = 176, st = 'reconfigure'})
 Reduce = ast('Reduce', {tt = 37, st = 'reduce'})
 Replace = ast('Replace', {tt = 55, st = 'replace'})
 Sample = ast('Sample', {tt = 81, st = 'sample'})
@@ -943,9 +953,12 @@ Sum = ast('Sum', {tt = 145, st = 'sum'})
 Sunday = ast('Sunday', {tt = 113, st = 'sunday'})
 Sync = ast('Sync', {tt = 138, st = 'sync'})
 Table = ast('Table', {tt = 15, st = 'table'})
+TableConfig = ast('TableConfig', {tt = 174, st = 'table_config'})
 TableCreate = ast('TableCreate', {tt = 60, st = 'table_create'})
 TableDrop = ast('TableDrop', {tt = 61, st = 'table_drop'})
 TableList = ast('TableList', {tt = 62, st = 'table_list'})
+TableStatus = ast('TableStatus', {tt = 175, st = 'table_status'})
+TableWait = ast('TableWait', {tt = 177, st = 'table_wait'})
 Thursday = ast('Thursday', {tt = 110, st = 'thursday'})
 Time = ast('Time', {tt = 136, st = 'time'})
 TimeOfDay = ast('TimeOfDay', {tt = 126, st = 'time_of_day'})

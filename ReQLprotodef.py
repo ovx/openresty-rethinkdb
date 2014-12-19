@@ -130,9 +130,15 @@ class Term:
         DB_CREATE = 57
         DB_DROP = 58
         DB_LIST = 59
+        DB_CONFIG = 178
         TABLE_CREATE = 60
         TABLE_DROP = 61
         TABLE_LIST = 62
+        TABLE_CONFIG = 174
+        TABLE_STATUS = 175
+        TABLE_WAIT = 177
+        RECONFIGURE = 176
+        REBALANCE = 179
         SYNC = 138
         INDEX_CREATE = 75
         INDEX_DROP = 76
