@@ -1,10 +1,11 @@
-local json = require('json')
 local mime = require('mime')
 local socket = require('socket')
 
 -- r is both the main export table for the module
 -- and a function that wraps a native Lua value in a ReQL datum
-local r = {}
+local r = {
+  json_parser = require('json'),
+}
 
 local DatumTerm, ReQLOp
 local Add, All, Any, Append, April, Args, Asc, August, Avg, Between, Binary
@@ -270,7 +271,11 @@ function recursively_convert_pseudotype(obj, opts)
     end
     obj = convert_pseudotype(obj, opts)
   end
-  if obj == json.util.null then return nil end
+  if r.json_parser.null then
+    if obj == r.json_parser.null then return nil end
+  elseif r.json_parser.util then
+    if obj == r.json_parser.util.null then return nil end
+  end
   return obj
 end
 
@@ -758,6 +763,12 @@ DatumTerm = ast(
         return '"' .. self.data .. '"'
       end
       if self.data == nil then
+        if r.json_parser.null then
+          return r.json_parser.null
+        end
+        if r.json_parser.util then
+          return r.json_parser.util.null
+        end
         return 'nil'
       end
       return '' .. self.data
@@ -1181,7 +1192,7 @@ r.connect = class(
             local response_buffer = string.sub(self.buffer, 1, response_length)
             self.buffer = string.sub(self.buffer, response_length + 1)
             response_length = 0
-            self:_process_response(json.decode(response_buffer), token)
+            self:_process_response(r.json_parser.decode(response_buffer), token)
             if token == reqest_token then return end
           end
         else
@@ -1341,7 +1352,7 @@ r.connect = class(
       self:_send_query(token, {3})
     end,
     _send_query = function(self, token, query)
-      local data = json.encode(query)
+      local data = r.json_parser.encode(query)
       self.raw_socket:send(
         int_to_bytes(token, 8) ..
         int_to_bytes(#data, 4) ..
