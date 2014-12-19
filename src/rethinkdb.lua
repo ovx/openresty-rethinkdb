@@ -100,6 +100,16 @@ setmetatable(r, {
       end
       return MakeObj(val)
     end
+    if type(val) == 'userdata' then
+      val = pcall(tostring, val)
+      r._logger('Found userdata inserting "' .. val .. '" into query')
+      return DatumTerm(val)
+    end
+    if type(val) == 'thread' then
+      val = pcall(tostring, val)
+      r._logger('Cannot insert thread object into query ' .. val)
+      return nil
+    end
     return DatumTerm(val)
   end
 })
