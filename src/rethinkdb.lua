@@ -5,6 +5,15 @@ local socket = require('socket')
 -- and a function that wraps a native Lua value in a ReQL datum
 local r = {
   json_parser = require('json'),
+  logger = function(err)
+    if type(err) == 'string' then
+      print(err)
+    elseif type(err) == 'table' and err.msg then
+      error(err.msg)
+    else
+      error('Unknown error type from driver')
+    end
+  end
 }
 
 local DatumTerm, ReQLOp
