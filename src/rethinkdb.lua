@@ -625,7 +625,7 @@ class_methods = {
         return r._logger('Anonymous function returned `nil`. Did you forget a `return`?')
       end
       optargs.arity = nil
-      args = {{unpack(arg_nums)}, func}
+      args = {arg_nums, func}
     elseif self.tt == 155 then
       local data = args[1]
       if r.is_instance(data, 'ReQLOp') then
