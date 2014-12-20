@@ -1,5 +1,6 @@
 local r = require('rethinkdb')
 local enable, dkjson = pcall(require, 'dkjson')
+local luajson = r.json_parser
 
 if enable then
   describe('control dkjson', function()
@@ -12,8 +13,6 @@ if enable then
 
       local err
 
-      r.json_parser = dkjson
-
       c, err = r.connect()
       if err then error(err.message) end
 
@@ -22,12 +21,18 @@ if enable then
       r.table_create(reql_table):run(c)
     end)
 
+    before_each(function()
+      r.json_parser = dkjson
+    end)
+
     after_each(function()
+      r.json_parser = luajson
       r.table(reql_table):delete():run(c)
     end)
 
     function test(name, query, res)
       it(name, function()
+        assert.equal(r.json_parser, dkjson)
         assert.same(res, query:run(
           c, function(err, cur)
             if err then error(err.message) end
