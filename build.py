@@ -62,18 +62,13 @@ def build(args):
     print('building rethinkdb.lua')
 
     name_re = re.compile('(^|_)(\w)')
-    ast_constants = {
+    ast_constants = list({
         term for term in dir(protodef.Term.TermType)
-        if not term.startswith('__')
-    } - {'DATUM', 'IMPLICIT_VAR'}
-    ast_class_names = {
-        name: {
-            'FUNCALL': 'Do', 'ISO8601': 'ISO8601',
-            'JAVASCRIPT': 'JavaScript', 'TO_ISO8601': 'ToISO8601',
-            'UUID': 'UUID'
-        }.get(name, name_re.sub(lambda m: m.group(2).upper(), name.lower()))
-        for name in ast_constants
-    }
+        if not term.startswith('_')
+    } - {'DATUM', 'IMPLICIT_VAR'})
+
+    ast_constants.sort()
+
     ast_method_names = {
         name: {
             'BRACKET': 'index', 'ERROR': 'error_', 'FUNCALL': 'do_',
@@ -83,7 +78,7 @@ def build(args):
     }
     ast_classes = [
         '{0} = ast({0!r}, {{tt = {1}, st = {2!r}}})'.format(
-            ast_class_names[name],
+            name,
             getattr(protodef.Term.TermType, name),
             ast_method_names[name]
         ) for name in ast_constants
@@ -110,27 +105,21 @@ def build(args):
     )
     ast_methods = [
         ast_methods_w_opt.get(
-            name,
-            '{} = function(...) return {}({{}}, ...) end'
+            name, '{} = function(...) return {}({{}}, ...) end'
         ).format(
-            ast_method_names[name],
-            ast_class_names[name]
+            ast_method_names[name], name
         ) for name in ast_constants
     ]
 
-    ast_class_names = list(ast_class_names.values())
-    ast_class_names.sort(reverse=True)
+    ast_constants.reverse()
 
-    lines = ['local {}'.format(ast_class_names.pop())]
-    while ast_class_names:
-        name = ast_class_names.pop()
+    lines = ['local {}'.format(ast_constants.pop())]
+    while ast_constants:
+        name = ast_constants.pop()
         if len(lines[-1]) + len(name) < 77:
             lines[-1] += ', {}'.format(name)
         else:
             lines.append('local {}'.format(name))
-
-    ast_classes.sort()
-    ast_methods.sort()
 
     def encode_magic(num):
         return "'\\{}'".format('\\'.join(map(str, struct.pack(

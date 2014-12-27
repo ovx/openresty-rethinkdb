@@ -22,7 +22,7 @@ function r._logger(err)
   end
 end
 
-local DatumTerm, ReQLOp
+local DATUMTERM, ReQLOp
 --[[AstNames]]
 local ReQLDriverError, ReQLServerError, ReQLRuntimeError, ReQLCompileError
 local ReQLClientError, ReQLQueryPrinter, ReQLError
@@ -68,7 +68,7 @@ setmetatable(r, {
       return val
     end
     if type(val) == 'function' then
-      return Func({}, val)
+      return FUNC({}, val)
     end
     if type(val) == 'table' then
       local array = true
@@ -77,21 +77,21 @@ setmetatable(r, {
         val[k] = r(v, nesting_depth - 1)
       end
       if array then
-        return MakeArray({}, unpack(val))
+        return MAKE_ARRAY({}, unpack(val))
       end
-      return MakeObj(val)
+      return MAKE_OBJ(val)
     end
     if type(val) == 'userdata' then
       val = pcall(tostring, val)
       r._logger('Found userdata inserting "' .. val .. '" into query')
-      return DatumTerm(val)
+      return DATUMTERM(val)
     end
     if type(val) == 'thread' then
       val = pcall(tostring, val)
       r._logger('Cannot insert thread object into query ' .. val)
       return nil
     end
-    return DatumTerm(val)
+    return DATUMTERM(val)
   end
 })
 
@@ -430,7 +430,7 @@ class_methods = {
       end
       for i=1, optargs.arity or 1 do
         table.insert(arg_nums, ReQLOp.next_var_id)
-        table.insert(anon_args, Var({}, ReQLOp.next_var_id))
+        table.insert(anon_args, VAR({}, ReQLOp.next_var_id))
         ReQLOp.next_var_id = ReQLOp.next_var_id + 1
       end
       func = func(unpack(anon_args))
@@ -450,11 +450,11 @@ class_methods = {
     elseif self.tt == --[[Term.FUNCALL]] then
       local func = table.remove(args)
       if type(func) == 'function' then
-        func = Func({arity = #args}, func)
+        func = FUNC({arity = #args}, func)
       end
       table.insert(args, 1, func)
     elseif self.tt == --[[Term.REDUCE]] then
-      args[#args] = Func({arity = 2}, args[#args])
+      args[#args] = FUNC({arity = 2}, args[#args])
     end
     self.args = {}
     self.optargs = {}
@@ -564,22 +564,22 @@ ReQLOp = class('ReQLOp', class_methods)
 
 local meta = {
   __call = function(...)
-    return Bracket({}, ...)
+    return BRACKET({}, ...)
   end,
   __add = function(...)
-    return Add({}, ...)
+    return ADD({}, ...)
   end,
   __mul = function(...)
-    return Mul({}, ...)
+    return MUL({}, ...)
   end,
   __mod = function(...)
-    return Mod({}, ...)
+    return MOD({}, ...)
   end,
   __sub = function(...)
-    return Sub({}, ...)
+    return SUB({}, ...)
   end,
   __div = function(...)
-    return Div({}, ...)
+    return DIV({}, ...)
   end
 }
 
@@ -590,8 +590,8 @@ function ast(name, base)
   return class(name, ReQLOp, base)
 end
 
-DatumTerm = ast(
-  'DatumTerm',
+DATUMTERM = ast(
+  'DATUMTERM',
   {
     __init = function(self, val)
       if type(val) == 'number' then

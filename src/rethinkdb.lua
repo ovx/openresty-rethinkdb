@@ -22,28 +22,29 @@ function r._logger(err)
   end
 end
 
-local DatumTerm, ReQLOp
-local Add, All, Any, Append, April, Args, Asc, August, Avg, Between, Binary
-local Bracket, Branch, ChangeAt, Changes, Circle, CoerceTo, ConcatMap
-local Contains, Count, Date, Day, DayOfWeek, DayOfYear, Db, DbConfig, DbCreate
-local DbDrop, DbList, December, Default, Delete, DeleteAt, Desc, Difference
-local Distance, Distinct, Div, Do, Downcase, During, EpochTime, Eq, EqJoin
-local Error, February, Fill, Filter, ForEach, Friday, Func, Ge, Geojson, Get
-local GetAll, GetField, GetIntersecting, GetNearest, Group, Gt, HasFields
-local Hours, Http, ISO8601, InTimezone, Includes, IndexCreate, IndexDrop
-local IndexList, IndexRename, IndexStatus, IndexWait, IndexesOf, Info
-local InnerJoin, Insert, InsertAt, Intersects, IsEmpty, January, JavaScript
-local Json, July, June, Keys, Le, Limit, Line, Literal, Lt, MakeArray, MakeObj
-local Map, March, Match, Max, May, Merge, Min, Minutes, Mod, Monday, Month
-local Mul, Ne, Not, November, Now, Nth, Object, October, OrderBy, OuterJoin
-local Pluck, Point, Polygon, PolygonSub, Prepend, Random, Range, Rebalance
-local Reconfigure, Reduce, Replace, Sample, Saturday, Seconds, September
-local SetDifference, SetInsert, SetIntersection, SetUnion, Skip, Slice
-local SpliceAt, Split, Sub, Sum, Sunday, Sync, Table, TableConfig, TableCreate
-local TableDrop, TableList, TableStatus, TableWait, Thursday, Time, TimeOfDay
-local Timezone, ToEpochTime, ToGeojson, ToISO8601, ToJsonString, Tuesday
-local TypeOf, UUID, Ungroup, Union, Upcase, Update, Var, Wednesday, WithFields
-local Without, Year, Zip
+local DATUMTERM, ReQLOp
+local ADD, ALL, ANY, APPEND, APRIL, ARGS, ASC, AUGUST, AVG, BETWEEN, BINARY
+local BRACKET, BRANCH, CHANGES, CHANGE_AT, CIRCLE, COERCE_TO, CONCAT_MAP
+local CONTAINS, COUNT, DATE, DAY, DAY_OF_WEEK, DAY_OF_YEAR, DB, DB_CONFIG
+local DB_CREATE, DB_DROP, DB_LIST, DECEMBER, DEFAULT, DELETE, DELETE_AT, DESC
+local DIFFERENCE, DISTANCE, DISTINCT, DIV, DOWNCASE, DURING, EPOCH_TIME, EQ
+local EQ_JOIN, ERROR, FEBRUARY, FILL, FILTER, FOR_EACH, FRIDAY, FUNC, FUNCALL
+local GE, GEOJSON, GET, GET_ALL, GET_FIELD, GET_INTERSECTING, GET_NEAREST
+local GROUP, GT, HAS_FIELDS, HOURS, HTTP, INCLUDES, INDEXES_OF, INDEX_CREATE
+local INDEX_DROP, INDEX_LIST, INDEX_RENAME, INDEX_STATUS, INDEX_WAIT, INFO
+local INNER_JOIN, INSERT, INSERT_AT, INTERSECTS, IN_TIMEZONE, ISO8601
+local IS_EMPTY, JANUARY, JAVASCRIPT, JSON, JULY, JUNE, KEYS, LE, LIMIT, LINE
+local LITERAL, LT, MAKE_ARRAY, MAKE_OBJ, MAP, MARCH, MATCH, MAX, MAY, MERGE
+local MIN, MINUTES, MOD, MONDAY, MONTH, MUL, NE, NOT, NOVEMBER, NOW, NTH
+local OBJECT, OCTOBER, ORDER_BY, OUTER_JOIN, PLUCK, POINT, POLYGON
+local POLYGON_SUB, PREPEND, RANDOM, RANGE, REBALANCE, RECONFIGURE, REDUCE
+local REPLACE, SAMPLE, SATURDAY, SECONDS, SEPTEMBER, SET_DIFFERENCE
+local SET_INSERT, SET_INTERSECTION, SET_UNION, SKIP, SLICE, SPLICE_AT, SPLIT
+local SUB, SUM, SUNDAY, SYNC, TABLE, TABLE_CONFIG, TABLE_CREATE, TABLE_DROP
+local TABLE_LIST, TABLE_STATUS, TABLE_WAIT, THURSDAY, TIME, TIMEZONE
+local TIME_OF_DAY, TO_EPOCH_TIME, TO_GEOJSON, TO_ISO8601, TO_JSON_STRING
+local TUESDAY, TYPE_OF, UNGROUP, UNION, UPCASE, UPDATE, UUID, VAR, WEDNESDAY
+local WITHOUT, WITH_FIELDS, YEAR, ZIP
 local ReQLDriverError, ReQLServerError, ReQLRuntimeError, ReQLCompileError
 local ReQLClientError, ReQLQueryPrinter, ReQLError
 
@@ -88,7 +89,7 @@ setmetatable(r, {
       return val
     end
     if type(val) == 'function' then
-      return Func({}, val)
+      return FUNC({}, val)
     end
     if type(val) == 'table' then
       local array = true
@@ -97,21 +98,21 @@ setmetatable(r, {
         val[k] = r(v, nesting_depth - 1)
       end
       if array then
-        return MakeArray({}, unpack(val))
+        return MAKE_ARRAY({}, unpack(val))
       end
-      return MakeObj(val)
+      return MAKE_OBJ(val)
     end
     if type(val) == 'userdata' then
       val = pcall(tostring, val)
       r._logger('Found userdata inserting "' .. val .. '" into query')
-      return DatumTerm(val)
+      return DATUMTERM(val)
     end
     if type(val) == 'thread' then
       val = pcall(tostring, val)
       r._logger('Cannot insert thread object into query ' .. val)
       return nil
     end
-    return DatumTerm(val)
+    return DATUMTERM(val)
   end
 })
 
@@ -431,174 +432,174 @@ ast_methods = {
 
     return connection:_start(self, callback, options or {})
   end,
-  add = function(...) return Add({}, ...) end,
-  all = function(...) return All({}, ...) end,
-  any = function(...) return Any({}, ...) end,
-  append = function(...) return Append({}, ...) end,
-  april = function(...) return April({}, ...) end,
-  args = function(...) return Args({}, ...) end,
-  asc = function(...) return Asc({}, ...) end,
-  august = function(...) return August({}, ...) end,
-  avg = function(...) return Avg({}, ...) end,
-  between = function(self, left, right, opts) return Between(opts, self, left, right) end,
-  binary = function(...) return Binary({}, ...) end,
-  branch = function(...) return Branch({}, ...) end,
-  change_at = function(...) return ChangeAt({}, ...) end,
-  changes = function(...) return Changes({}, ...) end,
-  circle = function(...) return Circle(get_opts(...)) end,
-  coerce_to = function(...) return CoerceTo({}, ...) end,
-  concat_map = function(...) return ConcatMap({}, ...) end,
-  contains = function(...) return Contains({}, ...) end,
-  count = function(...) return Count({}, ...) end,
-  date = function(...) return Date({}, ...) end,
-  day = function(...) return Day({}, ...) end,
-  day_of_week = function(...) return DayOfWeek({}, ...) end,
-  day_of_year = function(...) return DayOfYear({}, ...) end,
-  db = function(...) return Db({}, ...) end,
-  db_config = function(...) return DbConfig({}, ...) end,
-  db_create = function(...) return DbCreate({}, ...) end,
-  db_drop = function(...) return DbDrop({}, ...) end,
-  db_list = function(...) return DbList({}, ...) end,
-  december = function(...) return December({}, ...) end,
-  default = function(...) return Default({}, ...) end,
-  delete = function(...) return Delete(get_opts(...)) end,
-  delete_at = function(...) return DeleteAt({}, ...) end,
-  desc = function(...) return Desc({}, ...) end,
-  difference = function(...) return Difference({}, ...) end,
-  distance = function(self, g, opts) return Distance(opts, self, g) end,
-  distinct = function(...) return Distinct(get_opts(...)) end,
-  div = function(...) return Div({}, ...) end,
-  do_ = function(...) return Do({}, ...) end,
-  downcase = function(...) return Downcase({}, ...) end,
-  during = function(t1, t2, t3, opts) return During(opts, t1, t2, t3) end,
-  epoch_time = function(...) return EpochTime({}, ...) end,
-  eq = function(...) return Eq({}, ...) end,
-  eq_join = function(...) return EqJoin(get_opts(...)) end,
-  error_ = function(...) return Error({}, ...) end,
-  february = function(...) return February({}, ...) end,
-  fill = function(...) return Fill({}, ...) end,
-  filter = function(self, pred, opts) return Filter(opts, self, pred) end,
-  for_each = function(...) return ForEach({}, ...) end,
-  friday = function(...) return Friday({}, ...) end,
-  func = function(...) return Func({}, ...) end,
-  ge = function(...) return Ge({}, ...) end,
-  geojson = function(...) return Geojson({}, ...) end,
-  get = function(...) return Get({}, ...) end,
-  get_all = function(...) return GetAll(get_opts(...)) end,
-  get_field = function(...) return GetField({}, ...) end,
-  get_intersecting = function(...) return GetIntersecting(get_opts(...)) end,
-  get_nearest = function(...) return GetNearest(get_opts(...)) end,
-  group = function(...) return Group(get_opts(...)) end,
-  gt = function(...) return Gt({}, ...) end,
-  has_fields = function(...) return HasFields({}, ...) end,
-  hours = function(...) return Hours({}, ...) end,
-  http = function(...) return Http(get_opts(...)) end,
-  in_timezone = function(...) return InTimezone({}, ...) end,
-  includes = function(...) return Includes({}, ...) end,
-  index = function(...) return Bracket({}, ...) end,
-  index_create = function(...) return IndexCreate(get_opts(...)) end,
-  index_drop = function(...) return IndexDrop({}, ...) end,
-  index_list = function(...) return IndexList({}, ...) end,
-  index_rename = function(...) return IndexRename(get_opts(...)) end,
-  index_status = function(...) return IndexStatus({}, ...) end,
-  index_wait = function(...) return IndexWait({}, ...) end,
-  indexes_of = function(...) return IndexesOf({}, ...) end,
-  info = function(...) return Info({}, ...) end,
-  inner_join = function(...) return InnerJoin({}, ...) end,
-  insert = function(tbl, doc, opts) return Insert(opts, tbl, doc) end,
-  insert_at = function(...) return InsertAt({}, ...) end,
-  intersects = function(...) return Intersects({}, ...) end,
-  is_empty = function(...) return IsEmpty({}, ...) end,
+  add = function(...) return ADD({}, ...) end,
+  all = function(...) return ALL({}, ...) end,
+  any = function(...) return ANY({}, ...) end,
+  append = function(...) return APPEND({}, ...) end,
+  april = function(...) return APRIL({}, ...) end,
+  args = function(...) return ARGS({}, ...) end,
+  asc = function(...) return ASC({}, ...) end,
+  august = function(...) return AUGUST({}, ...) end,
+  avg = function(...) return AVG({}, ...) end,
+  between = function(self, left, right, opts) return BETWEEN(opts, self, left, right) end,
+  binary = function(...) return BINARY({}, ...) end,
+  index = function(...) return BRACKET({}, ...) end,
+  branch = function(...) return BRANCH({}, ...) end,
+  changes = function(...) return CHANGES({}, ...) end,
+  change_at = function(...) return CHANGE_AT({}, ...) end,
+  circle = function(...) return CIRCLE(get_opts(...)) end,
+  coerce_to = function(...) return COERCE_TO({}, ...) end,
+  concat_map = function(...) return CONCAT_MAP({}, ...) end,
+  contains = function(...) return CONTAINS({}, ...) end,
+  count = function(...) return COUNT({}, ...) end,
+  date = function(...) return DATE({}, ...) end,
+  day = function(...) return DAY({}, ...) end,
+  day_of_week = function(...) return DAY_OF_WEEK({}, ...) end,
+  day_of_year = function(...) return DAY_OF_YEAR({}, ...) end,
+  db = function(...) return DB({}, ...) end,
+  db_config = function(...) return DB_CONFIG({}, ...) end,
+  db_create = function(...) return DB_CREATE({}, ...) end,
+  db_drop = function(...) return DB_DROP({}, ...) end,
+  db_list = function(...) return DB_LIST({}, ...) end,
+  december = function(...) return DECEMBER({}, ...) end,
+  default = function(...) return DEFAULT({}, ...) end,
+  delete = function(...) return DELETE(get_opts(...)) end,
+  delete_at = function(...) return DELETE_AT({}, ...) end,
+  desc = function(...) return DESC({}, ...) end,
+  difference = function(...) return DIFFERENCE({}, ...) end,
+  distance = function(self, g, opts) return DISTANCE(opts, self, g) end,
+  distinct = function(...) return DISTINCT(get_opts(...)) end,
+  div = function(...) return DIV({}, ...) end,
+  downcase = function(...) return DOWNCASE({}, ...) end,
+  during = function(t1, t2, t3, opts) return DURING(opts, t1, t2, t3) end,
+  epoch_time = function(...) return EPOCH_TIME({}, ...) end,
+  eq = function(...) return EQ({}, ...) end,
+  eq_join = function(...) return EQ_JOIN(get_opts(...)) end,
+  error_ = function(...) return ERROR({}, ...) end,
+  february = function(...) return FEBRUARY({}, ...) end,
+  fill = function(...) return FILL({}, ...) end,
+  filter = function(self, pred, opts) return FILTER(opts, self, pred) end,
+  for_each = function(...) return FOR_EACH({}, ...) end,
+  friday = function(...) return FRIDAY({}, ...) end,
+  func = function(...) return FUNC({}, ...) end,
+  do_ = function(...) return FUNCALL({}, ...) end,
+  ge = function(...) return GE({}, ...) end,
+  geojson = function(...) return GEOJSON({}, ...) end,
+  get = function(...) return GET({}, ...) end,
+  get_all = function(...) return GET_ALL(get_opts(...)) end,
+  get_field = function(...) return GET_FIELD({}, ...) end,
+  get_intersecting = function(...) return GET_INTERSECTING(get_opts(...)) end,
+  get_nearest = function(...) return GET_NEAREST(get_opts(...)) end,
+  group = function(...) return GROUP(get_opts(...)) end,
+  gt = function(...) return GT({}, ...) end,
+  has_fields = function(...) return HAS_FIELDS({}, ...) end,
+  hours = function(...) return HOURS({}, ...) end,
+  http = function(...) return HTTP(get_opts(...)) end,
+  includes = function(...) return INCLUDES({}, ...) end,
+  indexes_of = function(...) return INDEXES_OF({}, ...) end,
+  index_create = function(...) return INDEX_CREATE(get_opts(...)) end,
+  index_drop = function(...) return INDEX_DROP({}, ...) end,
+  index_list = function(...) return INDEX_LIST({}, ...) end,
+  index_rename = function(...) return INDEX_RENAME(get_opts(...)) end,
+  index_status = function(...) return INDEX_STATUS({}, ...) end,
+  index_wait = function(...) return INDEX_WAIT({}, ...) end,
+  info = function(...) return INFO({}, ...) end,
+  inner_join = function(...) return INNER_JOIN({}, ...) end,
+  insert = function(tbl, doc, opts) return INSERT(opts, tbl, doc) end,
+  insert_at = function(...) return INSERT_AT({}, ...) end,
+  intersects = function(...) return INTERSECTS({}, ...) end,
+  in_timezone = function(...) return IN_TIMEZONE({}, ...) end,
   iso8601 = function(...) return ISO8601(get_opts(...)) end,
-  january = function(...) return January({}, ...) end,
-  js = function(...) return JavaScript(get_opts(...)) end,
-  json = function(...) return Json({}, ...) end,
-  july = function(...) return July({}, ...) end,
-  june = function(...) return June({}, ...) end,
-  keys = function(...) return Keys({}, ...) end,
-  le = function(...) return Le({}, ...) end,
-  limit = function(...) return Limit({}, ...) end,
-  line = function(...) return Line({}, ...) end,
-  literal = function(...) return Literal({}, ...) end,
-  lt = function(...) return Lt({}, ...) end,
-  make_array = function(...) return MakeArray({}, ...) end,
-  make_obj = function(...) return MakeObj({}, ...) end,
-  map = function(...) return Map({}, ...) end,
-  march = function(...) return March({}, ...) end,
-  match = function(...) return Match({}, ...) end,
-  max = function(...) return Max({}, ...) end,
-  may = function(...) return May({}, ...) end,
-  merge = function(...) return Merge({}, ...) end,
-  min = function(...) return Min({}, ...) end,
-  minutes = function(...) return Minutes({}, ...) end,
-  mod = function(...) return Mod({}, ...) end,
-  monday = function(...) return Monday({}, ...) end,
-  month = function(...) return Month({}, ...) end,
-  mul = function(...) return Mul({}, ...) end,
-  ne = function(...) return Ne({}, ...) end,
-  not_ = function(...) return Not({}, ...) end,
-  november = function(...) return November({}, ...) end,
-  now = function(...) return Now({}, ...) end,
-  nth = function(...) return Nth({}, ...) end,
-  object = function(...) return Object({}, ...) end,
-  october = function(...) return October({}, ...) end,
-  order_by = function(...) return OrderBy(get_opts(...)) end,
-  outer_join = function(...) return OuterJoin({}, ...) end,
-  pluck = function(...) return Pluck({}, ...) end,
-  point = function(...) return Point({}, ...) end,
-  polygon = function(...) return Polygon({}, ...) end,
-  polygon_sub = function(...) return PolygonSub({}, ...) end,
-  prepend = function(...) return Prepend({}, ...) end,
-  random = function(...) return Random(get_opts(...)) end,
-  range = function(...) return Range({}, ...) end,
-  rebalance = function(...) return Rebalance({}, ...) end,
-  reconfigure = function(...) return Reconfigure({}, ...) end,
-  reduce = function(...) return Reduce({}, ...) end,
-  replace = function(...) return Replace(get_opts(...)) end,
-  sample = function(...) return Sample({}, ...) end,
-  saturday = function(...) return Saturday({}, ...) end,
-  seconds = function(...) return Seconds({}, ...) end,
-  september = function(...) return September({}, ...) end,
-  set_difference = function(...) return SetDifference({}, ...) end,
-  set_insert = function(...) return SetInsert({}, ...) end,
-  set_intersection = function(...) return SetIntersection({}, ...) end,
-  set_union = function(...) return SetUnion({}, ...) end,
-  skip = function(...) return Skip({}, ...) end,
-  slice = function(...) return Slice(get_opts(...)) end,
-  splice_at = function(...) return SpliceAt({}, ...) end,
-  split = function(...) return Split({}, ...) end,
-  sub = function(...) return Sub({}, ...) end,
-  sum = function(...) return Sum({}, ...) end,
-  sunday = function(...) return Sunday({}, ...) end,
-  sync = function(...) return Sync({}, ...) end,
-  table = function(...) return Table(get_opts(...)) end,
-  table_config = function(...) return TableConfig({}, ...) end,
-  table_create = function(...) return TableCreate(get_opts(...)) end,
-  table_drop = function(...) return TableDrop({}, ...) end,
-  table_list = function(...) return TableList({}, ...) end,
-  table_status = function(...) return TableStatus({}, ...) end,
-  table_wait = function(...) return TableWait({}, ...) end,
-  thursday = function(...) return Thursday({}, ...) end,
-  time = function(...) return Time({}, ...) end,
-  time_of_day = function(...) return TimeOfDay({}, ...) end,
-  timezone = function(...) return Timezone({}, ...) end,
-  to_epoch_time = function(...) return ToEpochTime({}, ...) end,
-  to_geojson = function(...) return ToGeojson({}, ...) end,
-  to_iso8601 = function(...) return ToISO8601({}, ...) end,
-  to_json_string = function(...) return ToJsonString({}, ...) end,
-  tuesday = function(...) return Tuesday({}, ...) end,
-  type_of = function(...) return TypeOf({}, ...) end,
-  ungroup = function(...) return Ungroup({}, ...) end,
-  union = function(...) return Union({}, ...) end,
-  upcase = function(...) return Upcase({}, ...) end,
-  update = function(tbl, doc, opts) return Update(opts, tbl, doc) end,
+  is_empty = function(...) return IS_EMPTY({}, ...) end,
+  january = function(...) return JANUARY({}, ...) end,
+  js = function(...) return JAVASCRIPT(get_opts(...)) end,
+  json = function(...) return JSON({}, ...) end,
+  july = function(...) return JULY({}, ...) end,
+  june = function(...) return JUNE({}, ...) end,
+  keys = function(...) return KEYS({}, ...) end,
+  le = function(...) return LE({}, ...) end,
+  limit = function(...) return LIMIT({}, ...) end,
+  line = function(...) return LINE({}, ...) end,
+  literal = function(...) return LITERAL({}, ...) end,
+  lt = function(...) return LT({}, ...) end,
+  make_array = function(...) return MAKE_ARRAY({}, ...) end,
+  make_obj = function(...) return MAKE_OBJ({}, ...) end,
+  map = function(...) return MAP({}, ...) end,
+  march = function(...) return MARCH({}, ...) end,
+  match = function(...) return MATCH({}, ...) end,
+  max = function(...) return MAX({}, ...) end,
+  may = function(...) return MAY({}, ...) end,
+  merge = function(...) return MERGE({}, ...) end,
+  min = function(...) return MIN({}, ...) end,
+  minutes = function(...) return MINUTES({}, ...) end,
+  mod = function(...) return MOD({}, ...) end,
+  monday = function(...) return MONDAY({}, ...) end,
+  month = function(...) return MONTH({}, ...) end,
+  mul = function(...) return MUL({}, ...) end,
+  ne = function(...) return NE({}, ...) end,
+  not_ = function(...) return NOT({}, ...) end,
+  november = function(...) return NOVEMBER({}, ...) end,
+  now = function(...) return NOW({}, ...) end,
+  nth = function(...) return NTH({}, ...) end,
+  object = function(...) return OBJECT({}, ...) end,
+  october = function(...) return OCTOBER({}, ...) end,
+  order_by = function(...) return ORDER_BY(get_opts(...)) end,
+  outer_join = function(...) return OUTER_JOIN({}, ...) end,
+  pluck = function(...) return PLUCK({}, ...) end,
+  point = function(...) return POINT({}, ...) end,
+  polygon = function(...) return POLYGON({}, ...) end,
+  polygon_sub = function(...) return POLYGON_SUB({}, ...) end,
+  prepend = function(...) return PREPEND({}, ...) end,
+  random = function(...) return RANDOM(get_opts(...)) end,
+  range = function(...) return RANGE({}, ...) end,
+  rebalance = function(...) return REBALANCE({}, ...) end,
+  reconfigure = function(...) return RECONFIGURE({}, ...) end,
+  reduce = function(...) return REDUCE({}, ...) end,
+  replace = function(...) return REPLACE(get_opts(...)) end,
+  sample = function(...) return SAMPLE({}, ...) end,
+  saturday = function(...) return SATURDAY({}, ...) end,
+  seconds = function(...) return SECONDS({}, ...) end,
+  september = function(...) return SEPTEMBER({}, ...) end,
+  set_difference = function(...) return SET_DIFFERENCE({}, ...) end,
+  set_insert = function(...) return SET_INSERT({}, ...) end,
+  set_intersection = function(...) return SET_INTERSECTION({}, ...) end,
+  set_union = function(...) return SET_UNION({}, ...) end,
+  skip = function(...) return SKIP({}, ...) end,
+  slice = function(...) return SLICE(get_opts(...)) end,
+  splice_at = function(...) return SPLICE_AT({}, ...) end,
+  split = function(...) return SPLIT({}, ...) end,
+  sub = function(...) return SUB({}, ...) end,
+  sum = function(...) return SUM({}, ...) end,
+  sunday = function(...) return SUNDAY({}, ...) end,
+  sync = function(...) return SYNC({}, ...) end,
+  table = function(...) return TABLE(get_opts(...)) end,
+  table_config = function(...) return TABLE_CONFIG({}, ...) end,
+  table_create = function(...) return TABLE_CREATE(get_opts(...)) end,
+  table_drop = function(...) return TABLE_DROP({}, ...) end,
+  table_list = function(...) return TABLE_LIST({}, ...) end,
+  table_status = function(...) return TABLE_STATUS({}, ...) end,
+  table_wait = function(...) return TABLE_WAIT({}, ...) end,
+  thursday = function(...) return THURSDAY({}, ...) end,
+  time = function(...) return TIME({}, ...) end,
+  timezone = function(...) return TIMEZONE({}, ...) end,
+  time_of_day = function(...) return TIME_OF_DAY({}, ...) end,
+  to_epoch_time = function(...) return TO_EPOCH_TIME({}, ...) end,
+  to_geojson = function(...) return TO_GEOJSON({}, ...) end,
+  to_iso8601 = function(...) return TO_ISO8601({}, ...) end,
+  to_json_string = function(...) return TO_JSON_STRING({}, ...) end,
+  tuesday = function(...) return TUESDAY({}, ...) end,
+  type_of = function(...) return TYPE_OF({}, ...) end,
+  ungroup = function(...) return UNGROUP({}, ...) end,
+  union = function(...) return UNION({}, ...) end,
+  upcase = function(...) return UPCASE({}, ...) end,
+  update = function(tbl, doc, opts) return UPDATE(opts, tbl, doc) end,
   uuid = function(...) return UUID({}, ...) end,
-  var = function(...) return Var({}, ...) end,
-  wednesday = function(...) return Wednesday({}, ...) end,
-  with_fields = function(...) return WithFields({}, ...) end,
-  without = function(...) return Without({}, ...) end,
-  year = function(...) return Year({}, ...) end,
-  zip = function(...) return Zip({}, ...) end
+  var = function(...) return VAR({}, ...) end,
+  wednesday = function(...) return WEDNESDAY({}, ...) end,
+  without = function(...) return WITHOUT({}, ...) end,
+  with_fields = function(...) return WITH_FIELDS({}, ...) end,
+  year = function(...) return YEAR({}, ...) end,
+  zip = function(...) return ZIP({}, ...) end
 }
 
 class_methods = {
@@ -617,7 +618,7 @@ class_methods = {
       end
       for i=1, optargs.arity or 1 do
         table.insert(arg_nums, ReQLOp.next_var_id)
-        table.insert(anon_args, Var({}, ReQLOp.next_var_id))
+        table.insert(anon_args, VAR({}, ReQLOp.next_var_id))
         ReQLOp.next_var_id = ReQLOp.next_var_id + 1
       end
       func = func(unpack(anon_args))
@@ -637,11 +638,11 @@ class_methods = {
     elseif self.tt == 64 then
       local func = table.remove(args)
       if type(func) == 'function' then
-        func = Func({arity = #args}, func)
+        func = FUNC({arity = #args}, func)
       end
       table.insert(args, 1, func)
     elseif self.tt == 37 then
-      args[#args] = Func({arity = 2}, args[#args])
+      args[#args] = FUNC({arity = 2}, args[#args])
     end
     self.args = {}
     self.optargs = {}
@@ -751,22 +752,22 @@ ReQLOp = class('ReQLOp', class_methods)
 
 local meta = {
   __call = function(...)
-    return Bracket({}, ...)
+    return BRACKET({}, ...)
   end,
   __add = function(...)
-    return Add({}, ...)
+    return ADD({}, ...)
   end,
   __mul = function(...)
-    return Mul({}, ...)
+    return MUL({}, ...)
   end,
   __mod = function(...)
-    return Mod({}, ...)
+    return MOD({}, ...)
   end,
   __sub = function(...)
-    return Sub({}, ...)
+    return SUB({}, ...)
   end,
   __div = function(...)
-    return Div({}, ...)
+    return DIV({}, ...)
   end
 }
 
@@ -777,8 +778,8 @@ function ast(name, base)
   return class(name, ReQLOp, base)
 end
 
-DatumTerm = ast(
-  'DatumTerm',
+DATUMTERM = ast(
+  'DATUMTERM',
   {
     __init = function(self, val)
       if type(val) == 'number' then
@@ -812,174 +813,174 @@ DatumTerm = ast(
   }
 )
 
-Add = ast('Add', {tt = 24, st = 'add'})
-All = ast('All', {tt = 67, st = 'all'})
-Any = ast('Any', {tt = 66, st = 'any'})
-Append = ast('Append', {tt = 29, st = 'append'})
-April = ast('April', {tt = 117, st = 'april'})
-Args = ast('Args', {tt = 154, st = 'args'})
-Asc = ast('Asc', {tt = 73, st = 'asc'})
-August = ast('August', {tt = 121, st = 'august'})
-Avg = ast('Avg', {tt = 146, st = 'avg'})
-Between = ast('Between', {tt = 36, st = 'between'})
-Binary = ast('Binary', {tt = 155, st = 'binary'})
-Bracket = ast('Bracket', {tt = 170, st = 'index'})
-Branch = ast('Branch', {tt = 65, st = 'branch'})
-ChangeAt = ast('ChangeAt', {tt = 84, st = 'change_at'})
-Changes = ast('Changes', {tt = 152, st = 'changes'})
-Circle = ast('Circle', {tt = 165, st = 'circle'})
-CoerceTo = ast('CoerceTo', {tt = 51, st = 'coerce_to'})
-ConcatMap = ast('ConcatMap', {tt = 40, st = 'concat_map'})
-Contains = ast('Contains', {tt = 93, st = 'contains'})
-Count = ast('Count', {tt = 43, st = 'count'})
-Date = ast('Date', {tt = 106, st = 'date'})
-Day = ast('Day', {tt = 130, st = 'day'})
-DayOfWeek = ast('DayOfWeek', {tt = 131, st = 'day_of_week'})
-DayOfYear = ast('DayOfYear', {tt = 132, st = 'day_of_year'})
-Db = ast('Db', {tt = 14, st = 'db'})
-DbConfig = ast('DbConfig', {tt = 178, st = 'db_config'})
-DbCreate = ast('DbCreate', {tt = 57, st = 'db_create'})
-DbDrop = ast('DbDrop', {tt = 58, st = 'db_drop'})
-DbList = ast('DbList', {tt = 59, st = 'db_list'})
-December = ast('December', {tt = 125, st = 'december'})
-Default = ast('Default', {tt = 92, st = 'default'})
-Delete = ast('Delete', {tt = 54, st = 'delete'})
-DeleteAt = ast('DeleteAt', {tt = 83, st = 'delete_at'})
-Desc = ast('Desc', {tt = 74, st = 'desc'})
-Difference = ast('Difference', {tt = 95, st = 'difference'})
-Distance = ast('Distance', {tt = 162, st = 'distance'})
-Distinct = ast('Distinct', {tt = 42, st = 'distinct'})
-Div = ast('Div', {tt = 27, st = 'div'})
-Do = ast('Do', {tt = 64, st = 'do_'})
-Downcase = ast('Downcase', {tt = 142, st = 'downcase'})
-During = ast('During', {tt = 105, st = 'during'})
-EpochTime = ast('EpochTime', {tt = 101, st = 'epoch_time'})
-Eq = ast('Eq', {tt = 17, st = 'eq'})
-EqJoin = ast('EqJoin', {tt = 50, st = 'eq_join'})
-Error = ast('Error', {tt = 12, st = 'error_'})
-February = ast('February', {tt = 115, st = 'february'})
-Fill = ast('Fill', {tt = 167, st = 'fill'})
-Filter = ast('Filter', {tt = 39, st = 'filter'})
-ForEach = ast('ForEach', {tt = 68, st = 'for_each'})
-Friday = ast('Friday', {tt = 111, st = 'friday'})
-Func = ast('Func', {tt = 69, st = 'func'})
-Ge = ast('Ge', {tt = 22, st = 'ge'})
-Geojson = ast('Geojson', {tt = 157, st = 'geojson'})
-Get = ast('Get', {tt = 16, st = 'get'})
-GetAll = ast('GetAll', {tt = 78, st = 'get_all'})
-GetField = ast('GetField', {tt = 31, st = 'get_field'})
-GetIntersecting = ast('GetIntersecting', {tt = 166, st = 'get_intersecting'})
-GetNearest = ast('GetNearest', {tt = 168, st = 'get_nearest'})
-Group = ast('Group', {tt = 144, st = 'group'})
-Gt = ast('Gt', {tt = 21, st = 'gt'})
-HasFields = ast('HasFields', {tt = 32, st = 'has_fields'})
-Hours = ast('Hours', {tt = 133, st = 'hours'})
-Http = ast('Http', {tt = 153, st = 'http'})
+ADD = ast('ADD', {tt = 24, st = 'add'})
+ALL = ast('ALL', {tt = 67, st = 'all'})
+ANY = ast('ANY', {tt = 66, st = 'any'})
+APPEND = ast('APPEND', {tt = 29, st = 'append'})
+APRIL = ast('APRIL', {tt = 117, st = 'april'})
+ARGS = ast('ARGS', {tt = 154, st = 'args'})
+ASC = ast('ASC', {tt = 73, st = 'asc'})
+AUGUST = ast('AUGUST', {tt = 121, st = 'august'})
+AVG = ast('AVG', {tt = 146, st = 'avg'})
+BETWEEN = ast('BETWEEN', {tt = 36, st = 'between'})
+BINARY = ast('BINARY', {tt = 155, st = 'binary'})
+BRACKET = ast('BRACKET', {tt = 170, st = 'index'})
+BRANCH = ast('BRANCH', {tt = 65, st = 'branch'})
+CHANGES = ast('CHANGES', {tt = 152, st = 'changes'})
+CHANGE_AT = ast('CHANGE_AT', {tt = 84, st = 'change_at'})
+CIRCLE = ast('CIRCLE', {tt = 165, st = 'circle'})
+COERCE_TO = ast('COERCE_TO', {tt = 51, st = 'coerce_to'})
+CONCAT_MAP = ast('CONCAT_MAP', {tt = 40, st = 'concat_map'})
+CONTAINS = ast('CONTAINS', {tt = 93, st = 'contains'})
+COUNT = ast('COUNT', {tt = 43, st = 'count'})
+DATE = ast('DATE', {tt = 106, st = 'date'})
+DAY = ast('DAY', {tt = 130, st = 'day'})
+DAY_OF_WEEK = ast('DAY_OF_WEEK', {tt = 131, st = 'day_of_week'})
+DAY_OF_YEAR = ast('DAY_OF_YEAR', {tt = 132, st = 'day_of_year'})
+DB = ast('DB', {tt = 14, st = 'db'})
+DB_CONFIG = ast('DB_CONFIG', {tt = 178, st = 'db_config'})
+DB_CREATE = ast('DB_CREATE', {tt = 57, st = 'db_create'})
+DB_DROP = ast('DB_DROP', {tt = 58, st = 'db_drop'})
+DB_LIST = ast('DB_LIST', {tt = 59, st = 'db_list'})
+DECEMBER = ast('DECEMBER', {tt = 125, st = 'december'})
+DEFAULT = ast('DEFAULT', {tt = 92, st = 'default'})
+DELETE = ast('DELETE', {tt = 54, st = 'delete'})
+DELETE_AT = ast('DELETE_AT', {tt = 83, st = 'delete_at'})
+DESC = ast('DESC', {tt = 74, st = 'desc'})
+DIFFERENCE = ast('DIFFERENCE', {tt = 95, st = 'difference'})
+DISTANCE = ast('DISTANCE', {tt = 162, st = 'distance'})
+DISTINCT = ast('DISTINCT', {tt = 42, st = 'distinct'})
+DIV = ast('DIV', {tt = 27, st = 'div'})
+DOWNCASE = ast('DOWNCASE', {tt = 142, st = 'downcase'})
+DURING = ast('DURING', {tt = 105, st = 'during'})
+EPOCH_TIME = ast('EPOCH_TIME', {tt = 101, st = 'epoch_time'})
+EQ = ast('EQ', {tt = 17, st = 'eq'})
+EQ_JOIN = ast('EQ_JOIN', {tt = 50, st = 'eq_join'})
+ERROR = ast('ERROR', {tt = 12, st = 'error_'})
+FEBRUARY = ast('FEBRUARY', {tt = 115, st = 'february'})
+FILL = ast('FILL', {tt = 167, st = 'fill'})
+FILTER = ast('FILTER', {tt = 39, st = 'filter'})
+FOR_EACH = ast('FOR_EACH', {tt = 68, st = 'for_each'})
+FRIDAY = ast('FRIDAY', {tt = 111, st = 'friday'})
+FUNC = ast('FUNC', {tt = 69, st = 'func'})
+FUNCALL = ast('FUNCALL', {tt = 64, st = 'do_'})
+GE = ast('GE', {tt = 22, st = 'ge'})
+GEOJSON = ast('GEOJSON', {tt = 157, st = 'geojson'})
+GET = ast('GET', {tt = 16, st = 'get'})
+GET_ALL = ast('GET_ALL', {tt = 78, st = 'get_all'})
+GET_FIELD = ast('GET_FIELD', {tt = 31, st = 'get_field'})
+GET_INTERSECTING = ast('GET_INTERSECTING', {tt = 166, st = 'get_intersecting'})
+GET_NEAREST = ast('GET_NEAREST', {tt = 168, st = 'get_nearest'})
+GROUP = ast('GROUP', {tt = 144, st = 'group'})
+GT = ast('GT', {tt = 21, st = 'gt'})
+HAS_FIELDS = ast('HAS_FIELDS', {tt = 32, st = 'has_fields'})
+HOURS = ast('HOURS', {tt = 133, st = 'hours'})
+HTTP = ast('HTTP', {tt = 153, st = 'http'})
+INCLUDES = ast('INCLUDES', {tt = 164, st = 'includes'})
+INDEXES_OF = ast('INDEXES_OF', {tt = 87, st = 'indexes_of'})
+INDEX_CREATE = ast('INDEX_CREATE', {tt = 75, st = 'index_create'})
+INDEX_DROP = ast('INDEX_DROP', {tt = 76, st = 'index_drop'})
+INDEX_LIST = ast('INDEX_LIST', {tt = 77, st = 'index_list'})
+INDEX_RENAME = ast('INDEX_RENAME', {tt = 156, st = 'index_rename'})
+INDEX_STATUS = ast('INDEX_STATUS', {tt = 139, st = 'index_status'})
+INDEX_WAIT = ast('INDEX_WAIT', {tt = 140, st = 'index_wait'})
+INFO = ast('INFO', {tt = 79, st = 'info'})
+INNER_JOIN = ast('INNER_JOIN', {tt = 48, st = 'inner_join'})
+INSERT = ast('INSERT', {tt = 56, st = 'insert'})
+INSERT_AT = ast('INSERT_AT', {tt = 82, st = 'insert_at'})
+INTERSECTS = ast('INTERSECTS', {tt = 163, st = 'intersects'})
+IN_TIMEZONE = ast('IN_TIMEZONE', {tt = 104, st = 'in_timezone'})
 ISO8601 = ast('ISO8601', {tt = 99, st = 'iso8601'})
-InTimezone = ast('InTimezone', {tt = 104, st = 'in_timezone'})
-Includes = ast('Includes', {tt = 164, st = 'includes'})
-IndexCreate = ast('IndexCreate', {tt = 75, st = 'index_create'})
-IndexDrop = ast('IndexDrop', {tt = 76, st = 'index_drop'})
-IndexList = ast('IndexList', {tt = 77, st = 'index_list'})
-IndexRename = ast('IndexRename', {tt = 156, st = 'index_rename'})
-IndexStatus = ast('IndexStatus', {tt = 139, st = 'index_status'})
-IndexWait = ast('IndexWait', {tt = 140, st = 'index_wait'})
-IndexesOf = ast('IndexesOf', {tt = 87, st = 'indexes_of'})
-Info = ast('Info', {tt = 79, st = 'info'})
-InnerJoin = ast('InnerJoin', {tt = 48, st = 'inner_join'})
-Insert = ast('Insert', {tt = 56, st = 'insert'})
-InsertAt = ast('InsertAt', {tt = 82, st = 'insert_at'})
-Intersects = ast('Intersects', {tt = 163, st = 'intersects'})
-IsEmpty = ast('IsEmpty', {tt = 86, st = 'is_empty'})
-January = ast('January', {tt = 114, st = 'january'})
-JavaScript = ast('JavaScript', {tt = 11, st = 'js'})
-Json = ast('Json', {tt = 98, st = 'json'})
-July = ast('July', {tt = 120, st = 'july'})
-June = ast('June', {tt = 119, st = 'june'})
-Keys = ast('Keys', {tt = 94, st = 'keys'})
-Le = ast('Le', {tt = 20, st = 'le'})
-Limit = ast('Limit', {tt = 71, st = 'limit'})
-Line = ast('Line', {tt = 160, st = 'line'})
-Literal = ast('Literal', {tt = 137, st = 'literal'})
-Lt = ast('Lt', {tt = 19, st = 'lt'})
-MakeArray = ast('MakeArray', {tt = 2, st = 'make_array'})
-MakeObj = ast('MakeObj', {tt = 3, st = 'make_obj'})
-Map = ast('Map', {tt = 38, st = 'map'})
-March = ast('March', {tt = 116, st = 'march'})
-Match = ast('Match', {tt = 97, st = 'match'})
-Max = ast('Max', {tt = 148, st = 'max'})
-May = ast('May', {tt = 118, st = 'may'})
-Merge = ast('Merge', {tt = 35, st = 'merge'})
-Min = ast('Min', {tt = 147, st = 'min'})
-Minutes = ast('Minutes', {tt = 134, st = 'minutes'})
-Mod = ast('Mod', {tt = 28, st = 'mod'})
-Monday = ast('Monday', {tt = 107, st = 'monday'})
-Month = ast('Month', {tt = 129, st = 'month'})
-Mul = ast('Mul', {tt = 26, st = 'mul'})
-Ne = ast('Ne', {tt = 18, st = 'ne'})
-Not = ast('Not', {tt = 23, st = 'not_'})
-November = ast('November', {tt = 124, st = 'november'})
-Now = ast('Now', {tt = 103, st = 'now'})
-Nth = ast('Nth', {tt = 45, st = 'nth'})
-Object = ast('Object', {tt = 143, st = 'object'})
-October = ast('October', {tt = 123, st = 'october'})
-OrderBy = ast('OrderBy', {tt = 41, st = 'order_by'})
-OuterJoin = ast('OuterJoin', {tt = 49, st = 'outer_join'})
-Pluck = ast('Pluck', {tt = 33, st = 'pluck'})
-Point = ast('Point', {tt = 159, st = 'point'})
-Polygon = ast('Polygon', {tt = 161, st = 'polygon'})
-PolygonSub = ast('PolygonSub', {tt = 171, st = 'polygon_sub'})
-Prepend = ast('Prepend', {tt = 80, st = 'prepend'})
-Random = ast('Random', {tt = 151, st = 'random'})
-Range = ast('Range', {tt = 173, st = 'range'})
-Rebalance = ast('Rebalance', {tt = 179, st = 'rebalance'})
-Reconfigure = ast('Reconfigure', {tt = 176, st = 'reconfigure'})
-Reduce = ast('Reduce', {tt = 37, st = 'reduce'})
-Replace = ast('Replace', {tt = 55, st = 'replace'})
-Sample = ast('Sample', {tt = 81, st = 'sample'})
-Saturday = ast('Saturday', {tt = 112, st = 'saturday'})
-Seconds = ast('Seconds', {tt = 135, st = 'seconds'})
-September = ast('September', {tt = 122, st = 'september'})
-SetDifference = ast('SetDifference', {tt = 91, st = 'set_difference'})
-SetInsert = ast('SetInsert', {tt = 88, st = 'set_insert'})
-SetIntersection = ast('SetIntersection', {tt = 89, st = 'set_intersection'})
-SetUnion = ast('SetUnion', {tt = 90, st = 'set_union'})
-Skip = ast('Skip', {tt = 70, st = 'skip'})
-Slice = ast('Slice', {tt = 30, st = 'slice'})
-SpliceAt = ast('SpliceAt', {tt = 85, st = 'splice_at'})
-Split = ast('Split', {tt = 149, st = 'split'})
-Sub = ast('Sub', {tt = 25, st = 'sub'})
-Sum = ast('Sum', {tt = 145, st = 'sum'})
-Sunday = ast('Sunday', {tt = 113, st = 'sunday'})
-Sync = ast('Sync', {tt = 138, st = 'sync'})
-Table = ast('Table', {tt = 15, st = 'table'})
-TableConfig = ast('TableConfig', {tt = 174, st = 'table_config'})
-TableCreate = ast('TableCreate', {tt = 60, st = 'table_create'})
-TableDrop = ast('TableDrop', {tt = 61, st = 'table_drop'})
-TableList = ast('TableList', {tt = 62, st = 'table_list'})
-TableStatus = ast('TableStatus', {tt = 175, st = 'table_status'})
-TableWait = ast('TableWait', {tt = 177, st = 'table_wait'})
-Thursday = ast('Thursday', {tt = 110, st = 'thursday'})
-Time = ast('Time', {tt = 136, st = 'time'})
-TimeOfDay = ast('TimeOfDay', {tt = 126, st = 'time_of_day'})
-Timezone = ast('Timezone', {tt = 127, st = 'timezone'})
-ToEpochTime = ast('ToEpochTime', {tt = 102, st = 'to_epoch_time'})
-ToGeojson = ast('ToGeojson', {tt = 158, st = 'to_geojson'})
-ToISO8601 = ast('ToISO8601', {tt = 100, st = 'to_iso8601'})
-ToJsonString = ast('ToJsonString', {tt = 172, st = 'to_json_string'})
-Tuesday = ast('Tuesday', {tt = 108, st = 'tuesday'})
-TypeOf = ast('TypeOf', {tt = 52, st = 'type_of'})
+IS_EMPTY = ast('IS_EMPTY', {tt = 86, st = 'is_empty'})
+JANUARY = ast('JANUARY', {tt = 114, st = 'january'})
+JAVASCRIPT = ast('JAVASCRIPT', {tt = 11, st = 'js'})
+JSON = ast('JSON', {tt = 98, st = 'json'})
+JULY = ast('JULY', {tt = 120, st = 'july'})
+JUNE = ast('JUNE', {tt = 119, st = 'june'})
+KEYS = ast('KEYS', {tt = 94, st = 'keys'})
+LE = ast('LE', {tt = 20, st = 'le'})
+LIMIT = ast('LIMIT', {tt = 71, st = 'limit'})
+LINE = ast('LINE', {tt = 160, st = 'line'})
+LITERAL = ast('LITERAL', {tt = 137, st = 'literal'})
+LT = ast('LT', {tt = 19, st = 'lt'})
+MAKE_ARRAY = ast('MAKE_ARRAY', {tt = 2, st = 'make_array'})
+MAKE_OBJ = ast('MAKE_OBJ', {tt = 3, st = 'make_obj'})
+MAP = ast('MAP', {tt = 38, st = 'map'})
+MARCH = ast('MARCH', {tt = 116, st = 'march'})
+MATCH = ast('MATCH', {tt = 97, st = 'match'})
+MAX = ast('MAX', {tt = 148, st = 'max'})
+MAY = ast('MAY', {tt = 118, st = 'may'})
+MERGE = ast('MERGE', {tt = 35, st = 'merge'})
+MIN = ast('MIN', {tt = 147, st = 'min'})
+MINUTES = ast('MINUTES', {tt = 134, st = 'minutes'})
+MOD = ast('MOD', {tt = 28, st = 'mod'})
+MONDAY = ast('MONDAY', {tt = 107, st = 'monday'})
+MONTH = ast('MONTH', {tt = 129, st = 'month'})
+MUL = ast('MUL', {tt = 26, st = 'mul'})
+NE = ast('NE', {tt = 18, st = 'ne'})
+NOT = ast('NOT', {tt = 23, st = 'not_'})
+NOVEMBER = ast('NOVEMBER', {tt = 124, st = 'november'})
+NOW = ast('NOW', {tt = 103, st = 'now'})
+NTH = ast('NTH', {tt = 45, st = 'nth'})
+OBJECT = ast('OBJECT', {tt = 143, st = 'object'})
+OCTOBER = ast('OCTOBER', {tt = 123, st = 'october'})
+ORDER_BY = ast('ORDER_BY', {tt = 41, st = 'order_by'})
+OUTER_JOIN = ast('OUTER_JOIN', {tt = 49, st = 'outer_join'})
+PLUCK = ast('PLUCK', {tt = 33, st = 'pluck'})
+POINT = ast('POINT', {tt = 159, st = 'point'})
+POLYGON = ast('POLYGON', {tt = 161, st = 'polygon'})
+POLYGON_SUB = ast('POLYGON_SUB', {tt = 171, st = 'polygon_sub'})
+PREPEND = ast('PREPEND', {tt = 80, st = 'prepend'})
+RANDOM = ast('RANDOM', {tt = 151, st = 'random'})
+RANGE = ast('RANGE', {tt = 173, st = 'range'})
+REBALANCE = ast('REBALANCE', {tt = 179, st = 'rebalance'})
+RECONFIGURE = ast('RECONFIGURE', {tt = 176, st = 'reconfigure'})
+REDUCE = ast('REDUCE', {tt = 37, st = 'reduce'})
+REPLACE = ast('REPLACE', {tt = 55, st = 'replace'})
+SAMPLE = ast('SAMPLE', {tt = 81, st = 'sample'})
+SATURDAY = ast('SATURDAY', {tt = 112, st = 'saturday'})
+SECONDS = ast('SECONDS', {tt = 135, st = 'seconds'})
+SEPTEMBER = ast('SEPTEMBER', {tt = 122, st = 'september'})
+SET_DIFFERENCE = ast('SET_DIFFERENCE', {tt = 91, st = 'set_difference'})
+SET_INSERT = ast('SET_INSERT', {tt = 88, st = 'set_insert'})
+SET_INTERSECTION = ast('SET_INTERSECTION', {tt = 89, st = 'set_intersection'})
+SET_UNION = ast('SET_UNION', {tt = 90, st = 'set_union'})
+SKIP = ast('SKIP', {tt = 70, st = 'skip'})
+SLICE = ast('SLICE', {tt = 30, st = 'slice'})
+SPLICE_AT = ast('SPLICE_AT', {tt = 85, st = 'splice_at'})
+SPLIT = ast('SPLIT', {tt = 149, st = 'split'})
+SUB = ast('SUB', {tt = 25, st = 'sub'})
+SUM = ast('SUM', {tt = 145, st = 'sum'})
+SUNDAY = ast('SUNDAY', {tt = 113, st = 'sunday'})
+SYNC = ast('SYNC', {tt = 138, st = 'sync'})
+TABLE = ast('TABLE', {tt = 15, st = 'table'})
+TABLE_CONFIG = ast('TABLE_CONFIG', {tt = 174, st = 'table_config'})
+TABLE_CREATE = ast('TABLE_CREATE', {tt = 60, st = 'table_create'})
+TABLE_DROP = ast('TABLE_DROP', {tt = 61, st = 'table_drop'})
+TABLE_LIST = ast('TABLE_LIST', {tt = 62, st = 'table_list'})
+TABLE_STATUS = ast('TABLE_STATUS', {tt = 175, st = 'table_status'})
+TABLE_WAIT = ast('TABLE_WAIT', {tt = 177, st = 'table_wait'})
+THURSDAY = ast('THURSDAY', {tt = 110, st = 'thursday'})
+TIME = ast('TIME', {tt = 136, st = 'time'})
+TIMEZONE = ast('TIMEZONE', {tt = 127, st = 'timezone'})
+TIME_OF_DAY = ast('TIME_OF_DAY', {tt = 126, st = 'time_of_day'})
+TO_EPOCH_TIME = ast('TO_EPOCH_TIME', {tt = 102, st = 'to_epoch_time'})
+TO_GEOJSON = ast('TO_GEOJSON', {tt = 158, st = 'to_geojson'})
+TO_ISO8601 = ast('TO_ISO8601', {tt = 100, st = 'to_iso8601'})
+TO_JSON_STRING = ast('TO_JSON_STRING', {tt = 172, st = 'to_json_string'})
+TUESDAY = ast('TUESDAY', {tt = 108, st = 'tuesday'})
+TYPE_OF = ast('TYPE_OF', {tt = 52, st = 'type_of'})
+UNGROUP = ast('UNGROUP', {tt = 150, st = 'ungroup'})
+UNION = ast('UNION', {tt = 44, st = 'union'})
+UPCASE = ast('UPCASE', {tt = 141, st = 'upcase'})
+UPDATE = ast('UPDATE', {tt = 53, st = 'update'})
 UUID = ast('UUID', {tt = 169, st = 'uuid'})
-Ungroup = ast('Ungroup', {tt = 150, st = 'ungroup'})
-Union = ast('Union', {tt = 44, st = 'union'})
-Upcase = ast('Upcase', {tt = 141, st = 'upcase'})
-Update = ast('Update', {tt = 53, st = 'update'})
-Var = ast('Var', {tt = 10, st = 'var'})
-Wednesday = ast('Wednesday', {tt = 109, st = 'wednesday'})
-WithFields = ast('WithFields', {tt = 96, st = 'with_fields'})
-Without = ast('Without', {tt = 34, st = 'without'})
-Year = ast('Year', {tt = 128, st = 'year'})
-Zip = ast('Zip', {tt = 72, st = 'zip'})
+VAR = ast('VAR', {tt = 10, st = 'var'})
+WEDNESDAY = ast('WEDNESDAY', {tt = 109, st = 'wednesday'})
+WITHOUT = ast('WITHOUT', {tt = 34, st = 'without'})
+WITH_FIELDS = ast('WITH_FIELDS', {tt = 96, st = 'with_fields'})
+YEAR = ast('YEAR', {tt = 128, st = 'year'})
+ZIP = ast('ZIP', {tt = 72, st = 'zip'})
 
 local Cursor = class(
   'Cursor',
