@@ -3,38 +3,18 @@ if sys.version_info[0] < 3:
     print('Support for building with Python2 is not provided.')
     exit(0)
 
-import argparse
 import os
+import re
+import string
 import struct
 import subprocess
 
-
-def spec(args):
-    if not args.f:
-        lint(args)
-
-    import time
-
-    io = subprocess.Popen(
-        'rethinkdb', cwd='spec',
-        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
-    )
-    time.sleep(4)
-    res = subprocess.call('busted')
-    io.terminate()
-    io.wait()
-    exit(res)
+import ReQLprotodef as protodef
 
 
-def clean(args):
-    import shutil
-    shutil.rmtree('__pycache__', ignore_errors=True)
-    shutil.rmtree('spec/rethinkdb_data', ignore_errors=True)
 
-
-def lint(args):
-    if not args.f:
-        build(args)
+def lint():
+    build()
 
     print('linting rethinkdb.lua')
 
@@ -53,12 +33,7 @@ def lint(args):
     print('linting successful')
 
 
-def build(args):
-    import re
-    import string
-
-    import ReQLprotodef as protodef
-
+def build():
     print('building rethinkdb.lua')
 
     name_re = re.compile('(^|_)(\w)')
@@ -154,32 +129,5 @@ def build(args):
     print('building successful')
 
 
-def install(args):
-    if not args.f:
-        lint(args)
-
-    returncode = subprocess.call(['luarocks', 'make'])
-    if returncode:
-        exit(returncode)
-
-    print('install successful')
-
-
-def main():
-    parser = argparse.ArgumentParser(description='Build Lua-ReQL.')
-
-    parser.add_argument('action', nargs='?', default='spec')
-    parser.add_argument('-f', action='store_true')
-
-    args = parser.parse_args()
-
-    {
-        'spec': spec,
-        'lint': lint,
-        'clean': clean,
-        'install': install,
-        'build': build
-    }[args.action](args)
-
 if __name__ == '__main__':
-    main()
+    lint()
