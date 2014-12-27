@@ -6,7 +6,6 @@ import subprocess
 import ReQLprotodef as protodef
 
 
-
 def lint():
     build()
 
@@ -30,7 +29,6 @@ def lint():
 def build():
     print('building rethinkdb.lua')
 
-    name_re = re.compile('(^|_)(\w)')
     ast_constants = list({
         term for term in dir(protodef.Term.TermType)
         if not term.startswith('_')
@@ -52,6 +50,18 @@ def build():
             ast_method_names[name]
         ) for name in ast_constants
     ]
+
+    def const_args(num):
+        args = ['arg{}'.format(n) for n in range(num)]
+        pieces = [
+            '{} = function(',
+            ', '.join(args + ['opts']),
+            ') return {}(',
+            ', '.join(['opts'] + args),
+            ') end'
+        ]
+        return ''.join(pieces)
+
     ast_methods_w_opt = dict(
         {
             name: '{} = function(...) return {}(get_opts(...)) end'
@@ -63,14 +73,12 @@ def build():
                 'TABLE_CREATE', 'UPDATE'
             )
         },
-        BETWEEN=
-        '{} = function(self, left, right, opts) return {}(opts, self, left, right) end',
-        DISTANCE='{} = function(self, g, opts) return {}(opts, self, g) end',
-        DURING=
-        '{} = function(t1, t2, t3, opts) return {}(opts, t1, t2, t3) end',
-        FILTER='{} = function(self, pred, opts) return {}(opts, self, pred) end',
-        INSERT='{} = function(tbl, doc, opts) return {}(opts, tbl, doc) end',
-        UPDATE='{} = function(tbl, doc, opts) return {}(opts, tbl, doc) end'
+        BETWEEN=const_args(3),
+        DISTANCE=const_args(2),
+        DURING=const_args(3),
+        FILTER=const_args(2),
+        INSERT=const_args(2),
+        UPDATE=const_args(2)
     )
     ast_methods = [
         ast_methods_w_opt.get(
