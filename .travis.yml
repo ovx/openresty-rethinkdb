@@ -7,9 +7,6 @@ env:
     - LUA=lua5.1 LUA_DEV=liblua5.1-dev
     - LUA=lua5.2 LUA_DEV=liblua5.2-dev
 
-python:
-  - '3.3'
-
 # command to install dependencies
 install:
   - 'source /etc/lsb-release && echo "deb http://download.rethinkdb.com/apt $DISTRIB_CODENAME main" | sudo tee /etc/apt/sources.list.d/rethinkdb.list'
@@ -30,7 +27,7 @@ install:
   - sudo luarocks install dkjson
   - sudo luarocks install busted
   - cd $TRAVIS_BUILD_DIR
-  - python build.py lint
+  - python build.py
 
 # command to run tests
 script:

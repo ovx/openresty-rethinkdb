@@ -1,12 +1,6 @@
-import sys
-if sys.version_info[0] < 3:
-    print('Support for building with Python2 is not provided.')
-    exit(0)
-
 import os
 import re
 import string
-import struct
 import subprocess
 
 import ReQLprotodef as protodef
@@ -96,11 +90,6 @@ def build():
         else:
             lines.append('local {}'.format(name))
 
-    def encode_magic(num):
-        return "'\\{}'".format('\\'.join(map(str, struct.pack(
-            "<L", num
-        ))))
-
     class BuildFormat(string.Formatter):
         fspec = re.compile('--\[\[(.+?)\]\]')
 
@@ -117,11 +106,9 @@ def build():
         'AstClasses': '\n'.join(ast_classes),
         'AstMethods': ',\n  '.join(ast_methods),
         'AstNames': '\n'.join(lines),
-        'Protocol': encode_magic(protodef.VersionDummy.Protocol.JSON),
         'Query': protodef.Query.QueryType,
         'Response': protodef.Response.ResponseType,
         'Term': protodef.Term.TermType,
-        'Version': encode_magic(protodef.VersionDummy.Version.V0_3)
     })
     with open('src/rethinkdb.lua', 'w') as io:
         io.write(s)

@@ -816,10 +816,10 @@ r.connect = class(
         local buf, err, partial
         -- Initialize connection with magic number to validate version
         self.raw_socket:send(
-          --[[Version]] ..
+          '\62\232\117\95' ..
           int_to_bytes(#(self.auth_key), 4) ..
           self.auth_key ..
-          --[[Protocol]]
+          '\199\112\105\126'
         )
 
         -- Now we have to wait for a response from the server
