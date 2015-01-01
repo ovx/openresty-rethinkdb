@@ -1011,19 +1011,10 @@ DATUMTERM = ast(
     args = {},
     optargs = {},
     compose = function(self)
-      if type(self.data) == 'string' then
-        return '"' .. self.data .. '"'
-      end
       if self.data == nil then
-        if r.json_parser.null then
-          return r.json_parser.null
-        end
-        if r.json_parser.util then
-          return r.json_parser.util.null
-        end
         return 'nil'
       end
-      return '' .. self.data
+      return r.json_parser.encode(self.data)
     end,
     build = function(self)
       if self.data == nil then return json.util.null end
