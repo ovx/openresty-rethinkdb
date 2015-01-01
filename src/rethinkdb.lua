@@ -1017,7 +1017,14 @@ DATUMTERM = ast(
       return r.json_parser.encode(self.data)
     end,
     build = function(self)
-      if self.data == nil then return json.util.null end
+      if self.data == nil then
+        if r.json_parser.null then
+          return r.json_parser.null
+        end
+        if r.json_parser.util then
+          return r.json_parser.util.null
+        end
+      end
       return self.data
     end
   }
