@@ -295,6 +295,21 @@ end
 
 setmetatable(r, {
   __call = function(cls, val, nesting_depth)
+    if val == nil then
+      return {
+        compose = function()
+          return 'nil'
+        end,
+        build = function()
+          if r.json_parser.null then
+            return r.json_parser.null
+          end
+          if r.json_parser.util then
+            return r.json_parser.util.null
+          end
+        end
+      }
+    end
     if nesting_depth == nil then
       nesting_depth = 20
     end
@@ -324,14 +339,26 @@ setmetatable(r, {
     if type(val) == 'userdata' then
       val = pcall(tostring, val)
       r._logger('Found userdata inserting "' .. val .. '" into query')
-      return r.datum(val)
     end
     if type(val) == 'thread' then
       val = pcall(tostring, val)
       r._logger('Cannot insert thread object into query ' .. val)
       return nil
     end
-    return r.datum(val)
+    if type(val) == 'number' then
+      if math.abs(val) == math.huge or val ~= val then
+        r._logger('Illegal non-finite number `' .. val .. '`.')
+        return nil
+      end
+    end
+    return {
+      compose = function()
+        return r.json_parser.encode(val)
+      end,
+      build = function()
+        return val
+      end
+    }
   end
 })
 
@@ -996,39 +1023,6 @@ function ast(name, base)
   end
   return class(name, ReQLOp, base)
 end
-
-DATUMTERM = ast(
-  'DATUMTERM',
-  {
-    __init = function(self, val)
-      if type(val) == 'number' then
-        if math.abs(val) == math.huge or val ~= val then
-          return r._logger('Illegal non-finite number `' .. val .. '`.')
-        end
-      end
-      self.data = val
-    end,
-    args = {},
-    optargs = {},
-    compose = function(self)
-      if self.data == nil then
-        return 'nil'
-      end
-      return r.json_parser.encode(self.data)
-    end,
-    build = function(self)
-      if self.data == nil then
-        if r.json_parser.null then
-          return r.json_parser.null
-        end
-        if r.json_parser.util then
-          return r.json_parser.util.null
-        end
-      end
-      return self.data
-    end
-  }
-)
 
 ADD = ast('ADD', {tt = 24, st = 'add'})
 ALL = ast('ALL', {tt = 67, st = 'all'})
