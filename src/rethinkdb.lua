@@ -308,7 +308,7 @@ setmetatable(r, {
       return val
     end
     if type(val) == 'function' then
-      return FUNC({}, val)
+      return r.func({}, val)
     end
     if type(val) == 'table' then
       local array = true
@@ -317,21 +317,21 @@ setmetatable(r, {
         val[k] = r(v, nesting_depth - 1)
       end
       if array then
-        return MAKE_ARRAY({}, unpack(val))
+        return r.make_array({}, unpack(val))
       end
-      return MAKE_OBJ(val)
+      return r.make_obj(val)
     end
     if type(val) == 'userdata' then
       val = pcall(tostring, val)
       r._logger('Found userdata inserting "' .. val .. '" into query')
-      return DATUMTERM(val)
+      return r.datum(val)
     end
     if type(val) == 'thread' then
       val = pcall(tostring, val)
       r._logger('Cannot insert thread object into query ' .. val)
       return nil
     end
-    return DATUMTERM(val)
+    return r.datum(val)
   end
 })
 
@@ -837,7 +837,7 @@ class_methods = {
       end
       for i=1, optargs.arity or 1 do
         table.insert(arg_nums, ReQLOp.next_var_id)
-        table.insert(anon_args, VAR({}, ReQLOp.next_var_id))
+        table.insert(anon_args, r.var({}, ReQLOp.next_var_id))
         ReQLOp.next_var_id = ReQLOp.next_var_id + 1
       end
       func = func(unpack(anon_args))
@@ -857,11 +857,11 @@ class_methods = {
     elseif self.tt == 64 then
       local func = table.remove(args)
       if type(func) == 'function' then
-        func = FUNC({arity = #args}, func)
+        func = r.func({arity = #args}, func)
       end
       table.insert(args, 1, func)
     elseif self.tt == 37 then
-      args[#args] = FUNC({arity = 2}, args[#args])
+      args[#args] = r.func({arity = 2}, args[#args])
     end
     self.args = {}
     self.optargs = {}
@@ -971,22 +971,22 @@ ReQLOp = class('ReQLOp', class_methods)
 
 local meta = {
   __call = function(...)
-    return BRACKET({}, ...)
+    return r.bracket({}, ...)
   end,
   __add = function(...)
-    return ADD({}, ...)
+    return r.add({}, ...)
   end,
   __mul = function(...)
-    return MUL({}, ...)
+    return r.mul({}, ...)
   end,
   __mod = function(...)
-    return MOD({}, ...)
+    return r.mod({}, ...)
   end,
   __sub = function(...)
-    return SUB({}, ...)
+    return r.sub({}, ...)
   end,
   __div = function(...)
-    return DIV({}, ...)
+    return r.div({}, ...)
   end
 }
 
