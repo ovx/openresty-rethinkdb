@@ -1,5 +1,3 @@
-language: python
-
 env:
   global:
     - LUAROCKS_BASE=luarocks-2.2.0
@@ -7,14 +5,12 @@ env:
     - LUA=lua5.1 LUA_DEV=liblua5.1-dev
     - LUA=lua5.2 LUA_DEV=liblua5.2-dev
 
-# command to install dependencies
 install:
   - 'source /etc/lsb-release && echo "deb http://download.rethinkdb.com/apt $DISTRIB_CODENAME main" | sudo tee /etc/apt/sources.list.d/rethinkdb.list'
   - 'wget -qO- http://download.rethinkdb.com/apt/pubkey.gpg | sudo apt-key add -'
   - 'sudo apt-get update'
   - 'sudo apt-get install $LUA $LUA_DEV rethinkdb'
   - rethinkdb --daemon
-  # Install a recent luarocks release
   - wget http://luarocks.org/releases/$LUAROCKS_BASE.tar.gz
   - tar zxvpf $LUAROCKS_BASE.tar.gz
   - cd $LUAROCKS_BASE
@@ -27,8 +23,6 @@ install:
   - sudo luarocks install dkjson
   - sudo luarocks install busted
   - cd $TRAVIS_BUILD_DIR
-  - python build.py
 
-# command to run tests
 script:
   - busted
