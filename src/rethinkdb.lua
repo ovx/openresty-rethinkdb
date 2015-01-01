@@ -825,7 +825,7 @@ class_methods = {
   __init = function(self, optargs, ...)
     local args = {...}
     optargs = optargs or {}
-    if self.tt == 69 then
+    if self.tt == b.Term.FUNC then
       local func = args[1]
       local anon_args = {}
       local arg_nums = {}
@@ -846,7 +846,7 @@ class_methods = {
       end
       optargs.arity = nil
       args = {arg_nums, func}
-    elseif self.tt == 155 then
+    elseif self.tt == b.Term.BINARY then
       local data = args[1]
       if r.is_instance(data, 'ReQLOp') then
       elseif type(data) == 'string' then
@@ -854,13 +854,13 @@ class_methods = {
       else
         return r._logger('Parameter to `r.binary` must be a string or ReQL query.')
       end
-    elseif self.tt == 64 then
+    elseif self.tt == b.Term.FUNCALL then
       local func = table.remove(args)
       if type(func) == 'function' then
         func = r.func({arity = #args}, func)
       end
       table.insert(args, 1, func)
-    elseif self.tt == 37 then
+    elseif self.tt == b.Term.REDUCE then
       args[#args] = r.func({arity = 2}, args[#args])
     end
     self.args = {}
@@ -873,13 +873,13 @@ class_methods = {
     end
   end,
   build = function(self)
-    if self.tt == 155 and (not self.args[1]) then
+    if self.tt == b.Term.BINARY and (not self.args[1]) then
       return {
         ['$reql_type$'] = 'BINARY',
         data = self.base64_data
       }
     end
-    if self.tt == 3 then
+    if self.tt == b.Term.MAKE_OBJ then
       local res = {}
       for key, val in pairs(self.optargs) do
         res[key] = val:build()
@@ -901,23 +901,23 @@ class_methods = {
     return res
   end,
   compose = function(self, args, optargs)
-    if self.tt == 2 then
+    if self.tt == b.Term.MAKE_ARRAY then
       return {
         '{',
         intsp(args),
         '}'
       }
     end
-    if self.tt == 3 then
+    if self.tt == b.Term.MAKE_OBJ then
       return kved(optargs)
     end
-    if self.tt == 10 then
+    if self.tt == b.Term.VAR then
       return {'var_' .. args[1]}
     end
-    if self.tt == 155 and not self.args[1] then
+    if self.tt == b.Term.BINARY and not self.args[1] then
       return 'r.binary(<data>)'
     end
-    if self.tt == 170 then
+    if self.tt == b.Term.BRACKET then
       return {
         args[1],
         '(',
@@ -925,7 +925,7 @@ class_methods = {
         ')'
       }
     end
-    if self.tt == 69 then
+    if self.tt == b.Term.FUNC then
       return {
         'function(',
         intsp((function()
@@ -940,7 +940,7 @@ class_methods = {
         ' end'
       }
     end
-    if self.tt == 64 then
+    if self.tt == b.Term.FUNCALL then
       local func = table.remove(args, 1)
       if func then
         table.insert(args, func)
@@ -1206,10 +1206,10 @@ local Cursor = class(
     _add_response = function(self, response)
       local t = response.t
       if not self._type then self._type = t end
-      if response.r[1] or t == 4 then
+      if response.r[1] or t == b.Response.WAIT_COMPLETE then
         table.insert(self._responses, response)
       end
-      if t ~= 3 and t ~= 5 then
+      if t ~= b.Response.SUCCESS_PARTIAL and t ~= b.Response.SUCCESS_FEED then
         -- We got an error, SUCCESS_SEQUENCE, WAIT_COMPLETE, or a SUCCESS_ATOM
         self._end_flag = true
         self._conn:_del_query(self._token)
@@ -1228,7 +1228,7 @@ local Cursor = class(
       -- Behavior varies considerably based on response type
       -- Error responses are not discarded, and the error will be sent to all future callbacks
       local t = response.t
-      if t == 1 or t == 3 or t == 5 or t == 2 then
+      if t == b.Response.SUCCESS_ATOM or t == b.Response.SUCCESS_PARTIAL or t == b.Response.SUCCESS_FEED or t == b.Response.SUCCESS_SEQUENCE then
         local err
 
         local status, row = pcall(
@@ -1252,13 +1252,13 @@ local Cursor = class(
         return cb(err, row)
       end
       self:clear()
-      if t == 17 then
+      if t == b.Response.COMPILE_ERROR then
         return cb(ReQLCompileError(response.r[1], self._root, response.b))
-      elseif t == 16 then
+      elseif t == b.Response.CLIENT_ERROR then
         return cb(ReQLClientError(response.r[1], self._root, response.b))
-      elseif t == 18 then
+      elseif t == b.Response.RUNTIME_ERROR then
         return cb(ReQLRuntimeError(response.r[1], self._root, response.b))
-      elseif t == 4 then
+      elseif t == b.Response.WAIT_COMPLETE then
         return cb()
       end
       return cb(ReQLDriverError('Unknown response type ' .. t))
@@ -1320,7 +1320,7 @@ local Cursor = class(
     end,
     to_array = function(self, callback)
       if not self._type then self._conn:_get_response(self._token) end
-      if self._type == 5 then
+      if self._type == b.Response.SUCCESS_FEED then
         return cb(ReQLDriverError('`to_array` is not available for feeds.'))
       end
       local cb = function(err, arr)
@@ -1381,10 +1381,10 @@ r.connect = class(
         local buf, err, partial
         -- Initialize connection with magic number to validate version
         self.raw_socket:send(
-          '\62\232\117\95' ..
+          int_to_bytes(b.Version.V0_3, 4) ..
           int_to_bytes(#(self.auth_key), 4) ..
           self.auth_key ..
-          '\199\112\105\126'
+          int_to_bytes(b.Protocol.JSON, 4)
         )
 
         -- Now we have to wait for a response from the server
@@ -1428,7 +1428,7 @@ r.connect = class(
         if (not buf) and err then
           return self:_process_response(
             {
-              t = 16,
+              t = b.Response.CLIENT_ERROR,
               r = {'connection returned: ' .. err},
               b = {}
             },
@@ -1526,7 +1526,7 @@ r.connect = class(
       self.outstanding_callbacks[token] = {cursor = cursor}
 
       -- Construct query
-      self:_send_query(token, {4})
+      self:_send_query(token, {b.Query.NOREPLY_WAIT})
 
       return cb(nil, cursor)
     end,
@@ -1584,7 +1584,7 @@ r.connect = class(
       end
 
       -- Construct query
-      local query = {1, term:build(), global_opts}
+      local query = {b.Query.START, term:build(), global_opts}
 
       local cursor = Cursor(self, token, opts, term)
 
@@ -1594,11 +1594,11 @@ r.connect = class(
       return cb(nil, cursor)
     end,
     _continue_query = function(self, token)
-      self:_send_query(token, {2})
+      self:_send_query(token, {b.Query.CONTINUE})
     end,
     _end_query = function(self, token)
       self:_del_query(token)
-      self:_send_query(token, {3})
+      self:_send_query(token, {b.Query.STOP})
     end,
     _send_query = function(self, token, query)
       local data = r.json_parser.encode(query)
