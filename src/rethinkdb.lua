@@ -1679,5 +1679,36 @@ r.pool = class(
   }
 )
 
+function build_term(name, ast_name, tt)
+  local _ast = ast(name, {tt = tt, st = ast_name})
+  if b._get_opts[name] then
+    return function(...)
+      return _ast(get_opts(...))
+    end
+  end
+  local args = b._const_args[name]
+  if args then
+    return function(...)
+      local _args = {...}
+      local const_args = {}
+      for i=1, args do
+        table.insert(const_args, _args[i])
+      end
+      return _ast(_args[args + 1], const_args)
+    end
+  end
+  return function(...)
+    return _ast({}, ...)
+  end
+end
+
+for name, tt in pairs(b.Term) do
+  local _name = b._custom[name] or name
+  local ast_name = string.lower(_name)
+  local meth = build_term(name, ast_name, tt)
+  r[ast_name] = meth
+  class_methods[ast_name] = meth
+end
+
 -- Export all names defined on r
 return r
