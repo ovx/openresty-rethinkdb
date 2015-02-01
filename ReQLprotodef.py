@@ -36,6 +36,7 @@ class Response:
         SUCCESS_PARTIAL = 3
         SUCCESS_FEED = 5
         WAIT_COMPLETE = 4
+        SUCCESS_ATOM_FEED = 6
         CLIENT_ERROR = 16
         COMPILE_ERROR = 17
         RUNTIME_ERROR = 18
@@ -130,13 +131,12 @@ class Term:
         DB_CREATE = 57
         DB_DROP = 58
         DB_LIST = 59
-        DB_CONFIG = 178
         TABLE_CREATE = 60
         TABLE_DROP = 61
         TABLE_LIST = 62
-        TABLE_CONFIG = 174
-        TABLE_STATUS = 175
-        TABLE_WAIT = 177
+        CONFIG = 174
+        STATUS = 175
+        WAIT = 177
         RECONFIGURE = 176
         REBALANCE = 179
         SYNC = 138

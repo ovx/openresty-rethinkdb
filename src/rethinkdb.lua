@@ -25,7 +25,7 @@ end
 local DATUMTERM, ReQLOp
 local ADD, ALL, ANY, APPEND, APRIL, ARGS, ASC, AUGUST, AVG, BETWEEN, BINARY
 local BRACKET, BRANCH, CHANGES, CHANGE_AT, CIRCLE, COERCE_TO, CONCAT_MAP
-local CONTAINS, COUNT, DATE, DAY, DAY_OF_WEEK, DAY_OF_YEAR, DB, DB_CONFIG
+local CONFIG, CONTAINS, COUNT, DATE, DAY, DAY_OF_WEEK, DAY_OF_YEAR, DB
 local DB_CREATE, DB_DROP, DB_LIST, DECEMBER, DEFAULT, DELETE, DELETE_AT, DESC
 local DIFFERENCE, DISTANCE, DISTINCT, DIV, DOWNCASE, DURING, EPOCH_TIME, EQ
 local EQ_JOIN, ERROR, FEBRUARY, FILL, FILTER, FOR_EACH, FRIDAY, FUNC, FUNCALL
@@ -40,11 +40,11 @@ local OBJECT, OCTOBER, ORDER_BY, OUTER_JOIN, PLUCK, POINT, POLYGON
 local POLYGON_SUB, PREPEND, RANDOM, RANGE, REBALANCE, RECONFIGURE, REDUCE
 local REPLACE, SAMPLE, SATURDAY, SECONDS, SEPTEMBER, SET_DIFFERENCE
 local SET_INSERT, SET_INTERSECTION, SET_UNION, SKIP, SLICE, SPLICE_AT, SPLIT
-local SUB, SUM, SUNDAY, SYNC, TABLE, TABLE_CONFIG, TABLE_CREATE, TABLE_DROP
-local TABLE_LIST, TABLE_STATUS, TABLE_WAIT, THURSDAY, TIME, TIMEZONE
-local TIME_OF_DAY, TO_EPOCH_TIME, TO_GEOJSON, TO_ISO8601, TO_JSON_STRING
-local TUESDAY, TYPE_OF, UNGROUP, UNION, UPCASE, UPDATE, UUID, VAR, WEDNESDAY
-local WITHOUT, WITH_FIELDS, YEAR, ZIP
+local STATUS, SUB, SUM, SUNDAY, SYNC, TABLE, TABLE_CREATE, TABLE_DROP
+local TABLE_LIST, THURSDAY, TIME, TIMEZONE, TIME_OF_DAY, TO_EPOCH_TIME
+local TO_GEOJSON, TO_ISO8601, TO_JSON_STRING, TUESDAY, TYPE_OF, UNGROUP, UNION
+local UPCASE, UPDATE, UUID, VAR, WAIT, WEDNESDAY, WITHOUT, WITH_FIELDS, YEAR
+local ZIP
 local ReQLDriverError, ReQLServerError, ReQLRuntimeError, ReQLCompileError
 local ReQLClientError, ReQLQueryPrinter, ReQLError
 
@@ -450,6 +450,7 @@ ast_methods = {
   circle = function(...) return CIRCLE(get_opts(...)) end,
   coerce_to = function(...) return COERCE_TO({}, ...) end,
   concat_map = function(...) return CONCAT_MAP({}, ...) end,
+  config = function(...) return CONFIG({}, ...) end,
   contains = function(...) return CONTAINS({}, ...) end,
   count = function(...) return COUNT({}, ...) end,
   date = function(...) return DATE({}, ...) end,
@@ -457,7 +458,6 @@ ast_methods = {
   day_of_week = function(...) return DAY_OF_WEEK({}, ...) end,
   day_of_year = function(...) return DAY_OF_YEAR({}, ...) end,
   db = function(...) return DB({}, ...) end,
-  db_config = function(...) return DB_CONFIG({}, ...) end,
   db_create = function(...) return DB_CREATE({}, ...) end,
   db_drop = function(...) return DB_DROP({}, ...) end,
   db_list = function(...) return DB_LIST({}, ...) end,
@@ -568,17 +568,15 @@ ast_methods = {
   slice = function(...) return SLICE(get_opts(...)) end,
   splice_at = function(...) return SPLICE_AT({}, ...) end,
   split = function(...) return SPLIT({}, ...) end,
+  status = function(...) return STATUS({}, ...) end,
   sub = function(...) return SUB({}, ...) end,
   sum = function(...) return SUM({}, ...) end,
   sunday = function(...) return SUNDAY({}, ...) end,
   sync = function(...) return SYNC({}, ...) end,
   table = function(...) return TABLE(get_opts(...)) end,
-  table_config = function(...) return TABLE_CONFIG({}, ...) end,
   table_create = function(...) return TABLE_CREATE(get_opts(...)) end,
   table_drop = function(...) return TABLE_DROP({}, ...) end,
   table_list = function(...) return TABLE_LIST({}, ...) end,
-  table_status = function(...) return TABLE_STATUS({}, ...) end,
-  table_wait = function(...) return TABLE_WAIT({}, ...) end,
   thursday = function(...) return THURSDAY({}, ...) end,
   time = function(...) return TIME({}, ...) end,
   timezone = function(...) return TIMEZONE({}, ...) end,
@@ -595,6 +593,7 @@ ast_methods = {
   update = function(arg0, arg1, opts) return UPDATE(opts, arg0, arg1) end,
   uuid = function(...) return UUID({}, ...) end,
   var = function(...) return VAR({}, ...) end,
+  wait = function(...) return WAIT({}, ...) end,
   wednesday = function(...) return WEDNESDAY({}, ...) end,
   without = function(...) return WITHOUT({}, ...) end,
   with_fields = function(...) return WITH_FIELDS({}, ...) end,
@@ -822,6 +821,7 @@ CHANGE_AT = ast('CHANGE_AT', {tt = 84, st = 'change_at'})
 CIRCLE = ast('CIRCLE', {tt = 165, st = 'circle'})
 COERCE_TO = ast('COERCE_TO', {tt = 51, st = 'coerce_to'})
 CONCAT_MAP = ast('CONCAT_MAP', {tt = 40, st = 'concat_map'})
+CONFIG = ast('CONFIG', {tt = 174, st = 'config'})
 CONTAINS = ast('CONTAINS', {tt = 93, st = 'contains'})
 COUNT = ast('COUNT', {tt = 43, st = 'count'})
 DATE = ast('DATE', {tt = 106, st = 'date'})
@@ -829,7 +829,6 @@ DAY = ast('DAY', {tt = 130, st = 'day'})
 DAY_OF_WEEK = ast('DAY_OF_WEEK', {tt = 131, st = 'day_of_week'})
 DAY_OF_YEAR = ast('DAY_OF_YEAR', {tt = 132, st = 'day_of_year'})
 DB = ast('DB', {tt = 14, st = 'db'})
-DB_CONFIG = ast('DB_CONFIG', {tt = 178, st = 'db_config'})
 DB_CREATE = ast('DB_CREATE', {tt = 57, st = 'db_create'})
 DB_DROP = ast('DB_DROP', {tt = 58, st = 'db_drop'})
 DB_LIST = ast('DB_LIST', {tt = 59, st = 'db_list'})
@@ -940,17 +939,15 @@ SKIP = ast('SKIP', {tt = 70, st = 'skip'})
 SLICE = ast('SLICE', {tt = 30, st = 'slice'})
 SPLICE_AT = ast('SPLICE_AT', {tt = 85, st = 'splice_at'})
 SPLIT = ast('SPLIT', {tt = 149, st = 'split'})
+STATUS = ast('STATUS', {tt = 175, st = 'status'})
 SUB = ast('SUB', {tt = 25, st = 'sub'})
 SUM = ast('SUM', {tt = 145, st = 'sum'})
 SUNDAY = ast('SUNDAY', {tt = 113, st = 'sunday'})
 SYNC = ast('SYNC', {tt = 138, st = 'sync'})
 TABLE = ast('TABLE', {tt = 15, st = 'table'})
-TABLE_CONFIG = ast('TABLE_CONFIG', {tt = 174, st = 'table_config'})
 TABLE_CREATE = ast('TABLE_CREATE', {tt = 60, st = 'table_create'})
 TABLE_DROP = ast('TABLE_DROP', {tt = 61, st = 'table_drop'})
 TABLE_LIST = ast('TABLE_LIST', {tt = 62, st = 'table_list'})
-TABLE_STATUS = ast('TABLE_STATUS', {tt = 175, st = 'table_status'})
-TABLE_WAIT = ast('TABLE_WAIT', {tt = 177, st = 'table_wait'})
 THURSDAY = ast('THURSDAY', {tt = 110, st = 'thursday'})
 TIME = ast('TIME', {tt = 136, st = 'time'})
 TIMEZONE = ast('TIMEZONE', {tt = 127, st = 'timezone'})
@@ -967,6 +964,7 @@ UPCASE = ast('UPCASE', {tt = 141, st = 'upcase'})
 UPDATE = ast('UPDATE', {tt = 53, st = 'update'})
 UUID = ast('UUID', {tt = 169, st = 'uuid'})
 VAR = ast('VAR', {tt = 10, st = 'var'})
+WAIT = ast('WAIT', {tt = 177, st = 'wait'})
 WEDNESDAY = ast('WEDNESDAY', {tt = 109, st = 'wednesday'})
 WITHOUT = ast('WITHOUT', {tt = 34, st = 'without'})
 WITH_FIELDS = ast('WITH_FIELDS', {tt = 96, st = 'with_fields'})
@@ -990,7 +988,7 @@ local Cursor = class(
       if response.r[1] or t == 4 then
         table.insert(self._responses, response)
       end
-      if t ~= 3 and t ~= 5 then
+      if t ~= 3 and t ~= 5 and t ~= 6 then
         -- We got an error, SUCCESS_SEQUENCE, WAIT_COMPLETE, or a SUCCESS_ATOM
         self._end_flag = true
         self._conn:_del_query(self._token)
@@ -1009,7 +1007,7 @@ local Cursor = class(
       -- Behavior varies considerably based on response type
       -- Error responses are not discarded, and the error will be sent to all future callbacks
       local t = response.t
-      if t == 1 or t == 3 or t == 5 or t == 2 then
+      if t == 1 or t == 3 or t == 5 or t == 2 or t == 6 then
         local err
 
         local status, row = pcall(
@@ -1101,7 +1099,7 @@ local Cursor = class(
     end,
     to_array = function(self, callback)
       if not self._type then self._conn:_get_response(self._token) end
-      if self._type == 5 then
+      if self._type == 5 or self._type == 6 then
         return cb(ReQLDriverError('`to_array` is not available for feeds.'))
       end
       local cb = function(err, arr)
