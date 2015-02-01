@@ -86,7 +86,7 @@ describe('array limits', function()
 
   test('huge table', r.table(reql_table):insert({id = 0, array = huge_l:append(1)}), 100001, {{
         deleted = 0, unchanged = 0, replaced = 0, skipped = 0,
-        errors = 1, inserted = 1,
+        errors = 1, inserted = 0,
         first_error =
         'Array too large for disk writes (limit 100,000 elements)'
       }})
