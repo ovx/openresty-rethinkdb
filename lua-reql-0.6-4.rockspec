@@ -1,5 +1,5 @@
 package = 'Lua-ReQL'
-version = '0.6-3'
+version = '0.6-4'
 source = {
   url = 'git://github.com/grandquista/Lua-ReQL',
   tag = 'v0.6.x',
@@ -11,8 +11,8 @@ description = {
 }
 dependencies = {
   'lua > 5.1',
-  'luasocket > 3',
-  'luajson > 1.3',
+  'luasocket ~> 3',
+  'luajson ~> 1',
 }
 build = {
   type = 'builtin',
