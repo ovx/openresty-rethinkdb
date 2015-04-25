@@ -11,16 +11,15 @@ Rethinkdb driver in Lua
 - Lua >= 5.1
 - Luarocks
   - busted
-  - dkjson [optional]
   - luajson
   - luasocket
-- Python >= 3.3
 - RethinkDB
 
 ## Testing
-- python3 build.py
+- busted
 
 ## Installing from source
 - luarocks make
 
+## Supporting
 [![gratipay](http://img.shields.io/gratipay/grandquista.svg)](https://gratipay.com/grandquista/)

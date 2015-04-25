@@ -47,7 +47,6 @@ describe('cursor', function()
     )
   end)
 
---[[
   it('count', function()
     assert.are.equal(
       r.table(reql_table):run(
@@ -61,7 +60,6 @@ describe('cursor', function()
       ), num_rows
     )
   end)
---]]
 
   it('close', function()
     assert.has_no.errors(function()

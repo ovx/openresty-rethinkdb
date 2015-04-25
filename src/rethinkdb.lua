@@ -48,30 +48,30 @@ local VAR, WAIT, WEDNESDAY, WITHOUT, WITH_FIELDS, YEAR, ZIP
 local ReQLDriverError, ReQLServerError, ReQLRuntimeError, ReQLCompileError
 local ReQLClientError, ReQLQueryPrinter, ReQLError
 
-function r.is_instance(obj, ...)
-  local class_list = {...}
+function r.is_instance(obj, cls, ...)
+  if cls == nil then return false end
 
-  for _, cls in ipairs(class_list) do
-    if type(cls) == 'string' then
-      if type(obj) == cls then
+  if type(cls) == 'string' then
+    if type(obj) == cls then
+      return true
+    end
+  elseif type(cls) == 'table' then
+    cls = cls.__name
+  else
+    return false
+  end
+
+  if type(obj) == 'table' then
+    local obj_cls = obj.__class
+    while obj_cls do
+      if obj_cls.__name == cls then
         return true
       end
-    else
-      cls = cls.__name
-    end
-
-    if type(obj) == 'table' then
-      local obj_cls = obj.__class
-      while obj_cls do
-        if obj_cls.__name == cls then
-          return true
-        end
-        obj_cls = obj_cls.__parent
-      end
+      obj_cls = obj_cls.__parent
     end
   end
 
-  return false
+  return r.is_instance(obj, ...)
 end
 
 setmetatable(r, {
@@ -803,7 +803,14 @@ DATUMTERM = ast(
       return r.json_parser.encode(self.data)
     end,
     build = function(self)
-      if self.data == nil then return json.util.null end
+      if self.data == nil then
+        if r.json_parser.null then
+          return r.json_parser.null
+        end
+        if r.json_parser.util then
+          return r.json_parser.util.null
+        end
+      end
       return self.data
     end
   }
