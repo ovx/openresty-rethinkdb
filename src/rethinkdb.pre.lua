@@ -631,11 +631,11 @@ local Cursor = class(
     end,
     _add_response = function(self, response)
       local t = response.t
-      if not self._type then self._type = t end
+      if not self._type then self._type = response.n or true end
       if response.r[1] or t == --[[Response.WAIT_COMPLETE]] then
         table.insert(self._responses, response)
       end
-      if t ~= --[[Response.SUCCESS_PARTIAL]] and t ~= --[[Response.SUCCESS_FEED]] and t ~= --[[Response.SUCCESS_ATOM_FEED]] then
+      if t ~= --[[Response.SUCCESS_PARTIAL]] then
         -- We got an error, SUCCESS_SEQUENCE, WAIT_COMPLETE, or a SUCCESS_ATOM
         self._end_flag = true
         self._conn:_del_query(self._token)
@@ -654,7 +654,7 @@ local Cursor = class(
       -- Behavior varies considerably based on response type
       -- Error responses are not discarded, and the error will be sent to all future callbacks
       local t = response.t
-      if t == --[[Response.SUCCESS_ATOM]] or t == --[[Response.SUCCESS_PARTIAL]] or t == --[[Response.SUCCESS_FEED]] or t == --[[Response.SUCCESS_SEQUENCE]] or t == --[[Response.SUCCESS_ATOM_FEED]] then
+      if t == --[[Response.SUCCESS_ATOM]] or t == --[[Response.SUCCESS_PARTIAL]] or t == --[[Response.SUCCESS_SEQUENCE]] then
         local err
 
         local status, row = pcall(
@@ -746,7 +746,7 @@ local Cursor = class(
     end,
     to_array = function(self, callback)
       if not self._type then self._conn:_get_response(self._token) end
-      if self._type == --[[Response.SUCCESS_FEED]] or self._type == --[[Response.SUCCESS_ATOM_FEED]] then
+      if type(self._type) == 'number' then
         return cb(ReQLDriverError('`to_array` is not available for feeds.'))
       end
       local cb = function(err, arr)

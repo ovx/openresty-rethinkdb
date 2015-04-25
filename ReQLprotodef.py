@@ -6,6 +6,7 @@ class VersionDummy:
         V0_1 = 1063369270
         V0_2 = 1915781601
         V0_3 = 1601562686
+        V0_4 = 1074539808
 
     class Protocol:
         PROTOBUF = 656407617
@@ -34,12 +35,17 @@ class Response:
         SUCCESS_ATOM = 1
         SUCCESS_SEQUENCE = 2
         SUCCESS_PARTIAL = 3
-        SUCCESS_FEED = 5
         WAIT_COMPLETE = 4
-        SUCCESS_ATOM_FEED = 6
         CLIENT_ERROR = 16
         COMPILE_ERROR = 17
         RUNTIME_ERROR = 18
+
+    class ResponseNote:
+        SEQUENCE_FEED = 1
+        ATOM_FEED = 2
+        ORDER_BY_LIMIT_FEED = 3
+        UNIONED_FEED = 4
+        INCLUDES_STATES = 5
 
 class Datum:
     class DatumType:
@@ -81,6 +87,9 @@ class Term:
         MUL = 26
         DIV = 27
         MOD = 28
+        FLOOR = 183
+        CEIL = 184
+        ROUND = 185
         APPEND = 29
         PREPEND = 80
         DIFFERENCE = 95
@@ -91,7 +100,7 @@ class Term:
         SLICE = 30
         SKIP = 70
         LIMIT = 71
-        INDEXES_OF = 87
+        OFFSETS_OF = 87
         CONTAINS = 93
         GET_FIELD = 31
         KEYS = 94
@@ -101,7 +110,8 @@ class Term:
         PLUCK = 33
         WITHOUT = 34
         MERGE = 35
-        BETWEEN = 36
+        BETWEEN_DEPRECATED = 36
+        BETWEEN = 182
         REDUCE = 37
         MAP = 38
         FILTER = 39
@@ -148,8 +158,8 @@ class Term:
         INDEX_RENAME = 156
         FUNCALL = 64
         BRANCH = 65
-        ANY = 66
-        ALL = 67
+        OR = 66
+        AND = 67
         FOR_EACH = 68
         FUNC = 69
         ASC = 73
@@ -225,6 +235,8 @@ class Term:
         FILL = 167
         GET_NEAREST = 168
         POLYGON_SUB = 171
+        MINVAL = 180
+        MAXVAL = 181
 
     class AssocPair:
         pass

@@ -1,5 +1,5 @@
 package = 'Lua-ReQL'
-version = '0.6-4'
+version = '0.6-5'
 source = {
   url = 'git://github.com/grandquista/Lua-ReQL',
   tag = 'v0.6.x',

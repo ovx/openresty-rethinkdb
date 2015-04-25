@@ -23,28 +23,28 @@ function r._logger(err)
 end
 
 local DATUMTERM, ReQLOp
-local ADD, ALL, ANY, APPEND, APRIL, ARGS, ASC, AUGUST, AVG, BETWEEN, BINARY
-local BRACKET, BRANCH, CHANGES, CHANGE_AT, CIRCLE, COERCE_TO, CONCAT_MAP
-local CONFIG, CONTAINS, COUNT, DATE, DAY, DAY_OF_WEEK, DAY_OF_YEAR, DB
-local DB_CREATE, DB_DROP, DB_LIST, DECEMBER, DEFAULT, DELETE, DELETE_AT, DESC
-local DIFFERENCE, DISTANCE, DISTINCT, DIV, DOWNCASE, DURING, EPOCH_TIME, EQ
-local EQ_JOIN, ERROR, FEBRUARY, FILL, FILTER, FOR_EACH, FRIDAY, FUNC, FUNCALL
-local GE, GEOJSON, GET, GET_ALL, GET_FIELD, GET_INTERSECTING, GET_NEAREST
-local GROUP, GT, HAS_FIELDS, HOURS, HTTP, INCLUDES, INDEXES_OF, INDEX_CREATE
-local INDEX_DROP, INDEX_LIST, INDEX_RENAME, INDEX_STATUS, INDEX_WAIT, INFO
-local INNER_JOIN, INSERT, INSERT_AT, INTERSECTS, IN_TIMEZONE, ISO8601
-local IS_EMPTY, JANUARY, JAVASCRIPT, JSON, JULY, JUNE, KEYS, LE, LIMIT, LINE
-local LITERAL, LT, MAKE_ARRAY, MAKE_OBJ, MAP, MARCH, MATCH, MAX, MAY, MERGE
-local MIN, MINUTES, MOD, MONDAY, MONTH, MUL, NE, NOT, NOVEMBER, NOW, NTH
-local OBJECT, OCTOBER, ORDER_BY, OUTER_JOIN, PLUCK, POINT, POLYGON
-local POLYGON_SUB, PREPEND, RANDOM, RANGE, REBALANCE, RECONFIGURE, REDUCE
-local REPLACE, SAMPLE, SATURDAY, SECONDS, SEPTEMBER, SET_DIFFERENCE
-local SET_INSERT, SET_INTERSECTION, SET_UNION, SKIP, SLICE, SPLICE_AT, SPLIT
-local STATUS, SUB, SUM, SUNDAY, SYNC, TABLE, TABLE_CREATE, TABLE_DROP
-local TABLE_LIST, THURSDAY, TIME, TIMEZONE, TIME_OF_DAY, TO_EPOCH_TIME
-local TO_GEOJSON, TO_ISO8601, TO_JSON_STRING, TUESDAY, TYPE_OF, UNGROUP, UNION
-local UPCASE, UPDATE, UUID, VAR, WAIT, WEDNESDAY, WITHOUT, WITH_FIELDS, YEAR
-local ZIP
+local ADD, AND, APPEND, APRIL, ARGS, ASC, AUGUST, AVG, BETWEEN
+local BETWEEN_DEPRECATED, BINARY, BRACKET, BRANCH, CEIL, CHANGES, CHANGE_AT
+local CIRCLE, COERCE_TO, CONCAT_MAP, CONFIG, CONTAINS, COUNT, DATE, DAY
+local DAY_OF_WEEK, DAY_OF_YEAR, DB, DB_CREATE, DB_DROP, DB_LIST, DECEMBER
+local DEFAULT, DELETE, DELETE_AT, DESC, DIFFERENCE, DISTANCE, DISTINCT, DIV
+local DOWNCASE, DURING, EPOCH_TIME, EQ, EQ_JOIN, ERROR, FEBRUARY, FILL, FILTER
+local FLOOR, FOR_EACH, FRIDAY, FUNC, FUNCALL, GE, GEOJSON, GET, GET_ALL
+local GET_FIELD, GET_INTERSECTING, GET_NEAREST, GROUP, GT, HAS_FIELDS, HOURS
+local HTTP, INCLUDES, INDEX_CREATE, INDEX_DROP, INDEX_LIST, INDEX_RENAME
+local INDEX_STATUS, INDEX_WAIT, INFO, INNER_JOIN, INSERT, INSERT_AT
+local INTERSECTS, IN_TIMEZONE, ISO8601, IS_EMPTY, JANUARY, JAVASCRIPT, JSON
+local JULY, JUNE, KEYS, LE, LIMIT, LINE, LITERAL, LT, MAKE_ARRAY, MAKE_OBJ
+local MAP, MARCH, MATCH, MAX, MAXVAL, MAY, MERGE, MIN, MINUTES, MINVAL, MOD
+local MONDAY, MONTH, MUL, NE, NOT, NOVEMBER, NOW, NTH, OBJECT, OCTOBER
+local OFFSETS_OF, OR, ORDER_BY, OUTER_JOIN, PLUCK, POINT, POLYGON, POLYGON_SUB
+local PREPEND, RANDOM, RANGE, REBALANCE, RECONFIGURE, REDUCE, REPLACE, ROUND
+local SAMPLE, SATURDAY, SECONDS, SEPTEMBER, SET_DIFFERENCE, SET_INSERT
+local SET_INTERSECTION, SET_UNION, SKIP, SLICE, SPLICE_AT, SPLIT, STATUS, SUB
+local SUM, SUNDAY, SYNC, TABLE, TABLE_CREATE, TABLE_DROP, TABLE_LIST, THURSDAY
+local TIME, TIMEZONE, TIME_OF_DAY, TO_EPOCH_TIME, TO_GEOJSON, TO_ISO8601
+local TO_JSON_STRING, TUESDAY, TYPE_OF, UNGROUP, UNION, UPCASE, UPDATE, UUID
+local VAR, WAIT, WEDNESDAY, WITHOUT, WITH_FIELDS, YEAR, ZIP
 local ReQLDriverError, ReQLServerError, ReQLRuntimeError, ReQLCompileError
 local ReQLClientError, ReQLQueryPrinter, ReQLError
 
@@ -433,8 +433,7 @@ ast_methods = {
     return connection:_start(self, callback, options or {})
   end,
   add = function(...) return ADD({}, ...) end,
-  all = function(...) return ALL({}, ...) end,
-  any = function(...) return ANY({}, ...) end,
+  and_ = function(...) return AND({}, ...) end,
   append = function(...) return APPEND({}, ...) end,
   april = function(...) return APRIL({}, ...) end,
   args = function(...) return ARGS({}, ...) end,
@@ -442,9 +441,11 @@ ast_methods = {
   august = function(...) return AUGUST({}, ...) end,
   avg = function(...) return AVG({}, ...) end,
   between = function(arg0, arg1, arg2, opts) return BETWEEN(opts, arg0, arg1, arg2) end,
+  between_deprecated = function(arg0, arg1, arg2, opts) return BETWEEN_DEPRECATED(opts, arg0, arg1, arg2) end,
   binary = function(...) return BINARY({}, ...) end,
   index = function(...) return BRACKET({}, ...) end,
   branch = function(...) return BRANCH({}, ...) end,
+  ceil = function(...) return CEIL({}, ...) end,
   changes = function(...) return CHANGES({}, ...) end,
   change_at = function(...) return CHANGE_AT({}, ...) end,
   circle = function(...) return CIRCLE(get_opts(...)) end,
@@ -479,6 +480,7 @@ ast_methods = {
   february = function(...) return FEBRUARY({}, ...) end,
   fill = function(...) return FILL({}, ...) end,
   filter = function(arg0, arg1, opts) return FILTER(opts, arg0, arg1) end,
+  floor = function(...) return FLOOR({}, ...) end,
   for_each = function(...) return FOR_EACH({}, ...) end,
   friday = function(...) return FRIDAY({}, ...) end,
   func = function(...) return FUNC({}, ...) end,
@@ -496,7 +498,6 @@ ast_methods = {
   hours = function(...) return HOURS({}, ...) end,
   http = function(...) return HTTP(get_opts(...)) end,
   includes = function(...) return INCLUDES({}, ...) end,
-  indexes_of = function(...) return INDEXES_OF({}, ...) end,
   index_create = function(...) return INDEX_CREATE(get_opts(...)) end,
   index_drop = function(...) return INDEX_DROP({}, ...) end,
   index_list = function(...) return INDEX_LIST({}, ...) end,
@@ -528,10 +529,12 @@ ast_methods = {
   march = function(...) return MARCH({}, ...) end,
   match = function(...) return MATCH({}, ...) end,
   max = function(...) return MAX({}, ...) end,
+  maxval = function(...) return MAXVAL({}, ...) end,
   may = function(...) return MAY({}, ...) end,
   merge = function(...) return MERGE({}, ...) end,
   min = function(...) return MIN({}, ...) end,
   minutes = function(...) return MINUTES({}, ...) end,
+  minval = function(...) return MINVAL({}, ...) end,
   mod = function(...) return MOD({}, ...) end,
   monday = function(...) return MONDAY({}, ...) end,
   month = function(...) return MONTH({}, ...) end,
@@ -543,6 +546,8 @@ ast_methods = {
   nth = function(...) return NTH({}, ...) end,
   object = function(...) return OBJECT({}, ...) end,
   october = function(...) return OCTOBER({}, ...) end,
+  offsets_of = function(...) return OFFSETS_OF({}, ...) end,
+  or_ = function(...) return OR({}, ...) end,
   order_by = function(...) return ORDER_BY(get_opts(...)) end,
   outer_join = function(...) return OUTER_JOIN({}, ...) end,
   pluck = function(...) return PLUCK({}, ...) end,
@@ -556,6 +561,7 @@ ast_methods = {
   reconfigure = function(...) return RECONFIGURE({}, ...) end,
   reduce = function(...) return REDUCE({}, ...) end,
   replace = function(...) return REPLACE(get_opts(...)) end,
+  round = function(...) return ROUND({}, ...) end,
   sample = function(...) return SAMPLE({}, ...) end,
   saturday = function(...) return SATURDAY({}, ...) end,
   seconds = function(...) return SECONDS({}, ...) end,
@@ -804,18 +810,19 @@ DATUMTERM = ast(
 )
 
 ADD = ast('ADD', {tt = 24, st = 'add'})
-ALL = ast('ALL', {tt = 67, st = 'all'})
-ANY = ast('ANY', {tt = 66, st = 'any'})
+AND = ast('AND', {tt = 67, st = 'and_'})
 APPEND = ast('APPEND', {tt = 29, st = 'append'})
 APRIL = ast('APRIL', {tt = 117, st = 'april'})
 ARGS = ast('ARGS', {tt = 154, st = 'args'})
 ASC = ast('ASC', {tt = 73, st = 'asc'})
 AUGUST = ast('AUGUST', {tt = 121, st = 'august'})
 AVG = ast('AVG', {tt = 146, st = 'avg'})
-BETWEEN = ast('BETWEEN', {tt = 36, st = 'between'})
+BETWEEN = ast('BETWEEN', {tt = 182, st = 'between'})
+BETWEEN_DEPRECATED = ast('BETWEEN_DEPRECATED', {tt = 36, st = 'between_deprecated'})
 BINARY = ast('BINARY', {tt = 155, st = 'binary'})
 BRACKET = ast('BRACKET', {tt = 170, st = 'index'})
 BRANCH = ast('BRANCH', {tt = 65, st = 'branch'})
+CEIL = ast('CEIL', {tt = 184, st = 'ceil'})
 CHANGES = ast('CHANGES', {tt = 152, st = 'changes'})
 CHANGE_AT = ast('CHANGE_AT', {tt = 84, st = 'change_at'})
 CIRCLE = ast('CIRCLE', {tt = 165, st = 'circle'})
@@ -850,6 +857,7 @@ ERROR = ast('ERROR', {tt = 12, st = 'error_'})
 FEBRUARY = ast('FEBRUARY', {tt = 115, st = 'february'})
 FILL = ast('FILL', {tt = 167, st = 'fill'})
 FILTER = ast('FILTER', {tt = 39, st = 'filter'})
+FLOOR = ast('FLOOR', {tt = 183, st = 'floor'})
 FOR_EACH = ast('FOR_EACH', {tt = 68, st = 'for_each'})
 FRIDAY = ast('FRIDAY', {tt = 111, st = 'friday'})
 FUNC = ast('FUNC', {tt = 69, st = 'func'})
@@ -867,7 +875,6 @@ HAS_FIELDS = ast('HAS_FIELDS', {tt = 32, st = 'has_fields'})
 HOURS = ast('HOURS', {tt = 133, st = 'hours'})
 HTTP = ast('HTTP', {tt = 153, st = 'http'})
 INCLUDES = ast('INCLUDES', {tt = 164, st = 'includes'})
-INDEXES_OF = ast('INDEXES_OF', {tt = 87, st = 'indexes_of'})
 INDEX_CREATE = ast('INDEX_CREATE', {tt = 75, st = 'index_create'})
 INDEX_DROP = ast('INDEX_DROP', {tt = 76, st = 'index_drop'})
 INDEX_LIST = ast('INDEX_LIST', {tt = 77, st = 'index_list'})
@@ -899,10 +906,12 @@ MAP = ast('MAP', {tt = 38, st = 'map'})
 MARCH = ast('MARCH', {tt = 116, st = 'march'})
 MATCH = ast('MATCH', {tt = 97, st = 'match'})
 MAX = ast('MAX', {tt = 148, st = 'max'})
+MAXVAL = ast('MAXVAL', {tt = 181, st = 'maxval'})
 MAY = ast('MAY', {tt = 118, st = 'may'})
 MERGE = ast('MERGE', {tt = 35, st = 'merge'})
 MIN = ast('MIN', {tt = 147, st = 'min'})
 MINUTES = ast('MINUTES', {tt = 134, st = 'minutes'})
+MINVAL = ast('MINVAL', {tt = 180, st = 'minval'})
 MOD = ast('MOD', {tt = 28, st = 'mod'})
 MONDAY = ast('MONDAY', {tt = 107, st = 'monday'})
 MONTH = ast('MONTH', {tt = 129, st = 'month'})
@@ -914,6 +923,8 @@ NOW = ast('NOW', {tt = 103, st = 'now'})
 NTH = ast('NTH', {tt = 45, st = 'nth'})
 OBJECT = ast('OBJECT', {tt = 143, st = 'object'})
 OCTOBER = ast('OCTOBER', {tt = 123, st = 'october'})
+OFFSETS_OF = ast('OFFSETS_OF', {tt = 87, st = 'offsets_of'})
+OR = ast('OR', {tt = 66, st = 'or_'})
 ORDER_BY = ast('ORDER_BY', {tt = 41, st = 'order_by'})
 OUTER_JOIN = ast('OUTER_JOIN', {tt = 49, st = 'outer_join'})
 PLUCK = ast('PLUCK', {tt = 33, st = 'pluck'})
@@ -927,6 +938,7 @@ REBALANCE = ast('REBALANCE', {tt = 179, st = 'rebalance'})
 RECONFIGURE = ast('RECONFIGURE', {tt = 176, st = 'reconfigure'})
 REDUCE = ast('REDUCE', {tt = 37, st = 'reduce'})
 REPLACE = ast('REPLACE', {tt = 55, st = 'replace'})
+ROUND = ast('ROUND', {tt = 185, st = 'round'})
 SAMPLE = ast('SAMPLE', {tt = 81, st = 'sample'})
 SATURDAY = ast('SATURDAY', {tt = 112, st = 'saturday'})
 SECONDS = ast('SECONDS', {tt = 135, st = 'seconds'})
@@ -984,11 +996,11 @@ local Cursor = class(
     end,
     _add_response = function(self, response)
       local t = response.t
-      if not self._type then self._type = t end
+      if not self._type then self._type = response.n or true end
       if response.r[1] or t == 4 then
         table.insert(self._responses, response)
       end
-      if t ~= 3 and t ~= 5 and t ~= 6 then
+      if t ~= 3 then
         -- We got an error, SUCCESS_SEQUENCE, WAIT_COMPLETE, or a SUCCESS_ATOM
         self._end_flag = true
         self._conn:_del_query(self._token)
@@ -1007,7 +1019,7 @@ local Cursor = class(
       -- Behavior varies considerably based on response type
       -- Error responses are not discarded, and the error will be sent to all future callbacks
       local t = response.t
-      if t == 1 or t == 3 or t == 5 or t == 2 or t == 6 then
+      if t == 1 or t == 3 or t == 2 then
         local err
 
         local status, row = pcall(
@@ -1099,7 +1111,7 @@ local Cursor = class(
     end,
     to_array = function(self, callback)
       if not self._type then self._conn:_get_response(self._token) end
-      if self._type == 5 or self._type == 6 then
+      if type(self._type) == 'number' then
         return cb(ReQLDriverError('`to_array` is not available for feeds.'))
       end
       local cb = function(err, arr)

@@ -88,7 +88,7 @@ describe('array limits', function()
         deleted = 0, unchanged = 0, replaced = 0, skipped = 0,
         errors = 1, inserted = 0,
         first_error =
-        'Array too large for disk writes (limit 100,000 elements)'
+        'Array too large for disk writes (limit 100,000 elements).'
       }})
   test_error('less than', r({1, 2, 3, 4}):union({5, 6, 7, 8}), 4, 'Array over size limit `4`.')
 

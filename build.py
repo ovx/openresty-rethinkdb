@@ -38,8 +38,8 @@ def build():
 
     ast_method_names = {
         name: {
-            'BRACKET': 'index', 'ERROR': 'error_', 'FUNCALL': 'do_',
-            'JAVASCRIPT': 'js', 'NOT': 'not_'
+            'AND': 'and_', 'BRACKET': 'index', 'ERROR': 'error_',
+            'FUNCALL': 'do_', 'JAVASCRIPT': 'js', 'NOT': 'not_', 'OR': 'or_'
         }.get(name, name.lower())
         for name in ast_constants
     }
@@ -74,6 +74,7 @@ def build():
             )
         },
         BETWEEN=const_args(3),
+        BETWEEN_DEPRECATED=const_args(3),
         DISTANCE=const_args(2),
         DURING=const_args(3),
         FILTER=const_args(2),
