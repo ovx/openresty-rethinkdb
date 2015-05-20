@@ -1,10 +1,11 @@
 local mime = require('mime')
-local socket = require('socket')
+local socket = ngx.socket
+local cjson = require('cjson')
 
 -- r is both the main export table for the module
 -- and a function that wraps a native Lua value in a ReQL datum
 local r = {
-  json_parser = require('json'),
+  json_parser = cjson,
   logger = function(err)
     if type(err) == 'string' then
       error(err)
@@ -1167,12 +1168,8 @@ r.connect = class(
       self.next_token = 1
       self.open = false
       self.buffer = ''
-      if self.raw_socket then
-        self:close({
-          noreply_wait = false
-        })
-      end
       self.raw_socket = socket.tcp()
+      self.raw_socket:setkeepalive()
       self.raw_socket:settimeout(self.timeout)
       local status, err = self.raw_socket:connect(self.host, self.port)
       if status then
@@ -1209,7 +1206,7 @@ r.connect = class(
       end
       return cb(ReQLDriverError('Could not connect to ' .. self.host .. ':' .. self.port .. '.\n' .. err))
     end,
-    DEFAULT_HOST = 'localhost',
+    DEFAULT_HOST = '127.0.0.1',
     DEFAULT_PORT = 28015,
     DEFAULT_AUTH_KEY = '',
     DEFAULT_TIMEOUT = 20, -- In seconds
@@ -1286,8 +1283,6 @@ r.connect = class(
 
       function wrapped_cb(err)
         self.open = false
-        self.raw_socket:shutdown()
-        self.raw_socket:close()
         if cb then
           return cb(err)
         end

@@ -1,25 +1,17 @@
-# Lua-ReQL
+# openresty-rethinkdb
 
-[![Build Status](https://travis-ci.org/grandquista/Lua-ReQL.svg?branch=master)](https://travis-ci.org/grandquista/Lua-ReQL)
+Rethinkdb driver for OpenResty, using cjson and cosocket. Based on [Lua-ReQL](https://github.com/grandquista/Lua-ReQL)
 
-Rethinkdb driver in Lua
 
-## Installing
-- luarocks install lua-reql
-
-## Dev Dependencies
-- Lua >= 5.1
-- Luarocks
-  - busted
-  - luajson
-  - luasocket
-- RethinkDB
+## Dependencies
+- OpenResty >= 1.7.10
+- ~~luajson~~ -> cjson
+- ~~luasocket~~ -> ngx.socket
 
 ## Testing
-- busted
+- https://github.com/openresty/test-nginx
+- `prove t`
 
-## Installing from source
-- luarocks make
 
-## Supporting
-[![gratipay](http://img.shields.io/gratipay/grandquista.svg)](https://gratipay.com/grandquista/)
+## TODO
+- make busted work again
