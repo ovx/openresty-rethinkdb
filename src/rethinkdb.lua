@@ -1,24 +1,77 @@
-local mime = require('mime')
-local socket = require('socket')
-
 -- r is both the main export table for the module
 -- and a function that wraps a native Lua value in a ReQL datum
-local r = {
-  json_parser = require('json'),
-  logger = function(err)
-    if type(err) == 'string' then
-      error(err)
-    elseif type(err) == 'table' and err.msg then
-      error(err.msg)
-    else
-      error('Unknown error type from driver')
-    end
-  end
-}
+local r = {}
 
 function r._logger(err)
   if r.logger then
     r.logger(err)
+  elseif type(err) == 'string' then
+    error(err)
+  elseif type(err) == 'table' and err.msg then
+    error(err.msg)
+  else
+    error('Unknown error type from driver')
+  end
+end
+
+function r._unb64(data)
+  if r.unb64 then
+    return r.unb64(data)
+  else
+    if not r._lib_mime then
+      r._lib_mime = require('mime')
+    end
+    return r._lib_mime.unb64(data)
+  end
+end
+
+function r._b64(data)
+  if r.b64 then
+    return r.b64(data)
+  else
+    if not r._lib_mime then
+      r._lib_mime = require('mime')
+    end
+    return r._lib_mime.b64(data)
+  end
+end
+
+function r._encode(data)
+  if r.encode then
+    return r.encode(data)
+  elseif r.json_parser then
+    return r.json_parser.encode(data)
+  else
+    if not r._lib_json then
+      r._lib_json = require('json')
+      r.json_parser = r._lib_json
+    end
+    return r._lib_json.encode(data)
+  end
+end
+
+function r._decode(buffer)
+  if r.decode then
+    return r.decode(buffer)
+  elseif r.json_parser then
+    return r.json_parser.decode(buffer)
+  else
+    if not r._lib_json then
+      r._lib_json = require('json')
+      r.json_parser = r._lib_json
+    end
+    return r._lib_json.decode(buffer)
+  end
+end
+
+function r._socket()
+  if r.socket then
+    return r.socket()
+  else
+    if not r._lib_socket then
+      r._lib_socket = require('socket')
+    end
+    return r._lib_socket.tcp()
   end
 end
 
@@ -279,7 +332,7 @@ function convert_pseudotype(obj, opts)
       if not obj.data then
         return r._logger(ReQLDriverError('pseudo-type BINARY table missing expected field `data`.'))
       end
-      return mime.unb64(obj.data)
+      return r._unb64(obj.data)
     elseif 'raw' == binary_format then
       return obj
     else
@@ -297,11 +350,6 @@ function recursively_convert_pseudotype(obj, opts)
       obj[key] = recursively_convert_pseudotype(value, opts)
     end
     obj = convert_pseudotype(obj, opts)
-  end
-  if r.json_parser.null then
-    if obj == r.json_parser.null then return nil end
-  elseif r.json_parser.util then
-    if obj == r.json_parser.util.null then return nil end
   end
   return obj
 end
@@ -636,7 +684,7 @@ class_methods = {
       local data = args[1]
       if r.is_instance(data, 'ReQLOp') then
       elseif type(data) == 'string' then
-        self.base64_data = mime.b64(table.remove(args, 1))
+        self.base64_data = r._b64(table.remove(args, 1))
       else
         return r._logger('Parameter to `r.binary` must be a string or ReQL query.')
       end
@@ -800,10 +848,14 @@ DATUMTERM = ast(
       if self.data == nil then
         return 'nil'
       end
-      return r.json_parser.encode(self.data)
+      return r._encode(self.data)
     end,
     build = function(self)
       if self.data == nil then
+        if not r.json_parser then
+          r._lib_json = require('json')
+          r.json_parser = r._lib_json
+        end
         if r.json_parser.null then
           return r.json_parser.null
         end
@@ -1168,11 +1220,9 @@ r.connect = class(
       self.open = false
       self.buffer = ''
       if self.raw_socket then
-        self:close({
-          noreply_wait = false
-        })
+        self:close({noreply_wait = false})
       end
-      self.raw_socket = socket.tcp()
+      self.raw_socket = r._socket()
       self.raw_socket:settimeout(self.timeout)
       local status, err = self.raw_socket:connect(self.host, self.port)
       if status then
@@ -1239,7 +1289,7 @@ r.connect = class(
             local response_buffer = string.sub(self.buffer, 1, response_length)
             self.buffer = string.sub(self.buffer, response_length + 1)
             response_length = 0
-            self:_process_response(r.json_parser.decode(response_buffer), token)
+            self:_process_response(r._decode(response_buffer), token)
             if token == reqest_token then return end
           end
         else
@@ -1399,7 +1449,7 @@ r.connect = class(
       self:_send_query(token, {3})
     end,
     _send_query = function(self, token, query)
-      local data = r.json_parser.encode(query)
+      local data = r._encode(query)
       self.raw_socket:send(
         int_to_bytes(token, 8) ..
         int_to_bytes(#data, 4) ..
