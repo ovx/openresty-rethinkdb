@@ -1,7 +1,5 @@
 # Lua-ReQL
 
-[![Build Status](https://travis-ci.org/grandquista/Lua-ReQL.svg?branch=master)](https://travis-ci.org/grandquista/Lua-ReQL)
-
 Rethinkdb driver in Lua
 
 ## Installing
@@ -20,6 +18,3 @@ Rethinkdb driver in Lua
 
 ## Installing from source
 - luarocks make
-
-## Supporting
-[![gratipay](http://img.shields.io/gratipay/grandquista.svg)](https://gratipay.com/grandquista/)
