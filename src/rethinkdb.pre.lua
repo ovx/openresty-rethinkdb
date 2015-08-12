@@ -77,8 +77,11 @@ end
 
 local DATUMTERM, ReQLOp
 --[[AstNames]]
-local ReQLDriverError, ReQLServerError, ReQLRuntimeError, ReQLCompileError
-local ReQLClientError, ReQLQueryPrinter, ReQLError
+local ReQLAuthError, ReQLAvailabilityError, ReQLClientError, ReQLCompileError
+local ReQLDriverError, ReQLError, ReQLInternalError, ReQLNonExistenceError
+local ReQLOpFailedError, ReQLOpIndeterminateError, ReQLQueryLogicError
+local ReQLQueryPrinter, ReQLResourceLimitError, ReQLRuntimeError
+local ReQLServerError, ReQLTimeoutError, ReQLUserError
 
 function r.is_instance(obj, cls, ...)
   if cls == nil then return false end
@@ -345,12 +348,26 @@ ReQLError = class(
 )
 
 ReQLDriverError = class('ReQLDriverError', ReQLError, {})
-
 ReQLServerError = class('ReQLServerError', ReQLError, {})
 
 ReQLRuntimeError = class('ReQLRuntimeError', ReQLServerError, {})
 ReQLCompileError = class('ReQLCompileError', ReQLServerError, {})
+
+ReQLAuthError = class('ReQLDriverError', ReQLDriverError, {})
+
 ReQLClientError = class('ReQLClientError', ReQLServerError, {})
+
+ReQLAvailabilityError = class('ReQLRuntimeError', ReQLRuntimeError, {})
+ReQLInternalError = class('ReQLRuntimeError', ReQLRuntimeError, {})
+ReQLQueryLogicError = class('ReQLRuntimeError', ReQLRuntimeError, {})
+ReQLResourceLimitError = class('ReQLRuntimeError', ReQLRuntimeError, {})
+ReQLTimeoutError = class('ReQLRuntimeError', ReQLRuntimeError, {})
+ReQLUserError = class('ReQLRuntimeError', ReQLRuntimeError, {})
+
+ReQLOpFailedError = class('ReQLRuntimeError', ReQLAvailabilityError, {})
+ReQLOpIndeterminateError = class('ReQLRuntimeError', ReQLAvailabilityError, {})
+
+ReQLNonExistenceError = class('ReQLRuntimeError', ReQLQueryLogicError, {})
 
 ReQLQueryPrinter = class(
   'ReQLQueryPrinter',
