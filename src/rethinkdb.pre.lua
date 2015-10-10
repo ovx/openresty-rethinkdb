@@ -1165,11 +1165,13 @@ r.pool = class(
     end,
     _start = function(self, term, callback, opts)
       local weight = math.huge
-      local good_conn
       if opts.conn then
-        weight = -1
-        good_conn = self.pool[opts.conn]
+        local good_conn = self.pool[opts.conn]
+        if good_conn then
+          return good_conn:_start(term, callback, opts)
+        end
       end
+      local good_conn
       for i=1, self.size do
         if not self.pool[i] then self.pool[i] = r.connect(self.host) end
         local conn = self.pool[i]
