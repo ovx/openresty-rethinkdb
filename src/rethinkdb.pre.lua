@@ -1179,7 +1179,10 @@ r.pool = class(
       for i=1, self.size do
         if not self.pool[i] then self.pool[i] = r.connect(self.host) end
         local conn = self.pool[i]
-        if not conn.open then conn:reconnect() end
+        if not conn.open then
+          conn = conn:reconnect()
+          self.pool[i] = conn
+        end
         if conn.weight < weight then
           good_conn = conn
           weight = conn.weight
