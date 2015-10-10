@@ -1138,16 +1138,17 @@ r.pool = class(
         return pool, err
       end
       self.open = false
-      conn, err = r.connect(host)
-      if err then return cb(err) end
-      self.open = true
-      self.pool = {conn}
-      self.size = host.size or 12
-      self.host = host
-      for i=2, self.size do
-        table.insert(self.pool, (r.connect(host)))
-      end
-      return cb(nil, self)
+      return r.connect(host, function(err, conn)
+        if err then return cb(err) end
+        self.open = true
+        self.pool = {conn}
+        self.size = host.size or 12
+        self.host = host
+        for i=2, self.size do
+          table.insert(self.pool, (r.connect(host)))
+        end
+        return cb(nil, self)
+      end)
     end,
     close = function(self, opts, callback)
       local err
