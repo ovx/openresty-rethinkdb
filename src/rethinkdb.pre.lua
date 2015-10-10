@@ -707,7 +707,13 @@ local Cursor = class(
     end,
     _add_response = function(self, response)
       local t = response.t
-      if not self._type then self._type = response.n or true end
+      if not self._type then
+        if response.n then
+          self._type = response.n
+          self._conn.weight = self.conn.weight + 2
+        else
+          self._type = 'finite'
+        end
       if response.r[1] or t == --[[Response.WAIT_COMPLETE]] then
         table.insert(self._responses, response)
       end
@@ -956,6 +962,9 @@ r.connect = class(
     _del_query = function(self, token)
       -- This query is done, delete this cursor
       if self.outstanding_callbacks[token].cursor then
+        if self.outstanding_callbacks[token].cursor._type ~= 'finite' then
+          self.weight = self.weight - 2
+        end
         self.weight = self.weight - 1
       end
       self.outstanding_callbacks[token].cursor = nil
@@ -1005,9 +1014,18 @@ r.connect = class(
     end,
     noreply_wait = function(self, callback)
       local cb = function(err, cur)
-        self.weight = 0
         if cur then
-          return cur.next(function(err) return callback(err) end)
+          return cur.next(function(err)
+            self.weight = 0
+            for token, cur in pairs(self.outstanding_callbacks) do
+              if cur.cursor then
+                self.weight = self.weight + 3
+              else
+                self.outstanding_callbacks[token] = nil
+              end
+            end
+            return callback(err)
+          end)
         end
         return callback(err)
       end
