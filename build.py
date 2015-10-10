@@ -2,26 +2,30 @@ import os
 import re
 import string
 import subprocess
+import pathlib
 
 import ReQLprotodef as protodef
+
+
+def lint_dir(d):
+    for test in pathlib.Path(d).glob('*.lua'):
+        if '.pre' in test.suffixes:
+            continue
+        returncode = subprocess.call(['luac', str(test.relative_to(d))], cwd=d)
+        if returncode:
+            exit(returncode)
 
 
 def lint():
     build()
 
-    print('linting rethinkdb.lua')
+    print('linting driver')
 
-    returncode = subprocess.call(['luac', 'rethinkdb.lua'], cwd='src')
-    if returncode:
-        exit(returncode)
+    lint_dir('src')
 
     print('linting tests')
 
-    for test in os.listdir('spec'):
-        if test.endswith('.lua'):
-            returncode = subprocess.call(['luac', test], cwd='spec')
-            if returncode:
-                exit(returncode)
+    lint_dir('spec')
 
     print('linting successful')
 
@@ -109,18 +113,19 @@ def build():
                 last = match.end()
             yield string[last:], None, None, None
 
-    with open('src/rethinkdb.pre.lua') as io:
-        s = io.read()
-    s = BuildFormat().vformat(s, (), {
+    formatter = {
         'AstClasses': '\n'.join(ast_classes),
         'AstMethods': ',\n  '.join(ast_methods),
         'AstNames': '\n'.join(lines),
         'Query': protodef.Query.QueryType,
         'Response': protodef.Response.ResponseType,
         'Term': protodef.Term.TermType,
-    })
-    with open('src/rethinkdb.lua', 'w') as io:
-        io.write(s)
+    }
+
+    for path in pathlib.Path('src').glob('*.pre.lua'):
+        path.with_suffix('').with_suffix('.lua').write_text(
+            BuildFormat().vformat(path.read_text(), (), formatter)
+        )
 
     print('building successful')
 
