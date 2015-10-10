@@ -714,6 +714,7 @@ local Cursor = class(
         else
           self._type = 'finite'
         end
+      end
       if response.r[1] or t == --[[Response.WAIT_COMPLETE]] then
         table.insert(self._responses, response)
       end

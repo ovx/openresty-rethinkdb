@@ -1072,7 +1072,14 @@ local Cursor = class(
     end,
     _add_response = function(self, response)
       local t = response.t
-      if not self._type then self._type = response.n or true end
+      if not self._type then
+        if response.n then
+          self._type = response.n
+          self._conn.weight = self.conn.weight + 2
+        else
+          self._type = 'finite'
+        end
+      end
       if response.r[1] or t == 4 then
         table.insert(self._responses, response)
       end
@@ -1155,8 +1162,8 @@ local Cursor = class(
     end,
     close = function(self, callback)
       if not self._end_flag then
-        self._conn:_end_query(self._token)
         self._end_flag = true
+        self._conn:_end_query(self._token)
       end
       if callback then return callback() end
     end,
@@ -1186,20 +1193,13 @@ local Cursor = class(
       return self:next(next_cb)
     end,
     to_array = function(self, callback)
-      if not self._type then self._conn:_get_response(self._token) end
-      if type(self._type) == 'number' then
-        return cb(ReQLDriverError('`to_array` is not available for feeds.'))
-      end
-      local cb = function(err, arr)
-        return callback(err, arr)
-      end
       local arr = {}
       return self:each(
         function(row)
           table.insert(arr, row)
         end,
         function(err)
-          return cb(err, arr)
+          return callback(err, arr)
         end
       )
     end,
@@ -1321,6 +1321,9 @@ r.connect = class(
     _del_query = function(self, token)
       -- This query is done, delete this cursor
       if self.outstanding_callbacks[token].cursor then
+        if self.outstanding_callbacks[token].cursor._type ~= 'finite' then
+          self.weight = self.weight - 2
+        end
         self.weight = self.weight - 1
       end
       self.outstanding_callbacks[token].cursor = nil
@@ -1370,9 +1373,18 @@ r.connect = class(
     end,
     noreply_wait = function(self, callback)
       local cb = function(err, cur)
-        self.weight = 0
         if cur then
-          return cur.next(function(err) return callback(err) end)
+          return cur.next(function(err)
+            self.weight = 0
+            for token, cur in pairs(self.outstanding_callbacks) do
+              if cur.cursor then
+                self.weight = self.weight + 3
+              else
+                self.outstanding_callbacks[token] = nil
+              end
+            end
+            return callback(err)
+          end)
         end
         return callback(err)
       end
@@ -1492,16 +1504,17 @@ r.pool = class(
         return pool, err
       end
       self.open = false
-      conn, err = r.connect(host)
-      if err then return cb(err) end
-      self.open = true
-      self.pool = {conn}
-      self.size = host.size or 12
-      self.host = host
-      for i=2, self.size do
-        table.insert(self.pool, (r.connect(host)))
-      end
-      return cb(nil, self)
+      return r.connect(host, function(err, conn)
+        if err then return cb(err) end
+        self.open = true
+        self.pool = {conn}
+        self.size = host.size or 12
+        self.host = host
+        for i=2, self.size do
+          table.insert(self.pool, (r.connect(host)))
+        end
+        return cb(nil, self)
+      end)
     end,
     close = function(self, opts, callback)
       local err
@@ -1518,15 +1531,20 @@ r.pool = class(
     end,
     _start = function(self, term, callback, opts)
       local weight = math.huge
-      local good_conn
       if opts.conn then
-        weight = -1
-        good_conn = self.pool[opts.conn]
+        local good_conn = self.pool[opts.conn]
+        if good_conn then
+          return good_conn:_start(term, callback, opts)
+        end
       end
+      local good_conn
       for i=1, self.size do
         if not self.pool[i] then self.pool[i] = r.connect(self.host) end
         local conn = self.pool[i]
-        if not conn.open then conn:reconnect() end
+        if not conn.open then
+          conn = conn:reconnect()
+          self.pool[i] = conn
+        end
         if conn.weight < weight then
           good_conn = conn
           weight = conn.weight
