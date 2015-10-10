@@ -796,8 +796,8 @@ local Cursor = class(
     end,
     close = function(self, callback)
       if not self._end_flag then
-        self._conn:_end_query(self._token)
         self._end_flag = true
+        self._conn:_end_query(self._token)
       end
       if callback then return callback() end
     end,
