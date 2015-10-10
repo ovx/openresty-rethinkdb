@@ -827,20 +827,13 @@ local Cursor = class(
       return self:next(next_cb)
     end,
     to_array = function(self, callback)
-      if not self._type then self._conn:_get_response(self._token) end
-      if type(self._type) == 'number' then
-        return cb(ReQLDriverError('`to_array` is not available for feeds.'))
-      end
-      local cb = function(err, arr)
-        return callback(err, arr)
-      end
       local arr = {}
       return self:each(
         function(row)
           table.insert(arr, row)
         end,
         function(err)
-          return cb(err, arr)
+          return callback(err, arr)
         end
       )
     end,
