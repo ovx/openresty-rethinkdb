@@ -38,17 +38,19 @@ describe('cursor', function()
 
   it('type', function()
     assert.are.equal(
+      'Cursor',
       r.table(reql_table):run(
         c, function(err, cur)
           if err then error(err.message) end
           return cur.__class.__name
         end
-      ), 'Cursor'
+      )
     )
   end)
 
   it('count', function()
     assert.are.equal(
+      num_rows,
       r.table(reql_table):run(
         c, function(err, cur)
           if err then error(err.message) end
@@ -57,7 +59,7 @@ describe('cursor', function()
             return #arr
           end)
         end
-      ), num_rows
+      )
     )
   end)
 

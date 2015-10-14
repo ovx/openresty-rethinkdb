@@ -116,6 +116,6 @@ describe('array limits', function()
     )
   end)
 
-  test_error('negative', r({1, 2, 3, 4, 5, 6, 7, 8}), -1, 'Illegal array size limit `-1`.')
-  test_error('zero', r({1, 2, 3, 4, 5, 6, 7, 8}), 0, 'Illegal array size limit `0`.')
+  test_error('negative', r({1, 2, 3, 4, 5, 6, 7, 8}), -1, 'Illegal array size limit `-1`.  (Must be >= 1.)')
+  test_error('zero', r({1, 2, 3, 4, 5, 6, 7, 8}), 0, 'Illegal array size limit `0`.  (Must be >= 1.)')
 end)

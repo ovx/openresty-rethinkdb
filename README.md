@@ -4,14 +4,11 @@ Rethinkdb driver for OpenResty, using cjson and cosocket. Based on [Lua-ReQL](ht
 
 
 ## Dependencies
-- OpenResty >= 1.7.10
+- OpenResty >= 1.9.3.1
 - ~~luajson~~ -> cjson
 - ~~luasocket~~ -> ngx.socket
 
 ## Testing
 - https://github.com/openresty/test-nginx
 - `prove t`
-
-
-## TODO
-- make busted work again
+- or `busted`
